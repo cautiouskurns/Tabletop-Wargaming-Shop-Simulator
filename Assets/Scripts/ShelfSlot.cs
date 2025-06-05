@@ -230,28 +230,57 @@ namespace TabletopShop
         /// <param name="productData">Product data to create</param>
         private void CreateAndPlaceProduct(ProductData productData)
         {
-            // Create product GameObject with visual representation
-            GameObject productObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            productObject.name = $"Product_{productData.ProductName}";
-            productObject.transform.position = SlotPosition;
-            productObject.transform.SetParent(transform);
-            productObject.transform.localScale = Vector3.one * 0.8f;
+            GameObject productObject;
+            
+            // Use the prefab if available, otherwise create a basic cube
+            if (productData.Prefab != null)
+            {
+                // Instantiate the actual prefab
+                productObject = Instantiate(productData.Prefab);
+                productObject.name = $"Product_{productData.ProductName}";
+                productObject.transform.position = SlotPosition;
+                productObject.transform.SetParent(transform);
+            }
+            else
+            {
+                // Fallback to cube if no prefab is set
+                productObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                productObject.name = $"Product_{productData.ProductName}";
+                productObject.transform.position = SlotPosition;
+                productObject.transform.SetParent(transform);
+                productObject.transform.localScale = Vector3.one * 0.8f;
+                
+                // Color the fallback cube based on product data
+                MeshRenderer renderer = productObject.GetComponent<MeshRenderer>();
+                if (renderer != null)
+                {
+                    Material productMaterial = new Material(Shader.Find("Standard"));
+                    productMaterial.color = GetProductColor(productData);
+                    renderer.material = productMaterial;
+                }
+            }
             
             // Set product layer for interaction
             InteractionLayers.SetProductLayer(productObject);
             
-            // Add Product component (now the GameObject has MeshRenderer and Collider from CreatePrimitive)
-            Product product = productObject.AddComponent<Product>();
+            // Add Product component if it doesn't already exist (prefabs might already have one)
+            Product product = productObject.GetComponent<Product>();
+            if (product == null)
+            {
+                product = productObject.AddComponent<Product>();
+            }
             product.Initialize(productData);
             
-            // Color the product based on its data (simple visualization)
-            MeshRenderer renderer = productObject.GetComponent<MeshRenderer>();
-            if (renderer != null)
+            // Ensure the object has required components for Product component
+            if (productObject.GetComponent<MeshRenderer>() == null)
             {
-                // Create a simple material with product's color or a default color
-                Material productMaterial = new Material(Shader.Find("Standard"));
-                productMaterial.color = GetProductColor(productData);
-                renderer.material = productMaterial;
+                Debug.LogWarning($"Product prefab {productData.ProductName} is missing MeshRenderer component");
+            }
+            if (productObject.GetComponent<Collider>() == null)
+            {
+                Debug.LogWarning($"Product prefab {productData.ProductName} is missing Collider component");
+                // Add a basic collider as fallback
+                productObject.AddComponent<BoxCollider>();
             }
             
             // Place the product in this slot
