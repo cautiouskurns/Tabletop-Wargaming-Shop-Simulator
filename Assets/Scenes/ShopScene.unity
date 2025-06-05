@@ -1012,11 +1012,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48b6c5fd04d0047e29b3c5c923162839, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfTester
-  testShelf: {fileID: 6612150940083019140, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  testShelf: {fileID: 1891580391}
   testProductDataList:
   - {fileID: 11400000, guid: b4933e77703f84af8be092a53f7d477e, type: 2}
+  - {fileID: 11400000, guid: f7291623a880e42bea9c56d2df27f87a, type: 2}
   productPrefabs:
   - {fileID: 451296204315812389, guid: 0319d0e81240e4855bdbe9ca611cb661, type: 3}
+  - {fileID: 6800198989442411400, guid: 4e8d97da9ccf947898ca3295eed01c5b, type: 3}
   createShelfKey: 121
   stockShelfKey: 117
   clearShelfKey: 105
@@ -1427,6 +1429,94 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1092444379}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1891580390
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 800048150188304937, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1237212235205480357, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.09619743
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.046
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -3.1409855
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5883046904152599424, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6612150940083019140, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: slotSpacing
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7032157210456165468, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7647451544521864112, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Name
+      value: BasicShelf_Prefab
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+--- !u!114 &1891580391 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6612150940083019140, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1891580390}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5b560c2c210d42e5bc205add8af093e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.Shelf
 --- !u!1 &1934702165
 GameObject:
   m_ObjectHideFlags: 0
@@ -1563,3 +1653,4 @@ SceneRoots:
   - {fileID: 1395094050}
   - {fileID: 500110049}
   - {fileID: 1304015481}
+  - {fileID: 1891580390}
