@@ -17,5 +17,5 @@ MonoBehaviour:
   type: 2
   description: Complete rules for tabletop warfare. Includes basic rules, advanced
     tactics, and lore sections.
-  icon: {fileID: 0}
-  prefab: {fileID: 0}
+  icon: {fileID: 21300000, guid: 722f20f6bcd80434a97ac3919dd6239f, type: 3}
+  prefab: {fileID: 1303984839545075410, guid: 0319d0e81240e4855bdbe9ca611cb661, type: 3}

@@ -17,5 +17,5 @@ MonoBehaviour:
   type: 0
   description: A complete starter army for the Iron Legion faction. Contains 10 detailed
     miniatures and assembly guide.
-  icon: {fileID: 0}
-  prefab: {fileID: 0}
+  icon: {fileID: 21300000, guid: c93780ff4fea84a6189e039153ccf9f0, type: 3}
+  prefab: {fileID: 2600664504126768182, guid: 60ebb4e808b9f4afc8a592eb373fd068, type: 3}
