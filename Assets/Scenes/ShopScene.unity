@@ -536,6 +536,66 @@ Transform:
   - {fileID: 1092444379}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &590490614
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 590490616}
+  - component: {fileID: 590490615}
+  m_Layer: 0
+  m_Name: InventoryManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &590490615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 590490614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7943a2d4449864788b4641c79c43b748, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.InventoryManager
+  availableProducts:
+  - {fileID: 11400000, guid: b4933e77703f84af8be092a53f7d477e, type: 2}
+  - {fileID: 11400000, guid: f7291623a880e42bea9c56d2df27f87a, type: 2}
+  - {fileID: 11400000, guid: 3b32b793429ab4cb89051299df3368aa, type: 2}
+  startingQuantityPerProduct: 5
+  autoLoadProductsOnStart: 1
+  selectedProduct: {fileID: 0}
+  onInventoryChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onProductSelected:
+    m_PersistentCalls:
+      m_Calls: []
+  onProductCountChanged:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!4 &590490616
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 590490614}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.9, y: 0.57796, z: -0.71292}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &699177123
 GameObject:
   m_ObjectHideFlags: 0
@@ -1260,6 +1320,8 @@ MonoBehaviour:
   transitionSpeed: 5
   interactionText: {fileID: 0}
   interactionTextGroup: {fileID: 0}
+  textFontSize: 18
+  textColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1395094053
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1764,6 +1826,54 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &2000765056
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2000765058}
+  - component: {fileID: 2000765057}
+  m_Layer: 0
+  m_Name: InventoryTestSimple
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2000765057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000765056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70ae7a9765d0c4398941643fa2bc06e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryTestSimple
+  runTestOnStart: 1
+  logDetailedInfo: 1
+  showOnScreenInventory: 1
+  toggleInventoryKey: 9
+--- !u!4 &2000765058
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000765056}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.9, y: 0.57796, z: -0.71292}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1775,3 +1885,5 @@ SceneRoots:
   - {fileID: 1304015481}
   - {fileID: 1891580390}
   - {fileID: 338406089}
+  - {fileID: 590490616}
+  - {fileID: 2000765058}

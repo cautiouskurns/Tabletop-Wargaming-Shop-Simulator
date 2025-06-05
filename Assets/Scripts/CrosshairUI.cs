@@ -17,6 +17,8 @@ namespace TabletopShop
         [Header("Interaction Text")]
         [SerializeField] private Text interactionText;
         [SerializeField] private CanvasGroup interactionTextGroup;
+        [SerializeField] private int textFontSize = 68;
+        [SerializeField] private Color textColor = Color.white;
         
         private Color targetColor;
         private bool showingInteractionText = false;
@@ -31,6 +33,13 @@ namespace TabletopShop
             
             if (interactionTextGroup == null && interactionText != null)
                 interactionTextGroup = interactionText.GetComponent<CanvasGroup>();
+            
+            // Apply text settings if text component exists
+            if (interactionText != null)
+            {
+                interactionText.fontSize = textFontSize;
+                interactionText.color = textColor;
+            }
             
             // Set initial state
             targetColor = normalColor;
@@ -99,6 +108,32 @@ namespace TabletopShop
                 interactionTextGroup.gameObject.SetActive(visible);
         }
         
+        /// <summary>
+        /// Set the font size of the interaction text
+        /// </summary>
+        /// <param name="fontSize">The new font size</param>
+        public void SetTextSize(int fontSize)
+        {
+            textFontSize = fontSize;
+            if (interactionText != null)
+            {
+                interactionText.fontSize = fontSize;
+            }
+        }
+        
+        /// <summary>
+        /// Set the color of the interaction text
+        /// </summary>
+        /// <param name="color">The new text color</param>
+        public void SetTextColor(Color color)
+        {
+            textColor = color;
+            if (interactionText != null)
+            {
+                interactionText.color = color;
+            }
+        }
+        
         #endregion
         
         #region Setup Methods
@@ -151,13 +186,13 @@ namespace TabletopShop
             RectTransform textRect = textObj.AddComponent<RectTransform>();
             textRect.anchorMin = new Vector2(0.5f, 0f);
             textRect.anchorMax = new Vector2(0.5f, 0f);
-            textRect.anchoredPosition = new Vector2(0, -30);
-            textRect.sizeDelta = new Vector2(200, 30);
+            textRect.anchoredPosition = new Vector2(0, -40);
+            textRect.sizeDelta = new Vector2(300, 40); // Increased size for larger text
             
             Text text = textObj.AddComponent<Text>();
             text.text = "";
             text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.fontSize = 14;
+            text.fontSize = 18; // Increased from 14 for better visibility
             text.color = Color.white;
             text.alignment = TextAnchor.MiddleCenter;
             
