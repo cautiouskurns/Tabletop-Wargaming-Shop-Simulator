@@ -13,6 +13,8 @@ public class InventoryTestSimple : MonoBehaviour
     [SerializeField] private bool logDetailedInfo = true;
     [SerializeField] private bool showOnScreenInventory = true;
     [SerializeField] private KeyCode toggleInventoryKey = KeyCode.Tab;
+    [SerializeField] private KeyCode nextProductKey = KeyCode.RightArrow;
+    [SerializeField] private KeyCode previousProductKey = KeyCode.LeftArrow;
     
     [Header("UI Components")]
     private Canvas inventoryCanvas;
@@ -39,6 +41,20 @@ public class InventoryTestSimple : MonoBehaviour
         if (Input.GetKeyDown(toggleInventoryKey))
         {
             ToggleInventoryDisplay();
+        }
+        
+        // Product selection controls
+        var inventory = InventoryManager.Instance;
+        if (inventory != null)
+        {
+            if (Input.GetKeyDown(nextProductKey))
+            {
+                SelectNextProduct();
+            }
+            else if (Input.GetKeyDown(previousProductKey))
+            {
+                SelectPreviousProduct();
+            }
         }
         
         // Update inventory display if visible
@@ -216,9 +232,57 @@ public class InventoryTestSimple : MonoBehaviour
             displayText += "Create ProductData assets in\nResources/Products/ folder";
         }
         
-        displayText += $"\nPress {toggleInventoryKey} to toggle this display";
+        displayText += $"\nControls:\n";
+        displayText += $"Press {toggleInventoryKey} to toggle this display\n";
+        displayText += $"Press {previousProductKey}/{nextProductKey} to select products";
         
         inventoryText.text = displayText;
+    }
+    
+    /// <summary>
+    /// Select the next product in the inventory
+    /// </summary>
+    private void SelectNextProduct()
+    {
+        var inventory = InventoryManager.Instance;
+        if (inventory == null || inventory.AvailableProducts.Count == 0) return;
+        
+        // Get products that have stock
+        var availableProducts = inventory.AvailableProducts.FindAll(p => p != null && inventory.GetProductCount(p) > 0);
+        if (availableProducts.Count == 0) return;
+        
+        // Find current selection index
+        int currentIndex = availableProducts.IndexOf(inventory.SelectedProduct);
+        int nextIndex = (currentIndex + 1) % availableProducts.Count;
+        
+        bool selected = inventory.SelectProduct(availableProducts[nextIndex]);
+        if (selected)
+        {
+            Debug.Log($"Selected next product: {availableProducts[nextIndex].ProductName}");
+        }
+    }
+    
+    /// <summary>
+    /// Select the previous product in the inventory
+    /// </summary>
+    private void SelectPreviousProduct()
+    {
+        var inventory = InventoryManager.Instance;
+        if (inventory == null || inventory.AvailableProducts.Count == 0) return;
+        
+        // Get products that have stock
+        var availableProducts = inventory.AvailableProducts.FindAll(p => p != null && inventory.GetProductCount(p) > 0);
+        if (availableProducts.Count == 0) return;
+        
+        // Find current selection index
+        int currentIndex = availableProducts.IndexOf(inventory.SelectedProduct);
+        int previousIndex = currentIndex <= 0 ? availableProducts.Count - 1 : currentIndex - 1;
+        
+        bool selected = inventory.SelectProduct(availableProducts[previousIndex]);
+        if (selected)
+        {
+            Debug.Log($"Selected previous product: {availableProducts[previousIndex].ProductName}");
+        }
     }
     
     /// <summary>

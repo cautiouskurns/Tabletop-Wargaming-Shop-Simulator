@@ -32,7 +32,7 @@ namespace TabletopShop
         public Vector3 SlotPosition => transform.position + slotPosition;
         
         // IInteractable Properties
-        public string InteractionText => IsEmpty ? "Empty Slot" : $"Remove {currentProduct.ProductData?.ProductName ?? "Product"}";
+        public string InteractionText => IsEmpty ? GetPlacementText() : $"Remove {currentProduct.ProductData?.ProductName ?? "Product"}";
         public bool CanInteract => true;
         
         #region Unity Lifecycle
@@ -160,23 +160,133 @@ namespace TabletopShop
         {
             if (IsEmpty)
             {
-                Debug.Log($"Player interacted with empty slot {name}");
-                // TODO: Open inventory for product placement
-                // For now, just highlight for feedback
-                StartCoroutine(InteractionFeedback());
+                // Try to place selected product from inventory
+                PlaceProductFromInventory();
             }
             else
             {
                 Debug.Log($"Player interacted with slot {name} - removing {currentProduct.ProductData?.ProductName}");
-                // Remove product and potentially add to player inventory
+                // Remove product and add back to inventory
                 Product removedProduct = RemoveProduct();
                 if (removedProduct != null)
                 {
-                    // For now, just move it slightly to show it was "picked up"
-                    removedProduct.transform.position += Vector3.up * 2f;
-                    // TODO: Add to player inventory
+                    // Add product back to inventory
+                    if (removedProduct.ProductData != null)
+                    {
+                        InventoryManager.Instance.AddProduct(removedProduct.ProductData, 1);
+                        Debug.Log($"Added {removedProduct.ProductData.ProductName} back to inventory");
+                    }
+                    
+                    // Destroy the visual product object
+                    Destroy(removedProduct.gameObject);
                 }
             }
+        }
+        
+        /// <summary>
+        /// Attempt to place the currently selected product from inventory
+        /// </summary>
+        private void PlaceProductFromInventory()
+        {
+            var inventory = InventoryManager.Instance;
+            if (inventory == null)
+            {
+                Debug.LogWarning("InventoryManager not found!");
+                return;
+            }
+            
+            ProductData selectedProduct = inventory.SelectedProduct;
+            if (selectedProduct == null)
+            {
+                Debug.Log("No product selected in inventory");
+                StartCoroutine(InteractionFeedback());
+                return;
+            }
+            
+            if (!inventory.HasProduct(selectedProduct, 1))
+            {
+                Debug.Log($"Not enough {selectedProduct.ProductName} in inventory");
+                StartCoroutine(InteractionFeedback());
+                return;
+            }
+            
+            // Remove product from inventory
+            bool removed = inventory.RemoveProduct(selectedProduct, 1);
+            if (!removed)
+            {
+                Debug.LogWarning($"Failed to remove {selectedProduct.ProductName} from inventory");
+                return;
+            }
+            
+            // Create and place product on shelf
+            CreateAndPlaceProduct(selectedProduct);
+            
+            Debug.Log($"Placed {selectedProduct.ProductName} from inventory onto shelf. Remaining: {inventory.GetProductCount(selectedProduct)}");
+        }
+        
+        /// <summary>
+        /// Create a product GameObject and place it in this slot
+        /// </summary>
+        /// <param name="productData">Product data to create</param>
+        private void CreateAndPlaceProduct(ProductData productData)
+        {
+            // Create product GameObject with visual representation
+            GameObject productObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            productObject.name = $"Product_{productData.ProductName}";
+            productObject.transform.position = SlotPosition;
+            productObject.transform.SetParent(transform);
+            productObject.transform.localScale = Vector3.one * 0.8f;
+            
+            // Set product layer for interaction
+            InteractionLayers.SetProductLayer(productObject);
+            
+            // Add Product component (now the GameObject has MeshRenderer and Collider from CreatePrimitive)
+            Product product = productObject.AddComponent<Product>();
+            product.Initialize(productData);
+            
+            // Color the product based on its data (simple visualization)
+            MeshRenderer renderer = productObject.GetComponent<MeshRenderer>();
+            if (renderer != null)
+            {
+                // Create a simple material with product's color or a default color
+                Material productMaterial = new Material(Shader.Find("Standard"));
+                productMaterial.color = GetProductColor(productData);
+                renderer.material = productMaterial;
+            }
+            
+            // Place the product in this slot
+            PlaceProduct(product);
+        }
+        
+        /// <summary>
+        /// Get a color for the product based on its properties
+        /// </summary>
+        /// <param name="productData">Product data</param>
+        /// <returns>Color for the product</returns>
+        private Color GetProductColor(ProductData productData)
+        {
+            // Simple color assignment based on product name hash
+            int hash = productData.ProductName.GetHashCode();
+            float hue = (hash % 360) / 360f;
+            return Color.HSVToRGB(hue, 0.7f, 0.9f);
+        }
+        
+        /// <summary>
+        /// Get interaction text for placing products from inventory
+        /// </summary>
+        /// <returns>Descriptive text for the interaction</returns>
+        private string GetPlacementText()
+        {
+            var inventory = InventoryManager.Instance;
+            if (inventory == null) return "Empty Slot";
+            
+            ProductData selectedProduct = inventory.SelectedProduct;
+            if (selectedProduct == null) return "Empty Slot - No Product Selected";
+            
+            int quantity = inventory.GetProductCount(selectedProduct);
+            if (quantity <= 0) return $"Empty Slot - No {selectedProduct.ProductName} Available";
+            
+            return $"Place {selectedProduct.ProductName} ({quantity} available)";
         }
         
         /// <summary>
@@ -222,14 +332,23 @@ namespace TabletopShop
         {
             if (IsEmpty)
             {
-                Debug.Log($"Clicked on empty slot {name} - ready for product placement");
-                // TODO: Integrate with inventory system for player stocking
-                // For now, just log the interaction
+                Debug.Log($"Clicked on empty slot {name} - attempting to place product from inventory");
+                PlaceProductFromInventory();
             }
             else
             {
                 Debug.Log($"Clicked on slot {name} containing {currentProduct.ProductData?.ProductName}");
-                // Could allow removal or product management here
+                // Allow removal by clicking (alternative to E key interaction)
+                Product removedProduct = RemoveProduct();
+                if (removedProduct != null && removedProduct.ProductData != null)
+                {
+                    // Add product back to inventory
+                    InventoryManager.Instance.AddProduct(removedProduct.ProductData, 1);
+                    Debug.Log($"Clicked to remove: Added {removedProduct.ProductData.ProductName} back to inventory");
+                    
+                    // Destroy the visual product object
+                    Destroy(removedProduct.gameObject);
+                }
             }
         }
         
