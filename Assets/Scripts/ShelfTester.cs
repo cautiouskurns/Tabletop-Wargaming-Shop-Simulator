@@ -136,7 +136,7 @@ namespace TabletopShop
             ClearSpawnedProducts();
             
             // Try to stock each slot with a random product
-            for (int i = 0; i < testShelf.TotalSlots && i < productPrefabs.Count * 2; i++)
+            for (int i = 0; i < testShelf.TotalSlots; i++)
             {
                 // Get random product prefab
                 GameObject prefab = productPrefabs[Random.Range(0, productPrefabs.Count)];

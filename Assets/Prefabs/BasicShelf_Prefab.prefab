@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1629350246249168267}
   - component: {fileID: 301385908647246023}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Slot_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -63,7 +63,7 @@ GameObject:
   - component: {fileID: 1199984610279402530}
   - component: {fileID: 6691268545261172481}
   - component: {fileID: 7501412163562122499}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: ShelfVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -151,7 +151,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1237212235205480357}
   - component: {fileID: 3612627904194023414}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Slot_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -203,7 +203,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7032157210456165468}
   - component: {fileID: 4953916212804980277}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Slot_5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -255,7 +255,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1473008577561291774}
   - component: {fileID: 6612150940083019140}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: BasicShelf_Prefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -319,7 +319,7 @@ GameObject:
   m_Component:
   - component: {fileID: 800048150188304937}
   - component: {fileID: 6092454070858641272}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Slot_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -371,7 +371,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5883046904152599424}
   - component: {fileID: 7686742457222814376}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Slot_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}

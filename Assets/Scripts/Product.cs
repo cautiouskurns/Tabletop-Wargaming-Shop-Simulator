@@ -7,7 +7,7 @@ namespace TabletopShop
     /// Manages product interactions, visual feedback, and state management
     /// </summary>
     [RequireComponent(typeof(MeshRenderer), typeof(Collider))]
-    public class Product : MonoBehaviour
+    public class Product : MonoBehaviour, IInteractable
     {
         [Header("Product Configuration")]
         [SerializeField] private ProductData productData;
@@ -32,6 +32,10 @@ namespace TabletopShop
         public bool IsOnShelf => isOnShelf;
         public bool IsPurchased => isPurchased;
         
+        // IInteractable Properties
+        public string InteractionText => isPurchased ? "Already Purchased" : $"Buy {productData?.ProductName ?? "Product"} (${currentPrice})";
+        public bool CanInteract => !isPurchased;
+        
         #region Unity Lifecycle
         
         private void Awake()
@@ -39,6 +43,9 @@ namespace TabletopShop
             // Get required components
             meshRenderer = GetComponent<MeshRenderer>();
             productCollider = GetComponent<Collider>();
+            
+            // Set layer for interaction system
+            InteractionLayers.SetProductLayer(gameObject);
             
             // Validate components
             if (meshRenderer == null)
@@ -290,6 +297,51 @@ namespace TabletopShop
             if (meshRenderer != null && originalMaterial != null)
             {
                 meshRenderer.material = originalMaterial;
+            }
+        }
+        
+        #endregion
+        
+        #region IInteractable Implementation
+        
+        /// <summary>
+        /// Handle player interaction with this product
+        /// </summary>
+        /// <param name="player">The player GameObject</param>
+        public void Interact(GameObject player)
+        {
+            if (isPurchased)
+            {
+                Debug.Log($"Product {productData?.ProductName ?? name} is already purchased!");
+                return;
+            }
+            
+            // Purchase the product
+            Purchase();
+            
+            // TODO: Integrate with player inventory/money system
+            Debug.Log($"Player purchased {productData?.ProductName ?? name} for ${currentPrice}!");
+        }
+        
+        /// <summary>
+        /// Called when player starts looking at this product
+        /// </summary>
+        public void OnInteractionEnter()
+        {
+            if (!isPurchased)
+            {
+                ApplyHoverEffect();
+            }
+        }
+        
+        /// <summary>
+        /// Called when player stops looking at this product
+        /// </summary>
+        public void OnInteractionExit()
+        {
+            if (!isPurchased)
+            {
+                RemoveHoverEffect();
             }
         }
         

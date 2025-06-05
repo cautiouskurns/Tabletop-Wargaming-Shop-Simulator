@@ -1,0 +1,19 @@
+{
+    "asset": "c4cac6d9675ed41668e0ef5bb0f01577",
+    "fileName": "019741ee-7050-7178-bd6c-7d466be5faa9.png",
+    "prompt": "Cretae a basic crosshair for a UI interaction system",
+    "negativePrompt": "",
+    "model": "9d689c69-f246-40c1-9d53-dbf8e2aa0e79",
+    "customSeed": -1,
+    "w3CTraceId": "125e7dac1db5b85f5bf043c8b2f19756",
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0
+}

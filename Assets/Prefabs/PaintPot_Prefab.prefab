@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1822964535476590670}
   - component: {fileID: 4885614809761857291}
   - component: {fileID: 3984672962772106685}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: PaintPot_Prefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}

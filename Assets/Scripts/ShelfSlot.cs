@@ -6,7 +6,7 @@ namespace TabletopShop
     /// Individual slot on a shelf that can hold one product
     /// Handles product placement, visual feedback, and player interactions
     /// </summary>
-    public class ShelfSlot : MonoBehaviour
+    public class ShelfSlot : MonoBehaviour, IInteractable
     {
         [Header("Slot Configuration")]
         [SerializeField] private Vector3 slotPosition;
@@ -31,12 +31,19 @@ namespace TabletopShop
         public Product CurrentProduct => currentProduct;
         public Vector3 SlotPosition => transform.position + slotPosition;
         
+        // IInteractable Properties
+        public string InteractionText => IsEmpty ? "Empty Slot" : $"Remove {currentProduct.ProductData?.ProductName ?? "Product"}";
+        public bool CanInteract => true;
+        
         #region Unity Lifecycle
         
         private void Awake()
         {
             SetupSlotIndicator();
             SetupMaterials();
+            
+            // Set layer for interaction system
+            InteractionLayers.SetShelfLayer(gameObject);
             
             // Get collider for mouse interactions
             slotCollider = GetComponent<Collider>();
@@ -139,6 +146,69 @@ namespace TabletopShop
         public void SetSlotPosition(Vector3 position)
         {
             slotPosition = position;
+        }
+        
+        #endregion
+        
+        #region IInteractable Implementation
+        
+        /// <summary>
+        /// Handle player interaction with this slot
+        /// </summary>
+        /// <param name="player">The player GameObject</param>
+        public void Interact(GameObject player)
+        {
+            if (IsEmpty)
+            {
+                Debug.Log($"Player interacted with empty slot {name}");
+                // TODO: Open inventory for product placement
+                // For now, just highlight for feedback
+                StartCoroutine(InteractionFeedback());
+            }
+            else
+            {
+                Debug.Log($"Player interacted with slot {name} - removing {currentProduct.ProductData?.ProductName}");
+                // Remove product and potentially add to player inventory
+                Product removedProduct = RemoveProduct();
+                if (removedProduct != null)
+                {
+                    // For now, just move it slightly to show it was "picked up"
+                    removedProduct.transform.position += Vector3.up * 2f;
+                    // TODO: Add to player inventory
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Called when player starts looking at this slot
+        /// </summary>
+        public void OnInteractionEnter()
+        {
+            ApplyHighlight();
+        }
+        
+        /// <summary>
+        /// Called when player stops looking at this slot
+        /// </summary>
+        public void OnInteractionExit()
+        {
+            RemoveHighlight();
+        }
+        
+        /// <summary>
+        /// Provide visual feedback for interaction
+        /// </summary>
+        private System.Collections.IEnumerator InteractionFeedback()
+        {
+            // Flash the highlight a few times
+            for (int i = 0; i < 3; i++)
+            {
+                ApplyHighlight();
+                yield return new WaitForSeconds(0.1f);
+                RemoveHighlight();
+                yield return new WaitForSeconds(0.1f);
+            }
+            UpdateVisualState();
         }
         
         #endregion
