@@ -1,0 +1,10 @@
+{
+    "asset": "7076d699552a1414c82af83a93d4fdf6",
+    "fileName": "01974167-f83b-7608-a6ec-cc6c44cec361_Preview.png",
+    "prompt": "Create a realistic wood floor material with a warm brown/tan color scheme. The material should have:\n- Rich wood grain texture with natural variations\n- Warm brown to tan color palette suitable for a cozy shop interior\n- Subtle normal mapping for realistic wood surface detail\n- Appropriate shininess for finished hardwood flooring\n- Seamless tiling pattern that works well on large floor surfaces\n- PBR workflow compatible properties",
+    "negativePrompt": "",
+    "model": "575ecf67-4425-4939-97b9-5e138b8ee234",
+    "customSeed": 1240897952,
+    "w3CTraceId": "581b115113f7044f2735105d031036dd",
+    "refinementMode": "Generation"
+}

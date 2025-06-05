@@ -1,0 +1,10 @@
+{
+    "asset": "ad3c3f7e23f424368a6cab74fc8a8ad2",
+    "fileName": "0197416b-428d-7813-b592-00e4cb15acc6_Preview.png",
+    "prompt": "Create a clean interior wall material with a white/cream color. The material should have:\n- Smooth, painted wall surface texture\n- Warm off-white to cream color (not pure white)\n- Subtle surface variation to avoid flat appearance\n- Matte finish appropriate for interior shop walls\n- No visible seams when tiled across large wall surfaces\n- Clean, professional appearance suitable for a retail environment",
+    "negativePrompt": "",
+    "model": "575ecf67-4425-4939-97b9-5e138b8ee234",
+    "customSeed": 796084616,
+    "w3CTraceId": "445e87f65c72d0c9d3542052a97e7947",
+    "refinementMode": "Generation"
+}
