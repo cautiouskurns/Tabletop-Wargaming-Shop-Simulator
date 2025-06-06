@@ -35,6 +35,9 @@ namespace TabletopShop
         private float mouseY;
         private bool jumpInput;
         
+        // Mouse look control
+        private bool mouseLookEnabled = true;
+        
         void Start()
         {
             // Get required components
@@ -63,9 +66,8 @@ namespace TabletopShop
                 groundCheckPoint = groundCheck.transform;
             }
             
-            // Lock cursor to center of screen
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            // NOTE: Cursor management is now handled by CursorManager
+            // Removed cursor locking to prevent conflicts
         }
         
         void Update()
@@ -82,31 +84,30 @@ namespace TabletopShop
             horizontalInput = Input.GetAxis("Horizontal");
             verticalInput = Input.GetAxis("Vertical");
             
-            // Mouse input
-            mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
-            mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+            // Mouse input (only if mouse look is enabled)
+            if (mouseLookEnabled)
+            {
+                mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
+                mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+            }
+            else
+            {
+                mouseX = 0f;
+                mouseY = 0f;
+            }
             
             // Jump input
             jumpInput = Input.GetButtonDown("Jump");
             
-            // Unlock cursor with Escape key
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                if (Cursor.lockState == CursorLockMode.Locked)
-                {
-                    Cursor.lockState = CursorLockMode.None;
-                    Cursor.visible = true;
-                }
-                else
-                {
-                    Cursor.lockState = CursorLockMode.Locked;
-                    Cursor.visible = false;
-                }
-            }
+            // NOTE: Cursor management is now handled by CursorManager
+            // Removed Escape key handling to prevent conflicts
         }
         
         private void HandleMouseLook()
         {
+            // Only process mouse look if enabled
+            if (!mouseLookEnabled) return;
+            
             // Horizontal rotation (Y-axis) - rotate the player body
             transform.Rotate(0, mouseX, 0);
             
@@ -173,6 +174,24 @@ namespace TabletopShop
         public Vector3 GetVelocity()
         {
             return velocity;
+        }
+        
+        /// <summary>
+        /// Enable or disable mouse look for camera rotation
+        /// </summary>
+        /// <param name="enabled">True to enable mouse look, false to disable</param>
+        public void SetMouseLookEnabled(bool enabled)
+        {
+            mouseLookEnabled = enabled;
+        }
+        
+        /// <summary>
+        /// Check if mouse look is currently enabled
+        /// </summary>
+        /// <returns>True if mouse look is enabled</returns>
+        public bool IsMouseLookEnabled()
+        {
+            return mouseLookEnabled;
         }
         
         // Gizmos for debugging

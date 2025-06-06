@@ -142,13 +142,8 @@ namespace TabletopShop
             {
                 TogglePanel();
                 
-                // Auto-manage cursor when toggling inventory
-                CursorManager cursorManager = FindAnyObjectByType<CursorManager>();
-                if (cursorManager != null)
-                {
-                    // Unlock cursor when showing inventory, lock when hiding
-                    cursorManager.SetCursorState(!isPanelVisible);
-                }
+                // CursorManager will handle cursor state automatically
+                // No need to manage cursor here to prevent conflicts
             }
         }
         
