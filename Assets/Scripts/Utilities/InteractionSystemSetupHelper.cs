@@ -12,7 +12,6 @@ namespace TabletopShop
         [SerializeField] private bool step1_LayersSetup = false;
         [SerializeField] private bool step2_PlayerSetup = false;
         [SerializeField] private bool step3_TestObjectsCreated = false;
-        [SerializeField] private bool step4_SystemTested = false;
         
         [Header("Manual Setup")]
         [SerializeField] private bool createTestCubes = true;
@@ -47,15 +46,15 @@ namespace TabletopShop
             step1_LayersSetup = InteractionLayers.ValidateLayers();
             
             // Check if player is set up
-            PlayerInteraction playerInteraction = FindObjectOfType<PlayerInteraction>();
-            SimplePlayerController playerController = FindObjectOfType<SimplePlayerController>();
+            PlayerInteraction playerInteraction = FindFirstObjectByType<PlayerInteraction>();
+            SimplePlayerController playerController = FindFirstObjectByType<SimplePlayerController>();
             Camera mainCamera = Camera.main;
             
             step2_PlayerSetup = (playerInteraction != null && playerController != null && mainCamera != null);
             
             // Check if test objects exist
-            Product[] products = FindObjectsOfType<Product>();
-            ShelfSlot[] slots = FindObjectsOfType<ShelfSlot>();
+            Product[] products = FindObjectsByType<Product>(FindObjectsSortMode.None);
+            ShelfSlot[] slots = FindObjectsByType<ShelfSlot>(FindObjectsSortMode.None);
             step3_TestObjectsCreated = (products.Length > 0 || slots.Length > 0);
             
             // Log status
@@ -123,13 +122,13 @@ namespace TabletopShop
         private GameObject FindOrCreatePlayer()
         {
             // Try to find existing player
-            SimplePlayerController existingController = FindObjectOfType<SimplePlayerController>();
+            SimplePlayerController existingController = FindFirstObjectByType<SimplePlayerController>();
             if (existingController != null)
             {
                 return existingController.gameObject;
             }
             
-            PlayerInteraction existingInteraction = FindObjectOfType<PlayerInteraction>();
+            PlayerInteraction existingInteraction = FindFirstObjectByType<PlayerInteraction>();
             if (existingInteraction != null)
             {
                 return existingInteraction.gameObject;
@@ -246,7 +245,6 @@ namespace TabletopShop
                 }
             }
             
-            step4_SystemTested = true;
             
             Debug.Log("=== TEST COMPLETE ===");
             Debug.Log("Instructions:");

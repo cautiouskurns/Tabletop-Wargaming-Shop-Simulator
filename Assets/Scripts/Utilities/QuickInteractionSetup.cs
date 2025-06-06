@@ -73,7 +73,7 @@ namespace TabletopShop
             GameObject player = null;
             
             // Try to find existing player
-            SimplePlayerController existingController = FindObjectOfType<SimplePlayerController>();
+            SimplePlayerController existingController = FindAnyObjectByType<SimplePlayerController>();
             if (existingController != null)
             {
                 player = existingController.gameObject;
@@ -186,14 +186,14 @@ namespace TabletopShop
             bool isValid = true;
             
             // Check player
-            SimplePlayerController player = FindObjectOfType<SimplePlayerController>();
+            SimplePlayerController player = FindAnyObjectByType<SimplePlayerController>();
             if (player == null)
             {
                 Debug.LogError("No SimplePlayerController found!");
                 isValid = false;
             }
             
-            PlayerInteraction interaction = FindObjectOfType<PlayerInteraction>();
+            PlayerInteraction interaction = FindAnyObjectByType<PlayerInteraction>();
             if (interaction == null)
             {
                 Debug.LogError("No PlayerInteraction found!");
@@ -208,8 +208,8 @@ namespace TabletopShop
             }
             
             // Check for interactable objects
-            Product[] products = FindObjectsOfType<Product>();
-            ShelfSlot[] slots = FindObjectsOfType<ShelfSlot>();
+            Product[] products = FindObjectsByType<Product>(FindObjectsSortMode.None);
+            ShelfSlot[] slots = FindObjectsByType<ShelfSlot>(FindObjectsSortMode.None);
             
             if (products.Length == 0 && slots.Length == 0)
             {

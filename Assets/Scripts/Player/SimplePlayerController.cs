@@ -188,7 +188,7 @@ namespace TabletopShop
             playerCamera.farClipPlane = 1000f;
             
             // Add AudioListener if there isn't one already
-            if (FindObjectOfType<AudioListener>() == null)
+            if (FindAnyObjectByType<AudioListener>() == null)
             {
                 cameraObj.AddComponent<AudioListener>();
             }

@@ -108,8 +108,8 @@ namespace TabletopShop
             debugMessages.Add($"Shelf Layer Index: {InteractionLayers.ShelfLayerIndex}");
             
             // Check if objects are on correct layers
-            Product[] products = FindObjectsOfType<Product>();
-            ShelfSlot[] slots = FindObjectsOfType<ShelfSlot>();
+            Product[] products = FindObjectsByType<Product>(FindObjectsSortMode.None);
+            ShelfSlot[] slots = FindObjectsByType<ShelfSlot>(FindObjectsSortMode.None);
             
             debugMessages.Add($"Products found: {products.Length}");
             foreach (var product in products)
@@ -130,11 +130,11 @@ namespace TabletopShop
             
             // Auto-find components if not assigned
             if (playerInteraction == null)
-                playerInteraction = FindObjectOfType<PlayerInteraction>();
+                playerInteraction = FindFirstObjectByType<PlayerInteraction>();
             if (crosshairUI == null)
-                crosshairUI = FindObjectOfType<CrosshairUI>();
+                crosshairUI = FindFirstObjectByType<CrosshairUI>();
             if (playerCamera == null)
-                playerCamera = Camera.main ?? FindObjectOfType<Camera>();
+                playerCamera = Camera.main ?? FindFirstObjectByType<Camera>();
             
             debugMessages.Add($"PlayerInteraction: {(playerInteraction != null ? "✓" : "✗")}");
             if (playerInteraction != null)
@@ -165,11 +165,11 @@ namespace TabletopShop
         {
             debugMessages.Add("--- INTERACTABLE OBJECTS CHECK ---");
             
-            IInteractable[] interactables = FindObjectsOfType<MonoBehaviour>() as IInteractable[];
+            IInteractable[] interactables = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None) as IInteractable[];
             
             // Find all objects with IInteractable components
             List<IInteractable> foundInteractables = new List<IInteractable>();
-            MonoBehaviour[] allObjects = FindObjectsOfType<MonoBehaviour>();
+            MonoBehaviour[] allObjects = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
             
             foreach (var obj in allObjects)
             {
@@ -209,7 +209,7 @@ namespace TabletopShop
         {
             debugMessages.Add("--- UI CHECK ---");
             
-            Canvas[] canvases = FindObjectsOfType<Canvas>();
+            Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
             debugMessages.Add($"Canvases found: {canvases.Length}");
             
             foreach (var canvas in canvases)

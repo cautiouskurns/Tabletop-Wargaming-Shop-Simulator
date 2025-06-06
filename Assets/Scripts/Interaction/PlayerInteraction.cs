@@ -42,7 +42,7 @@ namespace TabletopShop
                 playerCamera = Camera.main;
                 if (playerCamera == null)
                 {
-                    playerCamera = FindObjectOfType<Camera>();
+                    playerCamera = FindAnyObjectByType<Camera>();
                 }
             }
             
@@ -170,7 +170,7 @@ namespace TabletopShop
             // Find or create canvas
             if (uiCanvas == null)
             {
-                uiCanvas = FindObjectOfType<Canvas>();
+                uiCanvas = FindAnyObjectByType<Canvas>();
             }
             
             if (uiCanvas == null)
