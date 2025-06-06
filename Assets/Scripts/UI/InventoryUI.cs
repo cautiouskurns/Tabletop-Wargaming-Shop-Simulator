@@ -30,33 +30,109 @@ namespace TabletopShop
         
         private void Awake()
         {
+            Debug.Log("InventoryUI Awake() called");
+            
+            // Try to get InventoryManager instance early
             inventoryManager = InventoryManager.Instance;
+            Debug.Log($"InventoryUI: InventoryManager instance in Awake: {inventoryManager != null}");
+            
+            // Validate required components
+            if (inventoryCanvasGroup == null)
+            {
+                inventoryCanvasGroup = GetComponent<CanvasGroup>();
+                if (inventoryCanvasGroup == null)
+                {
+                    Debug.LogError("InventoryUI: No CanvasGroup found! Adding one automatically.");
+                    inventoryCanvasGroup = gameObject.AddComponent<CanvasGroup>();
+                }
+            }
+            
+            if (productButtons == null || productButtons.Length == 0)
+            {
+                Debug.LogWarning("InventoryUI: No product buttons assigned in Inspector!");
+            }
         }
         
         private void Start()
         {
             Debug.Log("InventoryUI Start() called");
             
-            // Subscribe to inventory events
+            // Ensure we have the InventoryManager instance
+            if (inventoryManager == null)
+            {
+                inventoryManager = InventoryManager.Instance;
+                Debug.Log($"InventoryUI: Retrieved InventoryManager instance: {inventoryManager != null}");
+            }
+            
+            // Subscribe to inventory events with additional error checking
             if (inventoryManager != null)
             {
                 Debug.Log("InventoryUI: Subscribing to InventoryManager events");
-                inventoryManager.OnInventoryChanged.AddListener(UpdateDisplay);
-                inventoryManager.OnProductSelected.AddListener(OnProductSelected);
-                inventoryManager.OnProductCountChanged.AddListener(OnProductCountChanged);
+                
+                // Check if events exist and subscribe
+                if (inventoryManager.OnInventoryChanged != null)
+                {
+                    inventoryManager.OnInventoryChanged.AddListener(UpdateDisplay);
+                    Debug.Log("InventoryUI: Subscribed to OnInventoryChanged");
+                }
+                else
+                {
+                    Debug.LogError("InventoryUI: OnInventoryChanged is null!");
+                }
+                
+                if (inventoryManager.OnProductSelected != null)
+                {
+                    inventoryManager.OnProductSelected.AddListener(OnProductSelected);
+                    Debug.Log("InventoryUI: Subscribed to OnProductSelected");
+                }
+                else
+                {
+                    Debug.LogError("InventoryUI: OnProductSelected is null!");
+                }
+                
+                if (inventoryManager.OnProductCountChanged != null)
+                {
+                    inventoryManager.OnProductCountChanged.AddListener(OnProductCountChanged);
+                    Debug.Log("InventoryUI: Subscribed to OnProductCountChanged");
+                }
+                else
+                {
+                    Debug.LogError("InventoryUI: OnProductCountChanged is null!");
+                }
             }
             else
             {
-                Debug.LogError("InventoryUI: InventoryManager is null!");
+                Debug.LogError("InventoryUI: InventoryManager is null after attempting to get instance!");
             }
             
             Debug.Log($"InventoryUI: productButtons array length: {productButtons?.Length ?? 0}");
             
-            // Initialize display
-            UpdateDisplay();
+            // Delay initial display update to ensure InventoryManager is fully initialized
+            StartCoroutine(DelayedInitialization());
             
             // Start with panel hidden
             SetPanelVisibility(false, false);
+        }
+        
+        /// <summary>
+        /// Delayed initialization to ensure InventoryManager is ready
+        /// </summary>
+        private IEnumerator DelayedInitialization()
+        {
+            // Wait a frame to ensure InventoryManager Start() has completed
+            yield return null;
+            
+            Debug.Log("InventoryUI: Performing delayed initialization");
+            
+            // Re-check InventoryManager and update display
+            if (inventoryManager == null)
+            {
+                inventoryManager = InventoryManager.Instance;
+                Debug.Log($"InventoryUI: Re-retrieved InventoryManager instance: {inventoryManager != null}");
+            }
+            
+            // Initialize display
+            UpdateDisplay();
         }
         
         private void Update()
@@ -199,13 +275,24 @@ namespace TabletopShop
         /// </summary>
         private void UpdateProductButton(int buttonIndex, ProductType productType)
         {
-            if (buttonIndex >= productButtons.Length) return;
+            if (buttonIndex >= productButtons.Length) 
+            {
+                Debug.LogWarning($"InventoryUI: Button index {buttonIndex} out of range (array length: {productButtons.Length})");
+                return;
+            }
             
             Button button = productButtons[buttonIndex];
-            if (button == null) return;
+            if (button == null) 
+            {
+                Debug.LogWarning($"InventoryUI: Button at index {buttonIndex} is null");
+                return;
+            }
+            
+            Debug.Log($"InventoryUI: Updating button {buttonIndex} for product type {productType}");
             
             // Get total count for this product type
             int totalCount = GetTotalCountForType(productType);
+            Debug.Log($"InventoryUI: Total count for {productType}: {totalCount}");
             
             // Update button interactability
             button.interactable = totalCount > 0;
@@ -216,11 +303,21 @@ namespace TabletopShop
             if (countText != null)
             {
                 countText.text = totalCount.ToString();
+                Debug.Log($"InventoryUI: Updated count text for button {buttonIndex} to: {totalCount}");
+            }
+            else
+            {
+                Debug.LogWarning($"InventoryUI: No ProductCount text found for button {buttonIndex}");
             }
             
             // Set up button click event
             button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(() => OnProductButtonClick(productType));
+            button.onClick.AddListener(() => {
+                Debug.Log($"InventoryUI: Button {buttonIndex} clicked! Calling OnProductButtonClick({buttonIndex})");
+                OnProductButtonClick(buttonIndex);
+            });
+            
+            Debug.Log($"InventoryUI: Button {buttonIndex} click event set up for {productType}");
         }
         
         /// <summary>
@@ -280,9 +377,30 @@ namespace TabletopShop
         /// <summary>
         /// Handle product button click for selection
         /// </summary>
-        public void OnProductButtonClick(ProductType productType)
+        public void OnProductButtonClick(int buttonIndex)
         {
-            if (inventoryManager == null) return;
+            // Map button index to ProductType
+            ProductType[] productTypes = { ProductType.MiniatureBox, ProductType.PaintPot, ProductType.Rulebook };
+            
+            if (buttonIndex < 0 || buttonIndex >= productTypes.Length)
+            {
+                Debug.LogError($"InventoryUI: Invalid button index {buttonIndex}! Expected 0-{productTypes.Length - 1}");
+                return;
+            }
+            
+            ProductType productType = productTypes[buttonIndex];
+            
+            Debug.Log($"Button {buttonIndex} ({productType}) clicked!");
+
+            Debug.Log($"InventoryUI: Button clicked for product type: {productType}");
+            
+            if (inventoryManager == null)
+            {
+                Debug.LogError("InventoryUI: InventoryManager is null during button click!");
+                return;
+            }
+            
+            Debug.Log($"InventoryUI: Searching for product of type {productType}");
             
             // Find the first available product of this type
             ProductData productToSelect = null;
@@ -292,27 +410,29 @@ namespace TabletopShop
                 if (product != null && product.Type == productType && inventoryManager.HasProduct(product))
                 {
                     productToSelect = product;
+                    Debug.Log($"InventoryUI: Found available product: {product.ProductName}");
                     break;
                 }
             }
             
             if (productToSelect != null)
             {
+                Debug.Log($"InventoryUI: Attempting to select product: {productToSelect.ProductName}");
                 bool success = inventoryManager.SelectProduct(productToSelect);
                 if (success)
                 {
-                    Debug.Log($"Selected product: {productToSelect.ProductName} of type: {productType}");
+                    Debug.Log($"InventoryUI: Successfully selected product: {productToSelect.ProductName} of type: {productType}");
                     // Force immediate visual update
                     UpdateSelectionHighlight();
                 }
                 else
                 {
-                    Debug.LogWarning($"Failed to select product: {productToSelect.ProductName}");
+                    Debug.LogWarning($"InventoryUI: Failed to select product: {productToSelect.ProductName}");
                 }
             }
             else
             {
-                Debug.Log($"No available products found for type: {productType}");
+                Debug.LogWarning($"InventoryUI: No available products found for type: {productType}");
             }
         }
         
@@ -321,7 +441,7 @@ namespace TabletopShop
         /// </summary>
         private void OnProductSelected(ProductData selectedProduct)
         {
-            Debug.Log($"InventoryUI: Product selection changed to: {selectedProduct?.ProductName ?? "None"}");
+            Debug.Log($"InventoryUI: OnProductSelected event received - Product: {selectedProduct?.ProductName ?? "None"}");
             UpdateSelectionHighlight();
         }
         
@@ -330,6 +450,7 @@ namespace TabletopShop
         /// </summary>
         private void OnProductCountChanged(ProductData product, int newCount)
         {
+            Debug.Log($"InventoryUI: OnProductCountChanged event received - Product: {product?.ProductName ?? "None"}, New Count: {newCount}");
             UpdateDisplay();
         }
         
