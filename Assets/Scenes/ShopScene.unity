@@ -622,7 +622,19 @@ MonoBehaviour:
       m_Calls: []
   onProductSelected:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1174955271}
+        m_TargetAssemblyTypeName: TabletopShop.InventoryUI, Assembly-CSharp
+        m_MethodName: UpdateDisplay
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onProductCountChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1239,6 +1251,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: c93780ff4fea84a6189e039153ccf9f0, type: 3}
+    - target: {fileID: 1688503734856842156, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
+      propertyPath: m_Color.a
+      value: 0.8
+      objectReference: {fileID: 0}
     - target: {fileID: 3892225150802252091, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -1259,10 +1275,18 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 722f20f6bcd80434a97ac3919dd6239f, type: 3}
+    - target: {fileID: 6915354330255524693, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
+      propertyPath: m_Color.a
+      value: 0.8
+      objectReference: {fileID: 0}
     - target: {fileID: 7836373335639824262, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: f0649e2c8806342e69809665c7512baa, type: 3}
+    - target: {fileID: 7836373335639824262, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
+      propertyPath: m_Color.a
+      value: 0.8
+      objectReference: {fileID: 0}
     - target: {fileID: 9121325313428564418, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -1350,7 +1374,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1304015481
 Transform:
   m_ObjectHideFlags: 0
@@ -2136,9 +2160,9 @@ MonoBehaviour:
   runTestOnStart: 1
   logDetailedInfo: 1
   showOnScreenInventory: 1
-  toggleInventoryKey: 9
-  nextProductKey: 275
-  previousProductKey: 276
+  toggleInventoryKey: 113
+  nextProductKey: 99
+  previousProductKey: 122
 --- !u!4 &2000765058
 Transform:
   m_ObjectHideFlags: 0

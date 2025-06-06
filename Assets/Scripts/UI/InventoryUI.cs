@@ -35,13 +35,22 @@ namespace TabletopShop
         
         private void Start()
         {
+            Debug.Log("InventoryUI Start() called");
+            
             // Subscribe to inventory events
             if (inventoryManager != null)
             {
+                Debug.Log("InventoryUI: Subscribing to InventoryManager events");
                 inventoryManager.OnInventoryChanged.AddListener(UpdateDisplay);
                 inventoryManager.OnProductSelected.AddListener(OnProductSelected);
                 inventoryManager.OnProductCountChanged.AddListener(OnProductCountChanged);
             }
+            else
+            {
+                Debug.LogError("InventoryUI: InventoryManager is null!");
+            }
+            
+            Debug.Log($"InventoryUI: productButtons array length: {productButtons?.Length ?? 0}");
             
             // Initialize display
             UpdateDisplay();
@@ -167,13 +176,17 @@ namespace TabletopShop
         /// </summary>
         public void UpdateDisplay()
         {
+            Debug.Log($"UpdateDisplay called - inventoryManager: {inventoryManager != null}, productButtons: {productButtons?.Length ?? 0}");
+            
             if (inventoryManager == null || productButtons == null) return;
             
             var productTypes = System.Enum.GetValues(typeof(ProductType));
+            Debug.Log($"UpdateDisplay - Found {productTypes.Length} product types");
             
             for (int i = 0; i < productButtons.Length && i < productTypes.Length; i++)
             {
                 ProductType productType = (ProductType)productTypes.GetValue(i);
+                Debug.Log($"UpdateDisplay - Processing button {i} for type {productType}");
                 UpdateProductButton(i, productType);
             }
             
@@ -238,6 +251,8 @@ namespace TabletopShop
             ProductData selectedProduct = inventoryManager.SelectedProduct;
             var productTypes = System.Enum.GetValues(typeof(ProductType));
             
+            Debug.Log($"UpdateSelectionHighlight: Currently selected product is {selectedProduct?.ProductName ?? "None"} of type {selectedProduct?.Type.ToString() ?? "None"}");
+            
             for (int i = 0; i < productButtons.Length && i < productTypes.Length; i++)
             {
                 ProductType productType = (ProductType)productTypes.GetValue(i);
@@ -249,7 +264,10 @@ namespace TabletopShop
                     if (buttonImage != null)
                     {
                         bool isSelected = selectedProduct != null && selectedProduct.Type == productType;
-                        buttonImage.color = isSelected ? selectedButtonColor : defaultButtonColor;
+                        Color newColor = isSelected ? selectedButtonColor : defaultButtonColor;
+                        buttonImage.color = newColor;
+                        
+                        Debug.Log($"Button {i} ({productType}): Selected={isSelected}, Color={newColor}");
                     }
                 }
             }
@@ -280,7 +298,21 @@ namespace TabletopShop
             
             if (productToSelect != null)
             {
-                inventoryManager.SelectProduct(productToSelect);
+                bool success = inventoryManager.SelectProduct(productToSelect);
+                if (success)
+                {
+                    Debug.Log($"Selected product: {productToSelect.ProductName} of type: {productType}");
+                    // Force immediate visual update
+                    UpdateSelectionHighlight();
+                }
+                else
+                {
+                    Debug.LogWarning($"Failed to select product: {productToSelect.ProductName}");
+                }
+            }
+            else
+            {
+                Debug.Log($"No available products found for type: {productType}");
             }
         }
         
@@ -289,6 +321,7 @@ namespace TabletopShop
         /// </summary>
         private void OnProductSelected(ProductData selectedProduct)
         {
+            Debug.Log($"InventoryUI: Product selection changed to: {selectedProduct?.ProductName ?? "None"}");
             UpdateSelectionHighlight();
         }
         
