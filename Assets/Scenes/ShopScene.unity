@@ -324,6 +324,7 @@ GameObject:
   - component: {fileID: 156198324}
   - component: {fileID: 156198323}
   - component: {fileID: 156198329}
+  - component: {fileID: 156198330}
   m_Layer: 0
   m_Name: Customer
   m_TagString: Customer
@@ -349,7 +350,7 @@ NavMeshAgent:
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 2
+  m_Height: 1.8
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
@@ -375,7 +376,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
@@ -468,7 +469,7 @@ Transform:
   m_GameObject: {fileID: 156198322}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4.9, y: 0.38, z: 0.488}
+  m_LocalPosition: {x: -6.707, y: 0.9, z: 0.488}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -482,14 +483,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 156198322}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5c300fe31183b4aaa98f97ad54f86a2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.Customer
   currentState: 0
   shoppingTime: 1
-  targetShelf: {fileID: 506102678}
+  targetShelf: {fileID: 719705527}
   movementSpeed: 1.5
   stoppingDistance: 1
   stuckDetectionTime: 5
@@ -497,6 +498,19 @@ MonoBehaviour:
   destinationReachedDistance: 1.5
   maxPathfindingRetries: 3
   pathfindingRetryDelay: 1
+--- !u!114 &156198330
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 156198322}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd76b8ee2dbcf4be6998e917c65cd6ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.AI.Navigation.Samples::Unity.AI.Navigation.Samples.RandomWalk
+  m_Range: 25
 --- !u!1 &190786124
 GameObject:
   m_ObjectHideFlags: 0
@@ -724,17 +738,6 @@ Transform:
   - {fileID: 1092444379}
   m_Father: {fileID: 190786125}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &506102678 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3612627904194023414, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
-  m_PrefabInstance: {fileID: 1891580390}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
 --- !u!1 &521666255
 GameObject:
   m_ObjectHideFlags: 0
@@ -884,7 +887,7 @@ Transform:
   m_GameObject: {fileID: 682135404}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0, y: 0.305, z: -1.97997}
+  m_LocalPosition: {x: -0, y: 0.82, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1001,6 +1004,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1092444379}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &719705527 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4953916212804980277, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1891580390}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
 --- !u!1 &898342175
 GameObject:
   m_ObjectHideFlags: 0
@@ -1372,7 +1386,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7032157210456165468, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3
+      value: 2.265
+      objectReference: {fileID: 0}
+    - target: {fileID: 7032157210456165468, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.724
+      objectReference: {fileID: 0}
+    - target: {fileID: 7032157210456165468, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 2.357
       objectReference: {fileID: 0}
     - target: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
       propertyPath: m_Layer
