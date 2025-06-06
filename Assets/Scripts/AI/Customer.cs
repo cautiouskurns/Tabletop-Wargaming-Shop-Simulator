@@ -70,6 +70,9 @@ namespace TabletopShop
         private void Start()
         {
             Debug.Log($"Customer {name} initialized with state: {currentState}, shopping time: {shoppingTime:F1}s");
+            
+            // Start the customer lifecycle state machine
+            StartCoroutine(StartCustomerLifecycle());
         }
         
         private void Update()
@@ -507,6 +510,143 @@ namespace TabletopShop
                          $"Destination: {currentDestination}");
             }
         }
+        
+        #region Customer Lifecycle State Machine
+        
+        /// <summary>
+        /// Coroutine to handle the complete customer lifecycle automatically
+        /// Progresses through: Entering → Shopping → Purchasing → Leaving
+        /// </summary>
+        private IEnumerator StartCustomerLifecycle()
+        {
+            Debug.Log($"Customer {name} starting lifecycle in state: {currentState}");
+            
+            // Phase 1: Entering the shop
+            if (currentState == CustomerState.Entering)
+            {
+                Debug.Log($"Customer {name} entering shop - looking for shelves");
+                
+                // Move to a random shelf to start shopping
+                bool foundShelf = SetRandomShelfDestination();
+                if (foundShelf)
+                {
+                    // Wait for customer to reach shelf
+                    while (!HasReachedDestination())
+                    {
+                        yield return new WaitForSeconds(0.5f);
+                    }
+                    
+                    // Transition to shopping state
+                    ChangeState(CustomerState.Shopping);
+                }
+                else
+                {
+                    Debug.LogWarning($"Customer {name} couldn't find any shelves - skipping to leaving");
+                    ChangeState(CustomerState.Leaving);
+                }
+            }
+            
+            // Phase 2: Shopping behavior
+            if (currentState == CustomerState.Shopping)
+            {
+                Debug.Log($"Customer {name} browsing products for {shoppingTime:F1} seconds");
+                
+                float shoppedTime = 0f;
+                while (shoppedTime < shoppingTime)
+                {
+                    // Occasionally move to different shelves while shopping
+                    if (Random.value < 0.3f) // 30% chance every check
+                    {
+                        SetRandomShelfDestination();
+                        
+                        // Wait a bit for movement
+                        yield return new WaitForSeconds(2f);
+                        
+                        // Wait to reach new shelf
+                        while (!HasReachedDestination())
+                        {
+                            yield return new WaitForSeconds(0.5f);
+                        }
+                    }
+                    
+                    yield return new WaitForSeconds(1f);
+                    shoppedTime += 1f;
+                }
+                
+                // Finished shopping, move to purchasing
+                ChangeState(CustomerState.Purchasing);
+            }
+            
+            // Phase 3: Purchasing (move to checkout area)
+            if (currentState == CustomerState.Purchasing)
+            {
+                Debug.Log($"Customer {name} proceeding to checkout");
+                
+                // Look for checkout area or use a central location
+                GameObject checkout = GameObject.FindWithTag("Checkout");
+                bool reachedCheckout = false;
+                
+                if (checkout != null)
+                {
+                    reachedCheckout = SetDestination(checkout.transform.position);
+                }
+                else
+                {
+                    // Fallback: move to center of shop
+                    Vector3 shopCenter = Vector3.zero;
+                    reachedCheckout = SetDestination(shopCenter);
+                    Debug.LogWarning($"Customer {name} no checkout found, using shop center");
+                }
+                
+                if (reachedCheckout)
+                {
+                    // Wait to reach checkout
+                    while (!HasReachedDestination())
+                    {
+                        yield return new WaitForSeconds(0.5f);
+                    }
+                    
+                    // Simulate purchase time
+                    float purchaseTime = Random.Range(3f, 8f);
+                    Debug.Log($"Customer {name} making purchase (taking {purchaseTime:F1}s)");
+                    yield return new WaitForSeconds(purchaseTime);
+                }
+                
+                // Purchase complete, ready to leave
+                ChangeState(CustomerState.Leaving);
+            }
+            
+            // Phase 4: Leaving the shop
+            if (currentState == CustomerState.Leaving)
+            {
+                Debug.Log($"Customer {name} leaving the shop");
+                
+                bool foundExit = MoveToExitPoint();
+                if (foundExit)
+                {
+                    // Wait to reach exit
+                    while (!HasReachedDestination())
+                    {
+                        yield return new WaitForSeconds(0.5f);
+                    }
+                    
+                    Debug.Log($"Customer {name} has left the shop");
+                    
+                    // Optional: Destroy customer object after leaving
+                    yield return new WaitForSeconds(2f);
+                    Debug.Log($"Customer {name} cleanup - removing from scene");
+                    Destroy(gameObject);
+                }
+                else
+                {
+                    Debug.LogError($"Customer {name} couldn't find exit!");
+                }
+            }
+            
+            Debug.Log($"Customer {name} lifecycle completed");
+        }
+        
+        #endregion
         
         #region Target Management
         

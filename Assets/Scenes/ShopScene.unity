@@ -469,7 +469,7 @@ Transform:
   m_GameObject: {fileID: 156198322}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -6.707, y: 0.9, z: 0.488}
+  m_LocalPosition: {x: -5.59, y: 0.9, z: 0.488}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -483,19 +483,19 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 156198322}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5c300fe31183b4aaa98f97ad54f86a2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.Customer
   currentState: 0
   shoppingTime: 1
-  targetShelf: {fileID: 719705527}
+  targetShelf: {fileID: 657999861}
   movementSpeed: 1.5
   stoppingDistance: 1
   stuckDetectionTime: 5
   stuckDistanceThreshold: 0.5
-  destinationReachedDistance: 1.5
+  destinationReachedDistance: 2
   maxPathfindingRetries: 3
   pathfindingRetryDelay: 1
 --- !u!114 &156198330
@@ -505,7 +505,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 156198322}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dd76b8ee2dbcf4be6998e917c65cd6ed, type: 3}
   m_Name: 
@@ -829,6 +829,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 970041456}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &657999861 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3612627904194023414, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1054866598}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
 --- !u!1 &682135404
 GameObject:
   m_ObjectHideFlags: 0
@@ -887,9 +898,9 @@ Transform:
   m_GameObject: {fileID: 682135404}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0, y: 0.82, z: 0}
+  m_LocalPosition: {x: 4.42, y: 0.82, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1004,17 +1015,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1092444379}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &719705527 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4953916212804980277, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
-  m_PrefabInstance: {fileID: 1891580390}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
 --- !u!1 &898342175
 GameObject:
   m_ObjectHideFlags: 0
@@ -2093,7 +2093,7 @@ Transform:
   m_GameObject: {fileID: 1395094045}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4.9, y: 0.83311, z: -2.2551}
+  m_LocalPosition: {x: -7.53, y: 0.83311, z: -4.35}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
