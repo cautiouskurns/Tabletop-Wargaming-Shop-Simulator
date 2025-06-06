@@ -1,5 +1,9 @@
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace TabletopShop
 {
     /// <summary>
@@ -39,8 +43,7 @@ namespace TabletopShop
         
         private void Awake()
         {
-            SetupSlotIndicator();
-            SetupMaterials();
+            SetupSlotIndicator(); // This now calls SetupMaterials() internally
             
             // Set layer for interaction system
             InteractionLayers.SetShelfLayer(gameObject);
@@ -415,8 +418,38 @@ namespace TabletopShop
         /// </summary>
         private void SetupSlotIndicator()
         {
+            bool isPrefabReference = false;
+            
+            // Check if slotIndicator is a prefab reference
+            if (slotIndicator != null)
+            {
+#if UNITY_EDITOR
+                // In editor, use PrefabUtility to detect prefabs
+                isPrefabReference = PrefabUtility.IsPartOfPrefabAsset(slotIndicator);
+#else
+                // In runtime, check if it has no parent and no scene (typical of prefab references)
+                isPrefabReference = slotIndicator.transform.parent == null && 
+                                   slotIndicator.gameObject.scene.name == null;
+#endif
+            }
+            
+            // If a prefab is assigned in inspector, instantiate it
+            if (slotIndicator != null && isPrefabReference)
+            {
+                // This is a prefab reference, instantiate it
+                GameObject prefabInstance = Instantiate(slotIndicator);
+                slotIndicator = prefabInstance;
+                slotIndicator.name = $"{name}_Indicator";
+                slotIndicator.transform.SetParent(transform, false);
+                
+                // Position and scale the indicator
+                slotIndicator.transform.localPosition = slotPosition;
+                slotIndicator.transform.localScale = indicatorScale;
+                
+                Debug.Log($"Instantiated prefab indicator for slot {name}");
+            }
             // Create slot indicator if it doesn't exist
-            if (slotIndicator == null)
+            else if (slotIndicator == null)
             {
                 slotIndicator = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 slotIndicator.name = $"{name}_Indicator";
@@ -426,6 +459,8 @@ namespace TabletopShop
                 slotIndicator.transform.localPosition = slotPosition;
                 slotIndicator.transform.localScale = indicatorScale;
                 
+                Debug.Log($"Created default cube indicator for slot {name}");
+                
                 // Remove collider from indicator (we want slot collider to handle interactions)
                 Collider indicatorCollider = slotIndicator.GetComponent<Collider>();
                 if (indicatorCollider != null)
@@ -433,9 +468,35 @@ namespace TabletopShop
                     DestroyImmediate(indicatorCollider);
                 }
             }
+            else
+            {
+                // Indicator already exists in scene, just ensure proper positioning
+                slotIndicator.transform.localPosition = slotPosition;
+                slotIndicator.transform.localScale = indicatorScale;
+                Debug.Log($"Using existing scene indicator for slot {name}");
+            }
+            
+            // Remove any colliders from the indicator (we want slot collider to handle interactions)
+            Collider[] indicatorColliders = slotIndicator.GetComponents<Collider>();
+            foreach (Collider col in indicatorColliders)
+            {
+                if (Application.isPlaying)
+                {
+                    Destroy(col);
+                }
+                else
+                {
+                    DestroyImmediate(col);
+                }
+            }
             
             // Get renderer for material changes
             indicatorRenderer = slotIndicator.GetComponent<MeshRenderer>();
+            
+            Debug.Log($"Slot {name} indicator setup complete. Renderer found: {indicatorRenderer != null}");
+            
+            // Setup materials after renderer is assigned
+            SetupMaterials();
         }
         
         /// <summary>
@@ -445,19 +506,32 @@ namespace TabletopShop
         {
             if (indicatorRenderer == null) return;
             
-            // Create normal material if not assigned
+            // If materials are not assigned in inspector, create default ones OR preserve prefab material
             if (normalMaterial == null)
             {
-                normalMaterial = new Material(Shader.Find("Standard"));
-                normalMaterial.color = emptySlotColor;
-                normalMaterial.SetFloat("_Metallic", 0f);
-                normalMaterial.SetFloat("_Glossiness", 0.3f);
+                // Check if the renderer already has a material (from prefab)
+                if (indicatorRenderer.material != null && indicatorRenderer.material.name != "Default-Material")
+                {
+                    // Use the prefab's material as the normal material
+                    normalMaterial = indicatorRenderer.material;
+                    Debug.Log($"Using prefab material as normal material for slot {name}");
+                }
+                else
+                {
+                    // Create default material for generated cube indicators
+                    normalMaterial = new Material(Shader.Find("Standard"));
+                    normalMaterial.color = emptySlotColor;
+                    normalMaterial.SetFloat("_Metallic", 0f);
+                    normalMaterial.SetFloat("_Glossiness", 0.3f);
+                    Debug.Log($"Created default normal material for slot {name}");
+                }
             }
             
             // Create highlight material if not assigned
             if (highlightMaterial == null)
             {
-                highlightMaterial = new Material(Shader.Find("Standard"));
+                // Create a highlight version based on the normal material
+                highlightMaterial = new Material(normalMaterial);
                 highlightMaterial.color = highlightColor;
                 highlightMaterial.SetFloat("_Metallic", 0f);
                 highlightMaterial.SetFloat("_Glossiness", 0.5f);
@@ -465,6 +539,7 @@ namespace TabletopShop
                 // Add emission for better visibility
                 highlightMaterial.EnableKeyword("_EMISSION");
                 highlightMaterial.SetColor("_EmissionColor", highlightColor * 0.3f);
+                Debug.Log($"Created highlight material for slot {name}");
             }
         }
         
@@ -478,7 +553,7 @@ namespace TabletopShop
             // Show indicator only when slot is empty
             slotIndicator.SetActive(IsEmpty);
             
-            // Apply normal material when not highlighted
+            // Apply normal material when not highlighted (only if we have a MeshRenderer)
             if (IsEmpty && indicatorRenderer != null && normalMaterial != null)
             {
                 indicatorRenderer.material = normalMaterial;

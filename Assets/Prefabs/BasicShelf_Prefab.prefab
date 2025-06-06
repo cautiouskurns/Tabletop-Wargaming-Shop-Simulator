@@ -50,7 +50,7 @@ MonoBehaviour:
   normalMaterial: {fileID: 0}
   emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  slotIndicator: {fileID: 0}
+  slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
 --- !u!1 &4028624419644958173
 GameObject:
@@ -191,7 +191,7 @@ MonoBehaviour:
   normalMaterial: {fileID: 0}
   emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  slotIndicator: {fileID: 0}
+  slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
 --- !u!1 &7392343468210614318
 GameObject:
@@ -243,7 +243,7 @@ MonoBehaviour:
   normalMaterial: {fileID: 0}
   emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  slotIndicator: {fileID: 0}
+  slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
 --- !u!1 &7647451544521864112
 GameObject:
@@ -359,7 +359,7 @@ MonoBehaviour:
   normalMaterial: {fileID: 0}
   emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  slotIndicator: {fileID: 0}
+  slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
 --- !u!1 &9072554599393449449
 GameObject:
@@ -411,5 +411,5 @@ MonoBehaviour:
   normalMaterial: {fileID: 0}
   emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  slotIndicator: {fileID: 0}
+  slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
