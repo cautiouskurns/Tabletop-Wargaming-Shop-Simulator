@@ -583,19 +583,35 @@ namespace TabletopShop
                 Debug.Log($"Customer {name} proceeding to checkout");
                 
                 // Look for checkout area or use a central location
-                GameObject checkout = GameObject.FindWithTag("Checkout");
+                GameObject checkout = null;
                 bool reachedCheckout = false;
+                
+                // Try to find checkout by tag first
+                try
+                {
+                    GameObject[] checkouts = GameObject.FindGameObjectsWithTag("Checkout");
+                    if (checkouts.Length > 0)
+                    {
+                        checkout = checkouts[0];
+                    }
+                }
+                catch (UnityException)
+                {
+                    // Checkout tag doesn't exist, that's okay
+                    Debug.Log($"Customer {name}: Checkout tag not defined, using fallback");
+                }
                 
                 if (checkout != null)
                 {
                     reachedCheckout = SetDestination(checkout.transform.position);
+                    Debug.Log($"Customer {name} moving to checkout at {checkout.transform.position}");
                 }
                 else
                 {
                     // Fallback: move to center of shop
                     Vector3 shopCenter = Vector3.zero;
                     reachedCheckout = SetDestination(shopCenter);
-                    Debug.LogWarning($"Customer {name} no checkout found, using shop center");
+                    Debug.Log($"Customer {name} no checkout found, using shop center at {shopCenter}");
                 }
                 
                 if (reachedCheckout)

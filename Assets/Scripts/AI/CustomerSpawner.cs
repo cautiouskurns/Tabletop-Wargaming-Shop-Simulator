@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace TabletopShop
@@ -29,11 +30,14 @@ namespace TabletopShop
         
         // Spawning state
         private bool isSpawning = false;
+        private Coroutine spawningCoroutine;
+        private Coroutine cleanupCoroutine;
         
         // Properties
-        public int ActiveCustomerCount => activeCustomers.Count;
+        public int ActiveCustomerCount => GetActiveCustomerCount();
         public bool IsSpawning => isSpawning;
-        public bool CanSpawnCustomer => activeCustomers.Count < maxCustomers;
+        public bool CanSpawnCustomer => GetActiveCustomerCount() < maxCustomers;
+        public bool IsAtMaxCapacity => GetActiveCustomerCount() >= maxCustomers;
         public GameObject CustomerPrefab => customerPrefab;
         public Transform SpawnPoint => spawnPoint;
         public Transform ExitPoint => exitPoint;
@@ -48,6 +52,20 @@ namespace TabletopShop
         private void Start()
         {
             InitializeSpawner();
+        }
+        
+        private void Update()
+        {
+            // Periodically clean up null customer references
+            if (Time.frameCount % 300 == 0) // Every 5 seconds at 60fps
+            {
+                CleanupActiveCustomers();
+            }
+        }
+        
+        private void OnDestroy()
+        {
+            CleanupSpawner();
         }
         
         #endregion
@@ -130,6 +148,19 @@ namespace TabletopShop
                 Debug.Log($"- Exit Point: {(exitPoint != null ? exitPoint.name : "Not Set")}");
                 Debug.Log($"- Customer Prefab: {(customerPrefab != null ? customerPrefab.name : "Not Set")}");
             }
+            
+            // Start regular cleanup coroutine
+            StartCleanupCoroutine();
+            
+            // Auto-start spawning if all requirements are met
+            if (customerPrefab != null && spawnPoint != null)
+            {
+                StartSpawning();
+            }
+            else
+            {
+                Debug.LogWarning($"CustomerSpawner on {name}: Cannot auto-start - missing required references. Call StartSpawning() manually after setup.");
+            }
         }
         
         #endregion
@@ -163,7 +194,8 @@ namespace TabletopShop
                 Debug.Log($"CustomerSpawner on {name}: Started customer spawning");
             }
             
-            // TODO: Implement spawning coroutine logic
+            // Start the spawning coroutine
+            spawningCoroutine = StartCoroutine(SpawnCustomers());
         }
         
         /// <summary>
@@ -182,12 +214,111 @@ namespace TabletopShop
             
             isSpawning = false;
             
+            // Stop the spawning coroutine
+            if (spawningCoroutine != null)
+            {
+                StopCoroutine(spawningCoroutine);
+                spawningCoroutine = null;
+            }
+            
             if (enableDebugLogging)
             {
                 Debug.Log($"CustomerSpawner on {name}: Stopped customer spawning");
             }
+        }
+        
+        /// <summary>
+        /// Coroutine that handles the spawning of customers at random intervals
+        /// </summary>
+        private IEnumerator SpawnCustomers()
+        {
+            // Initial delay before first spawn
+            if (enableDebugLogging)
+            {
+                Debug.Log($"CustomerSpawner on {name}: Waiting 10 seconds before first spawn");
+            }
+            yield return new WaitForSeconds(10f);
             
-            // TODO: Implement spawning coroutine cleanup
+            while (isSpawning)
+            {
+                // Check if we can spawn more customers
+                if (CanSpawnCustomer)
+                {
+                    SpawnCustomer();
+                }
+                else
+                {
+                    if (enableDebugLogging)
+                    {
+                        Debug.Log($"CustomerSpawner on {name}: At maximum customer limit ({GetActiveCustomerCount()}/{maxCustomers}), waiting...");
+                    }
+                }
+                
+                // Wait for random interval before next spawn attempt
+                float nextSpawnDelay = Random.Range(minSpawnInterval, maxSpawnInterval);
+                if (enableDebugLogging)
+                {
+                    Debug.Log($"CustomerSpawner on {name}: Next spawn attempt in {nextSpawnDelay:F1} seconds");
+                }
+                yield return new WaitForSeconds(nextSpawnDelay);
+            }
+            
+            if (enableDebugLogging)
+            {
+                Debug.Log($"CustomerSpawner on {name}: Spawning coroutine ended");
+            }
+        }
+        
+        /// <summary>
+        /// Spawn a single customer at the spawn point
+        /// </summary>
+        private void SpawnCustomer()
+        {
+            if (customerPrefab == null || spawnPoint == null)
+            {
+                Debug.LogError($"CustomerSpawner on {name}: Cannot spawn customer - missing required references");
+                return;
+            }
+            
+            if (!CanSpawnCustomer)
+            {
+                if (enableDebugLogging)
+                {
+                    Debug.LogWarning($"CustomerSpawner on {name}: Cannot spawn customer - at maximum limit ({activeCustomers.Count}/{maxCustomers})");
+                }
+                return;
+            }
+            
+            try
+            {
+                // Instantiate customer at spawn point
+                GameObject customerObject = Instantiate(customerPrefab, spawnPoint.position, spawnPoint.rotation);
+                
+                // Get the Customer component
+                Customer customerComponent = customerObject.GetComponent<Customer>();
+                if (customerComponent == null)
+                {
+                    Debug.LogError($"CustomerSpawner on {name}: Spawned customer prefab does not have Customer component!");
+                    Destroy(customerObject);
+                    return;
+                }
+                
+                // Set up customer name for identification
+                customerObject.name = $"Customer_{System.DateTime.Now:HHmmss}_{Random.Range(100, 999)}";
+                
+                // Register the customer
+                RegisterCustomer(customerComponent);
+                
+                if (enableDebugLogging)
+                {
+                    Debug.Log($"CustomerSpawner on {name}: Successfully spawned customer '{customerObject.name}' at {spawnPoint.position}");
+                    Debug.Log($"CustomerSpawner on {name}: Active customers: {activeCustomers.Count}/{maxCustomers}");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"CustomerSpawner on {name}: Failed to spawn customer: {ex.Message}");
+            }
         }
         
         #endregion
@@ -206,7 +337,7 @@ namespace TabletopShop
                 
                 if (enableDebugLogging)
                 {
-                    Debug.Log($"CustomerSpawner on {name}: Registered customer {customer.name} (Total: {activeCustomers.Count}/{maxCustomers})");
+                    Debug.Log($"CustomerSpawner on {name}: Registered customer {customer.name} (Total: {GetActiveCustomerCount()}/{maxCustomers})");
                 }
             }
         }
@@ -223,27 +354,129 @@ namespace TabletopShop
                 
                 if (enableDebugLogging)
                 {
-                    Debug.Log($"CustomerSpawner on {name}: Unregistered customer {customer.name} (Total: {activeCustomers.Count}/{maxCustomers})");
+                    Debug.Log($"CustomerSpawner on {name}: Unregistered customer {customer.name} (Total: {GetActiveCustomerCount()}/{maxCustomers})");
                 }
             }
         }
         
         /// <summary>
-        /// Get the current number of active customers
+        /// Get the current number of active customers (excludes null references)
         /// </summary>
         /// <returns>Number of active customers</returns>
         public int GetActiveCustomerCount()
         {
+            // Clean up null references first, then return count
+            CleanupDestroyedCustomers();
             return activeCustomers.Count;
         }
         
         /// <summary>
-        /// Get a copy of the active customers list
+        /// Get a copy of the active customers list (excludes null references)
         /// </summary>
         /// <returns>List of active customers</returns>
         public List<Customer> GetActiveCustomers()
         {
+            CleanupDestroyedCustomers();
             return new List<Customer>(activeCustomers);
+        }
+        
+        #endregion
+        
+        #region Cleanup and Lifecycle Management
+        
+        /// <summary>
+        /// Start the cleanup coroutine for regular maintenance
+        /// </summary>
+        private void StartCleanupCoroutine()
+        {
+            StopCleanupCoroutine();
+            cleanupCoroutine = StartCoroutine(RegularCleanup());
+        }
+        
+        /// <summary>
+        /// Stop the cleanup coroutine
+        /// </summary>
+        private void StopCleanupCoroutine()
+        {
+            if (cleanupCoroutine != null)
+            {
+                StopCoroutine(cleanupCoroutine);
+                cleanupCoroutine = null;
+            }
+        }
+        
+        /// <summary>
+        /// Regular cleanup coroutine that runs every 5 seconds
+        /// </summary>
+        private IEnumerator RegularCleanup()
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(5f);
+                CleanupDestroyedCustomers();
+            }
+        }
+        
+        /// <summary>
+        /// Clean up null references from active customers list and prevent memory leaks
+        /// </summary>
+        public void CleanupDestroyedCustomers()
+        {
+            int initialCount = activeCustomers.Count;
+            int removedCount = activeCustomers.RemoveAll(customer => customer == null);
+            
+            if (removedCount > 0)
+            {
+                if (enableDebugLogging)
+                {
+                    Debug.Log($"CustomerSpawner on {name}: Cleaned up {removedCount} destroyed customer references (was {initialCount}, now {activeCustomers.Count})");
+                }
+                
+                // Force garbage collection if we removed many customers
+                if (removedCount > 2)
+                {
+                    System.GC.Collect();
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Manually trigger cleanup of destroyed customers
+        /// </summary>
+        public void ManualCleanup()
+        {
+            CleanupDestroyedCustomers();
+            
+            if (enableDebugLogging)
+            {
+                Debug.Log($"CustomerSpawner on {name}: Manual cleanup completed. Active customers: {activeCustomers.Count}/{maxCustomers}");
+            }
+        }
+        
+        /// <summary>
+        /// Clean shutdown of spawner system
+        /// </summary>
+        private void CleanupSpawner()
+        {
+            if (enableDebugLogging)
+            {
+                Debug.Log($"CustomerSpawner on {name}: Shutting down spawner system");
+            }
+            
+            // Stop all coroutines
+            StopSpawning();
+            StopCleanupCoroutine();
+            
+            // Clean up customer references
+            CleanupDestroyedCustomers();
+            
+            // Clear the list
+            activeCustomers.Clear();
+            
+            if (enableDebugLogging)
+            {
+                Debug.Log($"CustomerSpawner on {name}: Spawner cleanup completed");
+            }
         }
         
         #endregion
@@ -251,16 +484,51 @@ namespace TabletopShop
         #region Debug and Utilities
         
         /// <summary>
-        /// Get debug information about the spawner state
+        /// Get comprehensive debug information about the spawner state
         /// </summary>
         /// <returns>Debug string with spawner information</returns>
         public string GetDebugInfo()
         {
+            CleanupDestroyedCustomers(); // Ensure accurate count
+            
             return $"CustomerSpawner {name}: " +
                    $"IsSpawning={isSpawning}, " +
                    $"ActiveCustomers={activeCustomers.Count}/{maxCustomers}, " +
                    $"CanSpawn={CanSpawnCustomer}, " +
-                   $"SpawnInterval={minSpawnInterval}-{maxSpawnInterval}s";
+                   $"IsAtMaxCapacity={IsAtMaxCapacity}, " +
+                   $"SpawnInterval={minSpawnInterval}-{maxSpawnInterval}s, " +
+                   $"HasSpawnPoint={spawnPoint != null}, " +
+                   $"HasExitPoint={exitPoint != null}, " +
+                   $"HasPrefab={customerPrefab != null}";
+        }
+        
+        /// <summary>
+        /// Get detailed debug information including customer list
+        /// </summary>
+        /// <returns>Detailed debug string</returns>
+        public string GetDetailedDebugInfo()
+        {
+            CleanupDestroyedCustomers();
+            
+            string baseInfo = GetDebugInfo();
+            string customerList = "\nActive Customers:";
+            
+            if (activeCustomers.Count == 0)
+            {
+                customerList += " None";
+            }
+            else
+            {
+                for (int i = 0; i < activeCustomers.Count; i++)
+                {
+                    if (activeCustomers[i] != null)
+                    {
+                        customerList += $"\n  {i + 1}. {activeCustomers[i].name} - State: {activeCustomers[i].CurrentState}";
+                    }
+                }
+            }
+            
+            return baseInfo + customerList;
         }
         
         /// <summary>
@@ -268,12 +536,8 @@ namespace TabletopShop
         /// </summary>
         private void CleanupActiveCustomers()
         {
-            int removedCount = activeCustomers.RemoveAll(customer => customer == null);
-            
-            if (removedCount > 0 && enableDebugLogging)
-            {
-                Debug.Log($"CustomerSpawner on {name}: Cleaned up {removedCount} null customer references");
-            }
+            // Redirect to the new method name for backward compatibility
+            CleanupDestroyedCustomers();
         }
         
         #endregion
