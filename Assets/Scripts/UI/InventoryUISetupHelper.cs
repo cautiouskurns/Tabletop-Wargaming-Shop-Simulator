@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 namespace TabletopShop
 {
@@ -32,18 +31,12 @@ namespace TabletopShop
         
         private void LoadIcons()
         {
-            // Load sprites from the Textures folder
-            miniatureBoxIcon = Resources.Load<Sprite>("MiniatureBoxTexture");
-            paintPotIcon = Resources.Load<Sprite>("PaintPotTexture");
-            rulebookIcon = Resources.Load<Sprite>("RulebookTexture");
-            
-            // If not found in Resources, try direct asset loading
-            if (miniatureBoxIcon == null)
-                miniatureBoxIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Textures/MiniatureBoxTexture.png");
-            if (paintPotIcon == null)
-                paintPotIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Textures/PaintPotTexture.png");
-            if (rulebookIcon == null)
-                rulebookIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Textures/RulebookTexture.png");
+            // For now, manually assign these in the inspector
+            // The textures need to be manually dragged from Assets/Textures/ folder
+            Debug.Log("Please manually assign the icon sprites in the Inspector:");
+            Debug.Log("- Miniature Box Icon: MiniatureBoxTexture.png");
+            Debug.Log("- Paint Pot Icon: PaintPotTexture.png");
+            Debug.Log("- Rulebook Icon: RulebookTexture.png");
         }
         
         private void SetupButtons()
@@ -67,10 +60,10 @@ namespace TabletopShop
                 
             Button button = productButtons[index];
             
-            // Find child components
+            // Find child components - ProductButton prefab uses legacy Text components, not TextMeshPro
             Image iconImage = button.transform.Find("ProductIcon")?.GetComponent<Image>();
-            TextMeshProUGUI nameText = button.transform.Find("ProductName")?.GetComponent<TextMeshProUGUI>();
-            TextMeshProUGUI countText = button.transform.Find("ProductCount")?.GetComponent<TextMeshProUGUI>();
+            Text nameText = button.transform.Find("ProductName")?.GetComponent<Text>();
+            Text countText = button.transform.Find("ProductCount")?.GetComponent<Text>();
             
             // Set icon
             if (iconImage != null && icon != null)

@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using System.Collections;
 
 namespace TabletopShop
@@ -198,8 +197,9 @@ namespace TabletopShop
             // Update button interactability
             button.interactable = totalCount > 0;
             
-            // Update count text if available
-            TextMeshProUGUI countText = button.GetComponentInChildren<TextMeshProUGUI>();
+            // Update count text if available (specifically find ProductCount child)
+            Transform countTransform = button.transform.Find("ProductCount");
+            Text countText = countTransform?.GetComponent<Text>();
             if (countText != null)
             {
                 countText.text = totalCount.ToString();
