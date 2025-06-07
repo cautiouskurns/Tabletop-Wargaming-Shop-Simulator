@@ -6,10 +6,12 @@ namespace TabletopShop
 {
     /// <summary>
     /// Manages the inventory UI system for the tabletop wargaming shop simulator.
+    /// Uses composition pattern to coordinate visuals and interactions while maintaining the same public interface.
     /// Handles inventory panel display, product button interactions, and real-time updates.
     /// </summary>
     public class InventoryUI : MonoBehaviour
     {
+        // Legacy serialized fields for backward compatibility - these will be migrated to components
         [Header("UI References")]
         [SerializeField] private CanvasGroup inventoryCanvasGroup;
         [SerializeField] private Button[] productButtons;
@@ -22,15 +24,27 @@ namespace TabletopShop
         [SerializeField] private Color selectedButtonColor = Color.yellow;
         [SerializeField] private Color defaultButtonColor = Color.white;
         
+        // Component references
+        private InventoryUIVisuals uiVisuals;
+        private InventoryUIInteraction uiInteraction;
+        private InventoryManager inventoryManager;
+        
+        // Migration flag
+        [HideInInspector]
+        [SerializeField] private bool hasBeenMigrated = false;
+        
+        // Legacy state for backward compatibility
         private bool isPanelVisible = false;
         private Coroutine fadeCoroutine;
-        private InventoryManager inventoryManager;
         
         #region Unity Lifecycle
         
         private void Awake()
         {
             Debug.Log("InventoryUI Awake() called");
+            
+            // Ensure component initialization
+            EnsureComponents();
             
             // Try to get InventoryManager instance early
             inventoryManager = InventoryManager.Instance;
@@ -51,6 +65,9 @@ namespace TabletopShop
             {
                 Debug.LogWarning("InventoryUI: No product buttons assigned in Inspector!");
             }
+            
+            // Initialize components with references
+            InitializeComponents();
         }
         
         private void Start()
@@ -64,45 +81,11 @@ namespace TabletopShop
                 Debug.Log($"InventoryUI: Retrieved InventoryManager instance: {inventoryManager != null}");
             }
             
-            // Subscribe to inventory events with additional error checking
-            if (inventoryManager != null)
+            // Setup event handlers through interaction component
+            if (EnsureInteractionComponent())
             {
-                Debug.Log("InventoryUI: Subscribing to InventoryManager events");
-                
-                // Check if events exist and subscribe
-                if (inventoryManager.OnInventoryChanged != null)
-                {
-                    inventoryManager.OnInventoryChanged.AddListener(UpdateDisplay);
-                    Debug.Log("InventoryUI: Subscribed to OnInventoryChanged");
-                }
-                else
-                {
-                    Debug.LogError("InventoryUI: OnInventoryChanged is null!");
-                }
-                
-                if (inventoryManager.OnProductSelected != null)
-                {
-                    inventoryManager.OnProductSelected.AddListener(OnProductSelected);
-                    Debug.Log("InventoryUI: Subscribed to OnProductSelected");
-                }
-                else
-                {
-                    Debug.LogError("InventoryUI: OnProductSelected is null!");
-                }
-                
-                if (inventoryManager.OnProductCountChanged != null)
-                {
-                    inventoryManager.OnProductCountChanged.AddListener(OnProductCountChanged);
-                    Debug.Log("InventoryUI: Subscribed to OnProductCountChanged");
-                }
-                else
-                {
-                    Debug.LogError("InventoryUI: OnProductCountChanged is null!");
-                }
-            }
-            else
-            {
-                Debug.LogError("InventoryUI: InventoryManager is null after attempting to get instance!");
+                uiInteraction.OnPanelToggleRequested += TogglePanel;
+                uiInteraction.OnDisplayUpdateRequested += UpdateDisplay;
             }
             
             Debug.Log($"InventoryUI: productButtons array length: {productButtons?.Length ?? 0}");
@@ -111,7 +94,7 @@ namespace TabletopShop
             StartCoroutine(DelayedInitialization());
             
             // Start with panel hidden
-            SetPanelVisibility(false, false);
+            TogglePanelVisibility(false, false);
         }
         
         /// <summary>
@@ -119,43 +102,125 @@ namespace TabletopShop
         /// </summary>
         private IEnumerator DelayedInitialization()
         {
-            // Wait a frame to ensure InventoryManager Start() has completed
-            yield return null;
-            
-            Debug.Log("InventoryUI: Performing delayed initialization");
-            
-            // Re-check InventoryManager and update display
-            if (inventoryManager == null)
+            // Delegate to interaction component for delayed initialization
+            if (EnsureInteractionComponent())
             {
-                inventoryManager = InventoryManager.Instance;
-                Debug.Log($"InventoryUI: Re-retrieved InventoryManager instance: {inventoryManager != null}");
+                yield return StartCoroutine(uiInteraction.DelayedInitialization());
             }
-            
-            // Initialize display
-            UpdateDisplay();
+            else
+            {
+                // Fallback to original logic if component not available
+                yield return null;
+                Debug.Log("InventoryUI: Performing delayed initialization (fallback)");
+                
+                if (inventoryManager == null)
+                {
+                    inventoryManager = InventoryManager.Instance;
+                    Debug.Log($"InventoryUI: Re-retrieved InventoryManager instance: {inventoryManager != null}");
+                }
+                
+                UpdateDisplay();
+            }
         }
         
         private void Update()
         {
-            // Tab key input to toggle panel visibility
-            if (Input.GetKeyDown(KeyCode.Tab))
-            {
-                TogglePanel();
-                
-                // CursorManager will handle cursor state automatically
-                // No need to manage cursor here to prevent conflicts
-            }
+            // Input handling is now managed by interaction component
+            // This method is kept for backward compatibility but delegates work
         }
         
         private void OnDestroy()
         {
-            // Unsubscribe from events
-            if (inventoryManager != null)
+            // Cleanup component event handlers
+            if (uiInteraction != null)
             {
-                inventoryManager.OnInventoryChanged.RemoveListener(UpdateDisplay);
-                inventoryManager.OnProductSelected.RemoveListener(OnProductSelected);
-                inventoryManager.OnProductCountChanged.RemoveListener(OnProductCountChanged);
+                uiInteraction.OnPanelToggleRequested -= TogglePanel;
+                uiInteraction.OnDisplayUpdateRequested -= UpdateDisplay;
             }
+        }
+        
+        #endregion
+        
+        #region Component Management
+        
+        /// <summary>
+        /// Ensure all required components are present
+        /// </summary>
+        private void EnsureComponents()
+        {
+            EnsureVisualsComponent();
+            EnsureInteractionComponent();
+        }
+        
+        /// <summary>
+        /// Ensure visuals component exists and return success
+        /// </summary>
+        private bool EnsureVisualsComponent()
+        {
+            if (uiVisuals == null)
+            {
+                uiVisuals = GetComponent<InventoryUIVisuals>();
+                if (uiVisuals == null)
+                {
+                    uiVisuals = gameObject.AddComponent<InventoryUIVisuals>();
+                    Debug.Log("InventoryUI: Added InventoryUIVisuals component");
+                }
+            }
+            return uiVisuals != null;
+        }
+        
+        /// <summary>
+        /// Ensure interaction component exists and return success
+        /// </summary>
+        private bool EnsureInteractionComponent()
+        {
+            if (uiInteraction == null)
+            {
+                uiInteraction = GetComponent<InventoryUIInteraction>();
+                if (uiInteraction == null)
+                {
+                    uiInteraction = gameObject.AddComponent<InventoryUIInteraction>();
+                    Debug.Log("InventoryUI: Added InventoryUIInteraction component");
+                }
+            }
+            return uiInteraction != null;
+        }
+        
+        /// <summary>
+        /// Initialize components with references and migrate legacy fields
+        /// </summary>
+        private void InitializeComponents()
+        {
+            if (!hasBeenMigrated)
+            {
+                MigrateLegacyFields();
+                hasBeenMigrated = true;
+            }
+            
+            // Initialize visuals component
+            if (EnsureVisualsComponent())
+            {
+                uiVisuals.Initialize(inventoryCanvasGroup, productButtons);
+            }
+            
+            // Initialize interaction component
+            if (EnsureInteractionComponent())
+            {
+                uiInteraction.Initialize(productButtons, inventoryManager);
+            }
+        }
+        
+        /// <summary>
+        /// Migrate legacy serialized fields to components
+        /// </summary>
+        private void MigrateLegacyFields()
+        {
+            if (EnsureVisualsComponent())
+            {
+                uiVisuals.MigrateLegacyFields(fadeInDuration, fadeOutDuration, selectedButtonColor, defaultButtonColor);
+            }
+            
+            Debug.Log("InventoryUI: Legacy fields migrated to components");
         }
         
         #endregion
@@ -167,7 +232,8 @@ namespace TabletopShop
         /// </summary>
         public void TogglePanel()
         {
-            SetPanelVisibility(!isPanelVisible);
+            bool newVisibility = EnsureVisualsComponent() ? !uiVisuals.IsPanelVisible : !isPanelVisible;
+            TogglePanelVisibility(newVisibility);
         }
         
         /// <summary>
@@ -175,7 +241,24 @@ namespace TabletopShop
         /// </summary>
         /// <param name="visible">Whether the panel should be visible</param>
         /// <param name="animate">Whether to animate the transition</param>
-        private void SetPanelVisibility(bool visible, bool animate = true)
+        private void TogglePanelVisibility(bool visible, bool animate = true)
+        {
+            if (EnsureVisualsComponent())
+            {
+                uiVisuals.SetPanelVisibility(visible, animate);
+                isPanelVisible = uiVisuals.IsPanelVisible; // Keep legacy state in sync
+            }
+            else
+            {
+                // Fallback to legacy behavior if component not available
+                SetPanelVisibilityLegacy(visible, animate);
+            }
+        }
+        
+        /// <summary>
+        /// Legacy panel visibility method for backward compatibility
+        /// </summary>
+        private void SetPanelVisibilityLegacy(bool visible, bool animate = true)
         {
             if (isPanelVisible == visible) return;
             
@@ -188,7 +271,7 @@ namespace TabletopShop
             
             if (animate)
             {
-                fadeCoroutine = StartCoroutine(AnimatePanelFade(visible));
+                fadeCoroutine = StartCoroutine(AnimatePanelFadeLegacy(visible));
             }
             else
             {
@@ -199,9 +282,9 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Animate the panel fade in/out
+        /// Legacy animate the panel fade in/out
         /// </summary>
-        private IEnumerator AnimatePanelFade(bool fadeIn)
+        private IEnumerator AnimatePanelFadeLegacy(bool fadeIn)
         {
             float duration = fadeIn ? fadeInDuration : fadeOutDuration;
             float startAlpha = inventoryCanvasGroup.alpha;
@@ -285,9 +368,32 @@ namespace TabletopShop
             
             Debug.Log($"InventoryUI: Updating button {buttonIndex} for product type {productType}");
             
-            // Get total count for this product type
-            int totalCount = GetTotalCountForType(productType);
+            // Get total count for this product type (delegate to interaction component if available)
+            int totalCount = EnsureInteractionComponent() ? 
+                uiInteraction.GetTotalCountForType(productType) : 
+                GetTotalCountForTypeLegacy(productType);
+            
             Debug.Log($"InventoryUI: Total count for {productType}: {totalCount}");
+            
+            // Update button visual state through visuals component
+            if (EnsureVisualsComponent())
+            {
+                uiVisuals.UpdateButtonVisualState(buttonIndex, totalCount > 0);
+                uiVisuals.UpdateButtonCountDisplay(buttonIndex, totalCount);
+            }
+            else
+            {
+                // Fallback to legacy behavior
+                UpdateProductButtonLegacy(buttonIndex, totalCount);
+            }
+        }
+        
+        /// <summary>
+        /// Legacy method to update product button
+        /// </summary>
+        private void UpdateProductButtonLegacy(int buttonIndex, int totalCount)
+        {
+            Button button = productButtons[buttonIndex];
             
             // Update button interactability
             button.interactable = totalCount > 0;
@@ -311,8 +417,6 @@ namespace TabletopShop
                 Debug.Log($"InventoryUI: Button {buttonIndex} clicked! Calling OnProductButtonClick({buttonIndex})");
                 OnProductButtonClick(buttonIndex);
             });
-            
-            Debug.Log($"InventoryUI: Button {buttonIndex} click event set up for {productType}");
         }
         
         /// <summary>
@@ -334,9 +438,44 @@ namespace TabletopShop
         }
         
         /// <summary>
+        /// Legacy method to get the total count of all products of a specific type
+        /// </summary>
+        private int GetTotalCountForTypeLegacy(ProductType productType)
+        {
+            int totalCount = 0;
+            
+            foreach (var product in inventoryManager.AvailableProducts)
+            {
+                if (product != null && product.Type == productType)
+                {
+                    totalCount += inventoryManager.GetProductCount(product);
+                }
+            }
+            
+            return totalCount;
+        }
+        
+        /// <summary>
         /// Update visual selection highlight on buttons
         /// </summary>
         private void UpdateSelectionHighlight()
+        {
+            if (EnsureVisualsComponent() && EnsureInteractionComponent())
+            {
+                ProductData selectedProduct = uiInteraction.GetSelectedProduct();
+                uiVisuals.UpdateSelectionHighlight(selectedProduct);
+            }
+            else
+            {
+                // Fallback to legacy behavior
+                UpdateSelectionHighlightLegacy();
+            }
+        }
+        
+        /// <summary>
+        /// Legacy method to update visual selection highlight on buttons
+        /// </summary>
+        private void UpdateSelectionHighlightLegacy()
         {
             if (inventoryManager == null || productButtons == null) return;
             
@@ -364,15 +503,27 @@ namespace TabletopShop
                 }
             }
         }
-        
-        #endregion
-        
-        #region Event Handlers
-        
+
         /// <summary>
         /// Handle product button click for selection
         /// </summary>
         public void OnProductButtonClick(int buttonIndex)
+        {
+            // Delegate to interaction component if available, otherwise use legacy behavior
+            if (EnsureInteractionComponent())
+            {
+                uiInteraction.OnProductButtonClick(buttonIndex);
+            }
+            else
+            {
+                OnProductButtonClickLegacy(buttonIndex);
+            }
+        }
+        
+        /// <summary>
+        /// Legacy product button click handler for backward compatibility
+        /// </summary>
+        private void OnProductButtonClickLegacy(int buttonIndex)
         {
             // Map button index to ProductType
             ProductType[] productTypes = { ProductType.MiniatureBox, ProductType.PaintPot, ProductType.Rulebook };
@@ -386,7 +537,6 @@ namespace TabletopShop
             ProductType productType = productTypes[buttonIndex];
             
             Debug.Log($"Button {buttonIndex} ({productType}) clicked!");
-
             Debug.Log($"InventoryUI: Button clicked for product type: {productType}");
             
             if (inventoryManager == null)
@@ -429,24 +579,6 @@ namespace TabletopShop
             {
                 Debug.LogWarning($"InventoryUI: No available products found for type: {productType}");
             }
-        }
-        
-        /// <summary>
-        /// Handle product selection changed event
-        /// </summary>
-        private void OnProductSelected(ProductData selectedProduct)
-        {
-            Debug.Log($"InventoryUI: OnProductSelected event received - Product: {selectedProduct?.ProductName ?? "None"}");
-            UpdateSelectionHighlight();
-        }
-        
-        /// <summary>
-        /// Handle product count changed event
-        /// </summary>
-        private void OnProductCountChanged(ProductData product, int newCount)
-        {
-            Debug.Log($"InventoryUI: OnProductCountChanged event received - Product: {product?.ProductName ?? "None"}, New Count: {newCount}");
-            UpdateDisplay();
         }
         
         #endregion

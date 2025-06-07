@@ -592,6 +592,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &406820499 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7764066426610136478, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1054866598}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &406820502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 406820499}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
 --- !u!1 &430833186
 GameObject:
   m_ObjectHideFlags: 0
@@ -623,6 +642,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 274469690}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &442940682 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9072554599393449449, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1891580390}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &442940685
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 442940682}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
 --- !u!1 &500110048
 GameObject:
   m_ObjectHideFlags: 0
@@ -656,6 +694,25 @@ Transform:
   - {fileID: 1092444379}
   m_Father: {fileID: 190786125}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &506102677 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5579423599213339003, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1891580390}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &506102680
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 506102677}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
 --- !u!1 &521666255
 GameObject:
   m_ObjectHideFlags: 0
@@ -747,17 +804,36 @@ Transform:
   m_Children: []
   m_Father: {fileID: 970041456}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &657999859 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5579423599213339003, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1054866598}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &657999861 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3612627904194023414, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
   m_PrefabInstance: {fileID: 1054866598}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 657999859}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
+--- !u!114 &657999862
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 657999859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
 --- !u!1 &682135404
 GameObject:
   m_ObjectHideFlags: 0
@@ -933,6 +1009,44 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1092444379}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &719705526 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1891580390}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &719705529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 719705526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
+--- !u!1 &727747492 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7764066426610136478, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1891580390}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &727747495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 727747492}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
 --- !u!1 &898342175
 GameObject:
   m_ObjectHideFlags: 0
@@ -1304,15 +1418,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7032157210456165468, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.265
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7032157210456165468, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.724
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 7032157210456165468, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.357
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
       propertyPath: m_Layer
@@ -1337,7 +1451,22 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5579423599213339003, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 657999862}
+    - targetCorrespondingSourceObject: {fileID: 9072554599393449449, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1816805911}
+    - targetCorrespondingSourceObject: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1935449410}
+    - targetCorrespondingSourceObject: {fileID: 7764066426610136478, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 406820502}
+    - targetCorrespondingSourceObject: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1374902610}
   m_SourcePrefab: {fileID: 100100000, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
 --- !u!4 &1054866599 stripped
 Transform:
@@ -1906,6 +2035,25 @@ MonoBehaviour:
   debugShelfKey: 112
   shelfSpawnPosition: {x: 5, y: 0, z: 0}
   autoFindShelf: 1
+--- !u!1 &1374902607 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1054866598}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1374902610
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1374902607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
 --- !u!1 &1395094045
 GameObject:
   m_ObjectHideFlags: 0
@@ -2242,6 +2390,25 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!1 &1496188319 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1891580390}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1496188322
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1496188319}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
 --- !u!114 &1712641454 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 347833175486527610, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
@@ -2395,6 +2562,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 274469690}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1816805908 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9072554599393449449, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1054866598}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1816805911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1816805908}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
 --- !u!1 &1869153454
 GameObject:
   m_ObjectHideFlags: 0
@@ -2577,7 +2763,22 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5579423599213339003, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 506102680}
+    - targetCorrespondingSourceObject: {fileID: 9072554599393449449, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 442940685}
+    - targetCorrespondingSourceObject: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1496188322}
+    - targetCorrespondingSourceObject: {fileID: 7764066426610136478, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 727747495}
+    - targetCorrespondingSourceObject: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 719705529}
   m_SourcePrefab: {fileID: 100100000, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
 --- !u!114 &1891580391 stripped
 MonoBehaviour:
@@ -2722,6 +2923,25 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &1935449407 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1054866598}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1935449410
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1935449407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
 --- !u!114 &1941645308 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4029563289272380585, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
