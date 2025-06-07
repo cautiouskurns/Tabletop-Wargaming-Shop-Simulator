@@ -16,8 +16,8 @@ namespace TabletopShop
     }
 
     /// <summary>
-    /// Customer AI controller with basic state management and NavMeshAgent movement
-    /// Handles customer behavior states and movement within the shop
+    /// Customer AI controller using composition pattern with components for movement, behavior, and visuals.
+    /// Maintains the same public API for backward compatibility while delegating responsibilities to specialized components.
     /// </summary>
     [RequireComponent(typeof(NavMeshAgent))]
     public class Customer : MonoBehaviour
@@ -33,87 +33,174 @@ namespace TabletopShop
         [SerializeField] private float movementSpeed = 1.5f;
         [SerializeField] private float stoppingDistance = 1f;
         
-        [Header("Pathfinding Settings")]
-        [SerializeField] private float stuckDetectionTime = 5f;
-        [SerializeField] private float stuckDistanceThreshold = 0.5f;
-        [SerializeField] private float destinationReachedDistance = 1.5f;
-        [SerializeField] private int maxPathfindingRetries = 3;
-        [SerializeField] private float pathfindingRetryDelay = 1f;
+        // Component references - composition pattern
+        private CustomerMovement customerMovement;
+        private CustomerBehavior customerBehavior;
+        private CustomerVisuals customerVisuals;
         
-        // Component references
+        // Legacy component reference (kept for minimal compatibility)
         private NavMeshAgent navMeshAgent;
         
-        // Pathfinding state
-        private Vector3 currentDestination;
-        private bool hasDestination = false;
-        private Vector3 lastPosition;
-        private float stuckTimer = 0f;
-        private int pathfindingRetries = 0;
-        private Coroutine stuckDetectionCoroutine;
-        
-        // Properties
+        // Properties - delegating to components
         public CustomerState CurrentState => currentState;
-        public float ShoppingTime => shoppingTime;
-        public ShelfSlot TargetShelf => targetShelf;
-        public bool IsMoving => navMeshAgent != null && navMeshAgent.velocity.magnitude > 0.1f;
-        public Vector3 CurrentDestination => currentDestination;
-        public bool HasDestination => hasDestination;
+        public float ShoppingTime => customerBehavior != null ? customerBehavior.ShoppingTime : shoppingTime;
+        public ShelfSlot TargetShelf => customerBehavior != null ? customerBehavior.TargetShelf : targetShelf;
+        public bool IsMoving => customerMovement != null ? customerMovement.IsMoving : false;
+        public Vector3 CurrentDestination => customerMovement != null ? customerMovement.CurrentDestination : Vector3.zero;
+        public bool HasDestination => customerMovement != null ? customerMovement.HasDestination : false;
         
         #region Unity Lifecycle
         
         private void Awake()
         {
-            InitializeNavMeshAgent();
-            InitializeShoppingTime();
+            InitializeComponents();
+            InitializeLegacyFallbacks();
         }
         
         private void Start()
         {
-            Debug.Log($"Customer {name} initialized with state: {currentState}, shopping time: {shoppingTime:F1}s");
+            Debug.Log($"Customer {name} initialized with state: {currentState}, shopping time: {ShoppingTime:F1}s");
             
-            // Start the customer lifecycle state machine
-            StartCoroutine(StartCustomerLifecycle());
+            // Start the customer lifecycle state machine (delegate to behavior component)
+            if (customerBehavior != null)
+            {
+                customerBehavior.StartCustomerLifecycle(currentState);
+            }
+            else
+            {
+                Debug.LogError($"Customer {name} cannot start lifecycle - CustomerBehavior component not found!");
+            }
         }
         
         private void Update()
         {
-            // Basic movement and state monitoring
-            UpdateMovementState();
-            UpdatePathfindingState();
+            // All update logic is now handled by components
+            // No legacy fallback needed
         }
         
         #endregion
         
-        #region Initialization
+        #region Component Initialization
         
         /// <summary>
-        /// Initialize NavMeshAgent component and configure movement settings
+        /// Initialize and setup components using composition pattern
         /// </summary>
-        private void InitializeNavMeshAgent()
+        private void InitializeComponents()
         {
-            navMeshAgent = GetComponent<NavMeshAgent>();
+            // Get or create movement component
+            customerMovement = EnsureMovementComponent();
             
-            if (navMeshAgent == null)
+            // Get or create behavior component  
+            customerBehavior = EnsureBehaviorComponent();
+            
+            // Get or create visuals component
+            customerVisuals = EnsureVisualsComponent();
+            
+            // Initialize cross-component references
+            if (customerMovement != null && customerBehavior != null && customerVisuals != null)
             {
-                Debug.LogError($"Customer {name} is missing NavMeshAgent component!");
-                return;
+                customerMovement.Initialize();
+                customerBehavior.Initialize(customerMovement, this);
+                customerVisuals.Initialize(customerMovement, this);
+                
+                // Subscribe to component events
+                customerBehavior.OnStateChangeRequested += HandleStateChangeRequest;
+                customerBehavior.OnTargetShelfChanged += HandleTargetShelfChanged;
+                
+                // Migrate legacy field values
+                MigrateLegacyFields();
+                
+                Debug.Log($"Customer {name} components initialized successfully");
             }
-            
-            // Configure NavMeshAgent settings
-            navMeshAgent.speed = movementSpeed;
-            navMeshAgent.stoppingDistance = stoppingDistance;
-            navMeshAgent.autoBraking = true;
-            navMeshAgent.autoRepath = true;
-            
-            Debug.Log($"Customer {name} NavMeshAgent initialized - Speed: {movementSpeed}, Stopping Distance: {stoppingDistance}");
         }
         
         /// <summary>
-        /// Initialize random shopping time between 10-30 seconds
+        /// Initialize minimal legacy compatibility
         /// </summary>
-        private void InitializeShoppingTime()
+        private void InitializeLegacyFallbacks()
         {
-            shoppingTime = Random.Range(10f, 30f);
+            // Keep NavMeshAgent reference for basic compatibility
+            navMeshAgent = GetComponent<NavMeshAgent>();
+            
+            // Initialize legacy shopping time if not set
+            if (shoppingTime <= 0)
+            {
+                shoppingTime = UnityEngine.Random.Range(10f, 30f);
+            }
+        }
+        
+        /// <summary>
+        /// Ensure CustomerMovement component exists and return reference
+        /// </summary>
+        private CustomerMovement EnsureMovementComponent()
+        {
+            CustomerMovement movement = GetComponent<CustomerMovement>();
+            if (movement == null)
+            {
+                movement = gameObject.AddComponent<CustomerMovement>();
+                Debug.Log($"Customer {name} created CustomerMovement component");
+            }
+            return movement;
+        }
+        
+        /// <summary>
+        /// Ensure CustomerBehavior component exists and return reference
+        /// </summary>
+        private CustomerBehavior EnsureBehaviorComponent()
+        {
+            CustomerBehavior behavior = GetComponent<CustomerBehavior>();
+            if (behavior == null)
+            {
+                behavior = gameObject.AddComponent<CustomerBehavior>();
+                Debug.Log($"Customer {name} created CustomerBehavior component");
+            }
+            return behavior;
+        }
+        
+        /// <summary>
+        /// Ensure CustomerVisuals component exists and return reference
+        /// </summary>
+        private CustomerVisuals EnsureVisualsComponent()
+        {
+            CustomerVisuals visuals = GetComponent<CustomerVisuals>();
+            if (visuals == null)
+            {
+                visuals = gameObject.AddComponent<CustomerVisuals>();
+                Debug.Log($"Customer {name} created CustomerVisuals component");
+            }
+            return visuals;
+        }
+        
+        /// <summary>
+        /// Handle state change requests from behavior component
+        /// </summary>
+        private void HandleStateChangeRequest(CustomerState fromState, CustomerState toState)
+        {
+            ChangeState(toState);
+        }
+        
+        /// <summary>
+        /// Handle target shelf changes from behavior component
+        /// </summary>
+        private void HandleTargetShelfChanged(ShelfSlot shelf)
+        {
+            targetShelf = shelf;
+        }
+        
+        /// <summary>
+        /// Migrate legacy field values to components
+        /// </summary>
+        private void MigrateLegacyFields()
+        {
+            if (customerBehavior != null)
+            {
+                customerBehavior.MigrateLegacyFields(shoppingTime, targetShelf);
+            }
+            
+            if (customerVisuals != null)
+            {
+                customerVisuals.MigrateLegacyFields(true); // showDebugGizmos default true
+            }
         }
         
         #endregion
@@ -173,7 +260,7 @@ namespace TabletopShop
         
         #endregion
         
-        #region Movement and Pathfinding
+        #region Movement and Pathfinding - Delegated to CustomerMovement Component
         
         /// <summary>
         /// Set movement destination using NavMeshAgent with pathfinding validation
@@ -182,37 +269,14 @@ namespace TabletopShop
         /// <returns>True if destination was set successfully</returns>
         public bool SetDestination(Vector3 destination)
         {
-            if (navMeshAgent == null)
+            // Delegate to movement component
+            if (customerMovement != null)
             {
-                Debug.LogWarning($"Customer {name} cannot move - NavMeshAgent not found!");
-                return false;
+                return customerMovement.SetDestination(destination);
             }
             
-            // Check if destination is on NavMesh
-            NavMeshHit hit;
-            if (!NavMesh.SamplePosition(destination, out hit, 5f, NavMesh.AllAreas))
-            {
-                Debug.LogWarning($"Customer {name} destination not on NavMesh: {destination}");
-                return HandlePathfindingFailure(destination);
-            }
-            
-            bool pathSet = navMeshAgent.SetDestination(hit.position);
-            
-            if (pathSet)
-            {
-                currentDestination = hit.position;
-                hasDestination = true;
-                pathfindingRetries = 0;
-                StartStuckDetection();
-                Debug.Log($"Customer {name} moving to destination: {hit.position}");
-            }
-            else
-            {
-                Debug.LogWarning($"Customer {name} failed to set destination: {destination}");
-                return HandlePathfindingFailure(destination);
-            }
-            
-            return pathSet;
+            Debug.LogError($"Customer {name} cannot move - CustomerMovement component not found!");
+            return false;
         }
         
         /// <summary>
@@ -221,20 +285,14 @@ namespace TabletopShop
         /// <returns>True if a random shelf destination was set successfully</returns>
         public bool SetRandomShelfDestination()
         {
-            ShelfSlot[] availableShelves = FindObjectsByType<ShelfSlot>(FindObjectsSortMode.None);
-            
-            if (availableShelves.Length == 0)
+            // Delegate to movement component
+            if (customerMovement != null)
             {
-                Debug.LogWarning($"Customer {name} cannot find any shelves in scene!");
-                return false;
+                return customerMovement.SetRandomShelfDestination();
             }
             
-            // Select random shelf
-            ShelfSlot randomShelf = availableShelves[Random.Range(0, availableShelves.Length)];
-            SetTargetShelf(randomShelf);
-            
-            // Move to shelf position
-            return MoveToShelfPosition(randomShelf);
+            Debug.LogError($"Customer {name} cannot move - CustomerMovement component not found!");
+            return false;
         }
         
         /// <summary>
@@ -244,18 +302,14 @@ namespace TabletopShop
         /// <returns>True if movement was initiated successfully</returns>
         public bool MoveToShelfPosition(ShelfSlot shelf)
         {
-            if (shelf == null)
+            // Delegate to movement component
+            if (customerMovement != null)
             {
-                Debug.LogWarning($"Customer {name} cannot move to null shelf!");
-                return false;
+                return customerMovement.MoveToShelfPosition(shelf);
             }
             
-            // Calculate position in front of shelf
-            Vector3 shelfPosition = shelf.transform.position;
-            Vector3 shelfForward = shelf.transform.forward;
-            Vector3 targetPosition = shelfPosition + shelfForward * 2f; // Stand 2 units in front
-            
-            return SetDestination(targetPosition);
+            Debug.LogError($"Customer {name} cannot move - CustomerMovement component not found!");
+            return false;
         }
         
         /// <summary>
@@ -264,21 +318,14 @@ namespace TabletopShop
         /// <returns>True if exit destination was set successfully</returns>
         public bool MoveToExitPoint()
         {
-            // Look for objects tagged as "Exit" or find a reasonable exit position
-            GameObject[] exitPoints = GameObject.FindGameObjectsWithTag("Exit");
+            // Delegate to movement component
+            if (customerMovement != null)
+            {
+                return customerMovement.MoveToExitPoint();
+            }
             
-            if (exitPoints.Length > 0)
-            {
-                GameObject selectedExit = exitPoints[Random.Range(0, exitPoints.Length)];
-                return SetDestination(selectedExit.transform.position);
-            }
-            else
-            {
-                // Fallback: move to edge of NavMesh (simple exit strategy)
-                Vector3 exitPosition = transform.position + Vector3.forward * 10f;
-                Debug.LogWarning($"Customer {name} no exit points found, using fallback position: {exitPosition}");
-                return SetDestination(exitPosition);
-            }
+            Debug.LogError($"Customer {name} cannot move - CustomerMovement component not found!");
+            return false;
         }
         
         /// <summary>
@@ -286,13 +333,30 @@ namespace TabletopShop
         /// </summary>
         public void StopMovement()
         {
-            if (navMeshAgent != null && navMeshAgent.isActiveAndEnabled)
+            // Delegate to movement component
+            if (customerMovement != null)
             {
-                navMeshAgent.ResetPath();
-                hasDestination = false;
-                StopStuckDetection();
-                Debug.Log($"Customer {name} stopped movement");
+                customerMovement.StopMovement();
+                return;
             }
+            
+            Debug.LogError($"Customer {name} cannot stop movement - CustomerMovement component not found!");
+        }
+        
+        /// <summary>
+        /// Move to checkout point for purchasing
+        /// </summary>
+        /// <returns>True if checkout destination was set successfully</returns>
+        public bool MoveToCheckoutPoint()
+        {
+            // Delegate to movement component
+            if (customerMovement != null)
+            {
+                return customerMovement.MoveToCheckoutPoint();
+            }
+            
+            Debug.LogError($"Customer {name} cannot move - CustomerMovement component not found!");
+            return false;
         }
         
         /// <summary>
@@ -301,365 +365,14 @@ namespace TabletopShop
         /// <returns>True if customer has reached their destination</returns>
         public bool HasReachedDestination()
         {
-            if (navMeshAgent == null || !hasDestination) return true;
-            
-            // Check NavMeshAgent status
-            bool navMeshReached = !navMeshAgent.pathPending && 
-                                 navMeshAgent.remainingDistance < navMeshAgent.stoppingDistance;
-            
-            // Check direct distance to destination
-            float distanceToDestination = Vector3.Distance(transform.position, currentDestination);
-            bool directDistanceReached = distanceToDestination <= destinationReachedDistance;
-            
-            if (navMeshReached || directDistanceReached)
+            // Delegate to movement component
+            if (customerMovement != null)
             {
-                hasDestination = false;
-                StopStuckDetection();
-                Debug.Log($"Customer {name} reached destination: {currentDestination}");
-                return true;
+                return customerMovement.HasReachedDestination();
             }
             
-            return false;
-        }
-        
-        /// <summary>
-        /// Update pathfinding state and handle issues
-        /// </summary>
-        private void UpdatePathfindingState()
-        {
-            if (navMeshAgent == null || !hasDestination) return;
-            
-            // Check for pathfinding status
-            if (navMeshAgent.pathStatus == NavMeshPathStatus.PathInvalid)
-            {
-                Debug.LogWarning($"Customer {name} has invalid path!");
-                HandlePathfindingFailure(currentDestination);
-            }
-            else if (navMeshAgent.pathStatus == NavMeshPathStatus.PathPartial)
-            {
-                Debug.LogWarning($"Customer {name} has partial path - may not reach exact destination");
-            }
-        }
-        
-        /// <summary>
-        /// Handle pathfinding failures with retry logic
-        /// </summary>
-        /// <param name="originalDestination">The original destination that failed</param>
-        /// <returns>True if a fallback solution was found</returns>
-        private bool HandlePathfindingFailure(Vector3 originalDestination)
-        {
-            pathfindingRetries++;
-            
-            if (pathfindingRetries >= maxPathfindingRetries)
-            {
-                Debug.LogError($"Customer {name} exceeded pathfinding retry limit ({maxPathfindingRetries})");
-                
-                // Final fallback: stop and wait
-                StopMovement();
-                return false;
-            }
-            
-            Debug.Log($"Customer {name} pathfinding retry {pathfindingRetries}/{maxPathfindingRetries}");
-            
-            // Try nearby positions
-            for (int i = 0; i < 8; i++)
-            {
-                Vector3 randomOffset = Random.insideUnitSphere * 3f;
-                randomOffset.y = 0; // Keep on ground level
-                Vector3 fallbackDestination = originalDestination + randomOffset;
-                
-                NavMeshHit hit;
-                if (NavMesh.SamplePosition(fallbackDestination, out hit, 2f, NavMesh.AllAreas))
-                {
-                    if (navMeshAgent.SetDestination(hit.position))
-                    {
-                        currentDestination = hit.position;
-                        hasDestination = true;
-                        Debug.Log($"Customer {name} using fallback destination: {hit.position}");
-                        return true;
-                    }
-                }
-            }
-            
-            // If all fallbacks fail, try again after delay
-            StartCoroutine(RetryPathfindingAfterDelay(originalDestination));
-            return false;
-        }
-        
-        /// <summary>
-        /// Retry pathfinding after a delay
-        /// </summary>
-        private IEnumerator RetryPathfindingAfterDelay(Vector3 destination)
-        {
-            yield return new WaitForSeconds(pathfindingRetryDelay);
-            SetDestination(destination);
-        }
-        
-        #endregion
-        
-        #region Stuck Detection
-        
-        /// <summary>
-        /// Start stuck detection monitoring
-        /// </summary>
-        private void StartStuckDetection()
-        {
-            StopStuckDetection(); // Stop any existing detection
-            lastPosition = transform.position;
-            stuckTimer = 0f;
-            stuckDetectionCoroutine = StartCoroutine(MonitorStuckState());
-        }
-        
-        /// <summary>
-        /// Stop stuck detection monitoring
-        /// </summary>
-        private void StopStuckDetection()
-        {
-            if (stuckDetectionCoroutine != null)
-            {
-                StopCoroutine(stuckDetectionCoroutine);
-                stuckDetectionCoroutine = null;
-            }
-        }
-        
-        /// <summary>
-        /// Monitor for stuck state and handle recovery
-        /// </summary>
-        private IEnumerator MonitorStuckState()
-        {
-            while (hasDestination)
-            {
-                yield return new WaitForSeconds(1f); // Check every second
-                
-                float distanceMoved = Vector3.Distance(transform.position, lastPosition);
-                
-                if (distanceMoved < stuckDistanceThreshold && IsMoving)
-                {
-                    stuckTimer += 1f;
-                    
-                    if (stuckTimer >= stuckDetectionTime)
-                    {
-                        Debug.LogWarning($"Customer {name} detected as stuck! Attempting recovery...");
-                        HandleStuckCustomer();
-                        break;
-                    }
-                }
-                else
-                {
-                    stuckTimer = 0f; // Reset timer if moving properly
-                }
-                
-                lastPosition = transform.position;
-            }
-        }
-        
-        /// <summary>
-        /// Handle stuck customer with recovery strategies
-        /// </summary>
-        private void HandleStuckCustomer()
-        {
-            Debug.Log($"Customer {name} implementing stuck recovery");
-            
-            // Strategy 1: Try to find a new path to the same destination
-            Vector3 originalDestination = currentDestination;
-            StopMovement();
-            
-            // Wait briefly then try original destination again
-            StartCoroutine(AttemptStuckRecovery(originalDestination));
-        }
-        
-        /// <summary>
-        /// Attempt recovery from stuck state
-        /// </summary>
-        private IEnumerator AttemptStuckRecovery(Vector3 originalDestination)
-        {
-            yield return new WaitForSeconds(2f);
-            
-            // Try moving to a nearby position first, then to original destination
-            Vector3 nearbyPosition = transform.position + Random.insideUnitSphere * 3f;
-            nearbyPosition.y = transform.position.y;
-            
-            if (SetDestination(nearbyPosition))
-            {
-                // Wait for movement to nearby position
-                yield return new WaitForSeconds(3f);
-                
-                // Now try original destination again
-                SetDestination(originalDestination);
-            }
-            else
-            {
-                // If that fails, try random shelf destination
-                SetRandomShelfDestination();
-            }
-        }
-        
-        #endregion
-        
-        /// <summary>
-        /// Update movement state monitoring
-        /// </summary>
-        private void UpdateMovementState()
-        {
-            if (navMeshAgent == null) return;
-            
-            // Debug movement information (can be removed in production)
-            if (IsMoving && Time.frameCount % 60 == 0) // Log every 60 frames (~1 second)
-            {
-                Debug.Log($"Customer {name} moving - Remaining distance: {navMeshAgent.remainingDistance:F2}, " +
-                         $"Destination: {currentDestination}");
-            }
-        }
-        
-        #region Customer Lifecycle State Machine
-        
-        /// <summary>
-        /// Coroutine to handle the complete customer lifecycle automatically
-        /// Progresses through: Entering → Shopping → Purchasing → Leaving
-        /// </summary>
-        private IEnumerator StartCustomerLifecycle()
-        {
-            Debug.Log($"Customer {name} starting lifecycle in state: {currentState}");
-            
-            // Phase 1: Entering the shop
-            if (currentState == CustomerState.Entering)
-            {
-                Debug.Log($"Customer {name} entering shop - looking for shelves");
-                
-                // Move to a random shelf to start shopping
-                bool foundShelf = SetRandomShelfDestination();
-                if (foundShelf)
-                {
-                    // Wait for customer to reach shelf
-                    while (!HasReachedDestination())
-                    {
-                        yield return new WaitForSeconds(0.5f);
-                    }
-                    
-                    // Transition to shopping state
-                    ChangeState(CustomerState.Shopping);
-                }
-                else
-                {
-                    Debug.LogWarning($"Customer {name} couldn't find any shelves - skipping to leaving");
-                    ChangeState(CustomerState.Leaving);
-                }
-            }
-            
-            // Phase 2: Shopping behavior
-            if (currentState == CustomerState.Shopping)
-            {
-                Debug.Log($"Customer {name} browsing products for {shoppingTime:F1} seconds");
-                
-                float shoppedTime = 0f;
-                while (shoppedTime < shoppingTime)
-                {
-                    // Occasionally move to different shelves while shopping
-                    if (Random.value < 0.3f) // 30% chance every check
-                    {
-                        SetRandomShelfDestination();
-                        
-                        // Wait a bit for movement
-                        yield return new WaitForSeconds(2f);
-                        
-                        // Wait to reach new shelf
-                        while (!HasReachedDestination())
-                        {
-                            yield return new WaitForSeconds(0.5f);
-                        }
-                    }
-                    
-                    yield return new WaitForSeconds(1f);
-                    shoppedTime += 1f;
-                }
-                
-                // Finished shopping, move to purchasing
-                ChangeState(CustomerState.Purchasing);
-            }
-            
-            // Phase 3: Purchasing (move to checkout area)
-            if (currentState == CustomerState.Purchasing)
-            {
-                Debug.Log($"Customer {name} proceeding to checkout");
-                
-                // Look for checkout area or use a central location
-                GameObject checkout = null;
-                bool reachedCheckout = false;
-                
-                // Try to find checkout by tag first
-                try
-                {
-                    GameObject[] checkouts = GameObject.FindGameObjectsWithTag("Checkout");
-                    if (checkouts.Length > 0)
-                    {
-                        checkout = checkouts[0];
-                    }
-                }
-                catch (UnityException)
-                {
-                    // Checkout tag doesn't exist, that's okay
-                    Debug.Log($"Customer {name}: Checkout tag not defined, using fallback");
-                }
-                
-                if (checkout != null)
-                {
-                    reachedCheckout = SetDestination(checkout.transform.position);
-                    Debug.Log($"Customer {name} moving to checkout at {checkout.transform.position}");
-                }
-                else
-                {
-                    // Fallback: move to center of shop
-                    Vector3 shopCenter = Vector3.zero;
-                    reachedCheckout = SetDestination(shopCenter);
-                    Debug.Log($"Customer {name} no checkout found, using shop center at {shopCenter}");
-                }
-                
-                if (reachedCheckout)
-                {
-                    // Wait to reach checkout
-                    while (!HasReachedDestination())
-                    {
-                        yield return new WaitForSeconds(0.5f);
-                    }
-                    
-                    // Simulate purchase time
-                    float purchaseTime = Random.Range(3f, 8f);
-                    Debug.Log($"Customer {name} making purchase (taking {purchaseTime:F1}s)");
-                    yield return new WaitForSeconds(purchaseTime);
-                }
-                
-                // Purchase complete, ready to leave
-                ChangeState(CustomerState.Leaving);
-            }
-            
-            // Phase 4: Leaving the shop
-            if (currentState == CustomerState.Leaving)
-            {
-                Debug.Log($"Customer {name} leaving the shop");
-                
-                bool foundExit = MoveToExitPoint();
-                if (foundExit)
-                {
-                    // Wait to reach exit
-                    while (!HasReachedDestination())
-                    {
-                        yield return new WaitForSeconds(0.5f);
-                    }
-                    
-                    Debug.Log($"Customer {name} has left the shop");
-                    
-                    // Optional: Destroy customer object after leaving
-                    yield return new WaitForSeconds(2f);
-                    Debug.Log($"Customer {name} cleanup - removing from scene");
-                    Destroy(gameObject);
-                }
-                else
-                {
-                    Debug.LogError($"Customer {name} couldn't find exit!");
-                }
-            }
-            
-            Debug.Log($"Customer {name} lifecycle completed");
+            Debug.LogError($"Customer {name} cannot check destination - CustomerMovement component not found!");
+            return true; // Return true to avoid infinite loops
         }
         
         #endregion
@@ -717,7 +430,7 @@ namespace TabletopShop
         
         #endregion
         
-        #region Debug and Visualization
+        #region Debug and Visualization - Delegated to CustomerVisuals Component
         
         /// <summary>
         /// Get debug information about customer state
@@ -725,13 +438,13 @@ namespace TabletopShop
         /// <returns>Debug string with customer information</returns>
         public string GetDebugInfo()
         {
-            return $"Customer {name}: State={currentState}, " +
-                   $"ShoppingTime={shoppingTime:F1}s, " +
-                   $"IsMoving={IsMoving}, " +
-                   $"HasDestination={hasDestination}, " +
-                   $"Destination={currentDestination}, " +
-                   $"Distance={Vector3.Distance(transform.position, currentDestination):F2}, " +
-                   $"TargetShelf={targetShelf?.name ?? "None"}";
+            // Delegate to visuals component
+            if (customerVisuals != null)
+            {
+                return customerVisuals.GetDebugInfo();
+            }
+            
+            return $"Customer {name}: Debug info unavailable - CustomerVisuals component not found!";
         }
         
         /// <summary>
@@ -739,31 +452,9 @@ namespace TabletopShop
         /// </summary>
         private void OnDrawGizmosSelected()
         {
-            if (hasDestination)
-            {
-                // Draw destination
-                Gizmos.color = Color.red;
-                Gizmos.DrawWireSphere(currentDestination, 0.5f);
-                
-                // Draw line to destination
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawLine(transform.position, currentDestination);
-                
-                // Draw stopping distance
-                Gizmos.color = Color.green;
-                Gizmos.DrawWireSphere(currentDestination, destinationReachedDistance);
-            }
-            
-            // Draw NavMeshAgent path if available
-            if (navMeshAgent != null && navMeshAgent.hasPath)
-            {
-                Gizmos.color = Color.blue;
-                Vector3[] path = navMeshAgent.path.corners;
-                for (int i = 0; i < path.Length - 1; i++)
-                {
-                    Gizmos.DrawLine(path[i], path[i + 1]);
-                }
-            }
+            // Delegate to visuals component
+            // The CustomerVisuals component handles its own OnDrawGizmosSelected
+            // No fallback needed here as gizmos are optional
         }
         
         #endregion
