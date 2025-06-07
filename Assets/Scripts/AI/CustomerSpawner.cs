@@ -36,11 +36,74 @@ namespace TabletopShop
         // Properties
         public int ActiveCustomerCount => GetActiveCustomerCount();
         public bool IsSpawning => isSpawning;
-        public bool CanSpawnCustomer => GetActiveCustomerCount() < maxCustomers;
+        public bool CanSpawnCustomer => CanSpawnCustomerInternal();
         public bool IsAtMaxCapacity => GetActiveCustomerCount() >= maxCustomers;
         public GameObject CustomerPrefab => customerPrefab;
         public Transform SpawnPoint => spawnPoint;
         public Transform ExitPoint => exitPoint;
+        
+        /// <summary>
+        /// Enhanced spawn condition checking with GameManager day/night cycle integration
+        /// Checks multiple conditions: capacity limits, day/night cycle, and daily customer limits
+        /// </summary>
+        /// <returns>True if a customer can be spawned</returns>
+        private bool CanSpawnCustomerInternal()
+        {
+            // Priority 1: Check basic capacity limits (preserve existing logic)
+            if (GetActiveCustomerCount() >= maxCustomers)
+            {
+                if (enableDebugLogging)
+                {
+                    Debug.Log($"CustomerSpawner {name}: Cannot spawn - at capacity limit ({GetActiveCustomerCount()}/{maxCustomers})");
+                }
+                return false;
+            }
+            
+            // Priority 2: Check GameManager day/night cycle (graceful fallback if unavailable)
+            if (GameManager.Instance != null)
+            {
+                // Only spawn customers during day time for realistic shop hours
+                if (!GameManager.Instance.IsDayTime)
+                {
+                    if (enableDebugLogging)
+                    {
+                        Debug.Log($"CustomerSpawner {name}: Cannot spawn - shop is closed (night time)");
+                    }
+                    return false;
+                }
+                
+                // Priority 3: Check daily customer limit to create economic pressure
+                // This distinguishes between customer capacity (how many can be in shop simultaneously)
+                // and daily limit (how many customers the shop can serve per day)
+                if (GameManager.Instance.CustomersServedToday >= GameManager.Instance.MaxDailyCustomers)
+                {
+                    if (enableDebugLogging)
+                    {
+                        Debug.Log($"CustomerSpawner {name}: Cannot spawn - daily customer limit reached ({GameManager.Instance.CustomersServedToday}/{GameManager.Instance.MaxDailyCustomers})");
+                    }
+                    return false;
+                }
+            }
+            else
+            {
+                // Graceful fallback: Continue spawning if GameManager unavailable (for testing/development)
+                if (enableDebugLogging)
+                {
+                    Debug.LogWarning($"CustomerSpawner {name}: GameManager unavailable - using fallback spawn logic");
+                }
+            }
+            
+            // All conditions passed - customer can be spawned
+            if (enableDebugLogging)
+            {
+                string gameManagerStatus = GameManager.Instance != null ? 
+                    $"Day: {GameManager.Instance.CurrentDay}, IsDay: {GameManager.Instance.IsDayTime}, Served: {GameManager.Instance.CustomersServedToday}/{GameManager.Instance.MaxDailyCustomers}" : 
+                    "GameManager unavailable";
+                Debug.Log($"CustomerSpawner {name}: Can spawn customer - Active: {GetActiveCustomerCount()}/{maxCustomers}, {gameManagerStatus}");
+            }
+            
+            return true;
+        }
         
         #region Unity Lifecycle
         
