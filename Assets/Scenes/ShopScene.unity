@@ -1692,6 +1692,61 @@ Transform:
   - {fileID: 123400580}
   m_Father: {fileID: 500110049}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1162074220
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1162074222}
+  - component: {fileID: 1162074221}
+  m_Layer: 0
+  m_Name: ShopStatusUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1162074221
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1162074220}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38c55bf68cb7f49d5aab84830f1a9884, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShopStatusUI
+  showStatusUI: 1
+  enableDebugInfo: 0
+  displayPosition: {x: 10, y: 10}
+  fontSize: 14
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  backgroundTint: {r: 0, g: 0, b: 0, a: 0.3}
+  showMoney: 1
+  showDayInfo: 1
+  showCustomerMetrics: 1
+  showReputation: 1
+  showDayNightCycle: 1
+--- !u!4 &1162074222
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1162074220}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.40066, y: -0, z: 2.93089}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1174955266
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3176,7 +3231,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents:
-    - {fileID: 7502348738575602801, guid: 9a45cff2e41414665846b9ce77b8c2c4, type: 3}
+    - {fileID: 0}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -3196,3 +3251,4 @@ SceneRoots:
   - {fileID: 274469690}
   - {fileID: 373795100}
   - {fileID: 1237276469}
+  - {fileID: 1162074222}
