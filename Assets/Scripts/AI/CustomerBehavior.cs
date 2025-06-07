@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System;
 
 namespace TabletopShop
@@ -10,16 +11,24 @@ namespace TabletopShop
     /// </summary>
     public class CustomerBehavior : MonoBehaviour
     {
-        [Header("Shopping Configuration")]
-        [SerializeField] private float shoppingTime;
-        [SerializeField] private ShelfSlot targetShelf;
-        
-        // Component references
-        private CustomerMovement customerMovement;
-        private Customer mainCustomer; // Reference to main customer for state changes
-        
-        // State tracking
-        private Coroutine lifecycleCoroutine;
+    [Header("Shopping Configuration")]
+    [SerializeField] private float shoppingTime;
+    [SerializeField] private ShelfSlot targetShelf;
+    
+    [Header("Purchase Configuration")]
+    [SerializeField] private float baseSpendingPower = 100f;
+    [SerializeField] private float purchaseProbability = 0.8f;
+    
+    // Component references
+    private CustomerMovement customerMovement;
+    private Customer mainCustomer; // Reference to main customer for state changes
+    
+    // State tracking
+    private Coroutine lifecycleCoroutine;
+    
+    // Purchase tracking
+    private List<Product> selectedProducts = new List<Product>();
+    private float totalPurchaseAmount = 0f;
         
         // Events
         public event Action<CustomerState, CustomerState> OnStateChangeRequested;
@@ -28,6 +37,9 @@ namespace TabletopShop
         // Properties
         public float ShoppingTime => shoppingTime;
         public ShelfSlot TargetShelf => targetShelf;
+        public List<Product> SelectedProducts => selectedProducts;
+        public float TotalPurchaseAmount => totalPurchaseAmount;
+        public float BaseSpendingPower => baseSpendingPower;
         
         #region Initialization
         
@@ -51,6 +63,19 @@ namespace TabletopShop
         private void InitializeShoppingTime()
         {
             shoppingTime = UnityEngine.Random.Range(10f, 30f);
+        }
+        
+        /// <summary>
+        /// Reset customer's shopping state (for reuse or testing)
+        /// </summary>
+        public void ResetShoppingState()
+        {
+            selectedProducts.Clear();
+            totalPurchaseAmount = 0f;
+            targetShelf = null;
+            InitializeShoppingTime();
+            
+            Debug.Log($"CustomerBehavior {name} shopping state reset");
         }
         
         #endregion
@@ -158,6 +183,8 @@ namespace TabletopShop
             Debug.Log($"CustomerBehavior {name} browsing products for {shoppingTime:F1} seconds");
             
             float shoppedTime = 0f;
+            float lastProductCheckTime = 0f;
+            
             while (shoppedTime < shoppingTime)
             {
                 // Occasionally move to different shelves while shopping
@@ -175,9 +202,18 @@ namespace TabletopShop
                     }
                 }
                 
+                // Try to select products at current shelf every few seconds
+                if (shoppedTime - lastProductCheckTime >= 3f)
+                {
+                    TrySelectProductsAtCurrentShelf();
+                    lastProductCheckTime = shoppedTime;
+                }
+                
                 yield return new WaitForSeconds(1f);
                 shoppedTime += 1f;
             }
+            
+            Debug.Log($"CustomerBehavior {name} finished shopping. Selected {selectedProducts.Count} products totaling ${totalPurchaseAmount:F2}");
         }
         
         /// <summary>
@@ -197,10 +233,34 @@ namespace TabletopShop
                     yield return new WaitForSeconds(0.5f);
                 }
                 
-                // Simulate purchase time
-                float purchaseTime = UnityEngine.Random.Range(3f, 8f);
-                Debug.Log($"CustomerBehavior {name} making purchase (taking {purchaseTime:F1}s)");
-                yield return new WaitForSeconds(purchaseTime);
+                // Process actual purchase through GameManager
+                if (selectedProducts.Count > 0 && totalPurchaseAmount > 0)
+                {
+                    float purchaseTime = UnityEngine.Random.Range(3f, 8f);
+                    Debug.Log($"CustomerBehavior {name} making purchase (taking {purchaseTime:F1}s) - ${totalPurchaseAmount:F2} for {selectedProducts.Count} items");
+                    yield return new WaitForSeconds(purchaseTime);
+                    
+                    // Calculate customer satisfaction based on experience
+                    float customerSatisfaction = CalculateCustomerSatisfaction();
+                    
+                    // Process purchase through GameManager
+                    GameManager.Instance.ProcessCustomerPurchase(totalPurchaseAmount, customerSatisfaction);
+                    
+                    // Mark purchased products as bought
+                    foreach (Product product in selectedProducts)
+                    {
+                        if (product != null)
+                        {
+                            product.Purchase();
+                        }
+                    }
+                    
+                    Debug.Log($"CustomerBehavior {name} completed purchase of ${totalPurchaseAmount:F2} with satisfaction {customerSatisfaction:F2}");
+                }
+                else
+                {
+                    Debug.Log($"CustomerBehavior {name} left without purchasing anything");
+                }
             }
         }
         
@@ -304,6 +364,81 @@ namespace TabletopShop
                 // - Putting items back
                 // - Making decisions based on preferences
             }
+        }
+        
+        /// <summary>
+        /// Try to select products at the current target shelf
+        /// </summary>
+        private void TrySelectProductsAtCurrentShelf()
+        {
+            if (targetShelf == null) return;
+            
+            // Check if the target shelf has any products
+            if (!targetShelf.IsEmpty && targetShelf.CurrentProduct != null)
+            {
+                Product availableProduct = targetShelf.CurrentProduct;
+                
+                // Check if customer can afford and wants this product
+                if (CanAffordProduct(availableProduct) && WantsProduct(availableProduct))
+                {
+                    selectedProducts.Add(availableProduct);
+                    totalPurchaseAmount += availableProduct.CurrentPrice;
+                    
+                    Debug.Log($"CustomerBehavior {name} selected {availableProduct.ProductData?.ProductName ?? "Product"} for ${availableProduct.CurrentPrice}");
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Check if customer can afford a product
+        /// </summary>
+        /// <param name="product">Product to check</param>
+        /// <returns>True if customer can afford the product</returns>
+        private bool CanAffordProduct(Product product)
+        {
+            if (product == null) return false;
+            
+            float remainingBudget = baseSpendingPower - totalPurchaseAmount;
+            return product.CurrentPrice <= remainingBudget;
+        }
+        
+        /// <summary>
+        /// Check if customer wants a specific product (based on purchase probability and preferences)
+        /// </summary>
+        /// <param name="product">Product to check</param>
+        /// <returns>True if customer wants the product</returns>
+        private bool WantsProduct(Product product)
+        {
+            if (product == null || product.IsPurchased || !product.IsOnShelf) return false;
+            
+            // Base probability of wanting any product
+            return UnityEngine.Random.value <= purchaseProbability;
+        }
+        
+        /// <summary>
+        /// Calculate customer satisfaction based on their shopping experience
+        /// </summary>
+        /// <returns>Satisfaction value between 0 and 1</returns>
+        private float CalculateCustomerSatisfaction()
+        {
+            float baseSatisfaction = 0.7f; // Default satisfaction
+            
+            // Boost satisfaction if customer found products they wanted
+            if (selectedProducts.Count > 0)
+            {
+                baseSatisfaction += 0.2f;
+            }
+            
+            // Boost satisfaction if they didn't overspend
+            if (totalPurchaseAmount <= baseSpendingPower * 0.8f)
+            {
+                baseSatisfaction += 0.1f;
+            }
+            
+            // Add some randomness for personality variation
+            baseSatisfaction += UnityEngine.Random.Range(-0.1f, 0.1f);
+            
+            return Mathf.Clamp01(baseSatisfaction);
         }
         
         /// <summary>

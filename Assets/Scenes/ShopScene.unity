@@ -1304,6 +1304,75 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1092444379}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &962909632
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 962909633}
+  - component: {fileID: 962909634}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &962909633
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 962909632}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -2.49934, y: -0.16689, z: 0.6757901}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 970041456}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &962909634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 962909632}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 108c059d94bd443b196bf5e261011fbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.GameManager
+  startingMoney: 1000
+  dailyRent: 100
+  dailyUtilities: 50
+  enableEconomyValidation: 1
+  dayLengthInMinutes: 10
+  nightLengthInMinutes: 2
+  autoStartCycle: 1
+  maxDailyCustomers: 50
+  customerSpawnInterval: 5
+  baseCustomerSpendingPower: 100
+  customerSatisfactionMultiplier: 1
+  reputationDecayRate: 0.1
+  trackDailyMetrics: 1
+  onMoneyChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onDayChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onDayNightCycleChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onReputationChanged:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &970041455
 GameObject:
   m_ObjectHideFlags: 0
@@ -1334,6 +1403,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 590490616}
+  - {fileID: 962909633}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1054866598
@@ -2273,6 +2343,7 @@ GameObject:
   - component: {fileID: 1408606860}
   - component: {fileID: 1408606862}
   - component: {fileID: 1408606861}
+  - component: {fileID: 1408606863}
   m_Layer: 0
   m_Name: Player Camera
   m_TagString: Untagged
@@ -2390,6 +2461,18 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &1408606863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1408606859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 645ad3577f80d4ebcb4f9608965dc58d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FPSDisplay
 --- !u!1 &1496188319 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}

@@ -15,7 +15,9 @@ GameObject:
   - component: {fileID: 7865922934494475672}
   - component: {fileID: 5296130529775062928}
   - component: {fileID: 4048555501833892271}
-  - component: {fileID: 7502348738575602801}
+  - component: {fileID: 3706478564367830450}
+  - component: {fileID: 2883096600107730558}
+  - component: {fileID: 1743512066011946273}
   m_Layer: 0
   m_Name: Customer
   m_TagString: Customer
@@ -184,24 +186,53 @@ MonoBehaviour:
   targetShelf: {fileID: 0}
   movementSpeed: 1.5
   stoppingDistance: 1
-  stuckDetectionTime: 5
-  stuckDistanceThreshold: 0.5
-  destinationReachedDistance: 2
-  maxPathfindingRetries: 3
-  pathfindingRetryDelay: 1
---- !u!114 &7502348738575602801
+--- !u!114 &3706478564367830450
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3168686079647345549}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dd76b8ee2dbcf4be6998e917c65cd6ed, type: 3}
+  m_Script: {fileID: 11500000, guid: c98f439d8b77f4ba18e8c3fef23bc07e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Unity.AI.Navigation.Samples::Unity.AI.Navigation.Samples.RandomWalk
-  m_Range: 25
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.CustomerMovement
+  movementSpeed: 1.5
+  stoppingDistance: 1
+  stuckDetectionTime: 5
+  stuckDistanceThreshold: 0.5
+  destinationReachedDistance: 1.5
+  maxPathfindingRetries: 3
+  pathfindingRetryDelay: 1
+--- !u!114 &2883096600107730558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3168686079647345549}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8298f83ad56a480fac7f1df9a9e833e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.CustomerBehavior
+  shoppingTime: 0
+  targetShelf: {fileID: 0}
+  baseSpendingPower: 100
+  purchaseProbability: 0.8
+--- !u!114 &1743512066011946273
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3168686079647345549}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91ed294ffe8554576bcdd8242b2518f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.CustomerVisuals
 --- !u!1 &8490851179056470389
 GameObject:
   m_ObjectHideFlags: 0
