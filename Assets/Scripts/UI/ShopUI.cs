@@ -61,6 +61,28 @@ namespace TabletopShop
         /// </summary>
         private Canvas canvasComponent;
         
+        /// <summary>
+        /// Reference to InventoryUI for inventory panel toggle functionality.
+        /// Cached for efficient access without repeated lookups.
+        /// </summary>
+        private InventoryUI inventoryUI;
+        
+        /// <summary>
+        /// Current pause state of the game.
+        /// Used to track whether the game is paused for visual feedback and state management.
+        /// </summary>
+        private bool isGamePaused = false;
+        
+        /// <summary>
+        /// Original text for the pause button when the game is not paused.
+        /// </summary>
+        private const string PAUSE_TEXT = "Pause";
+        
+        /// <summary>
+        /// Text for the pause button when the game is paused.
+        /// </summary>
+        private const string RESUME_TEXT = "Resume";
+        
         #endregion
         
         #region Unity Lifecycle Methods
@@ -102,6 +124,9 @@ namespace TabletopShop
             // Initialize UI panels to default state (hidden for now)
             InitializeUIState();
             
+            // Setup button event handlers
+            SetupButtonEventHandlers();
+            
             Debug.Log("[ShopUI] Start initialization complete - ready for functionality implementation");
         }
         
@@ -133,15 +158,22 @@ namespace TabletopShop
         /// Clean up any subscriptions or connections when component is destroyed.
         /// Following existing UI pattern for proper cleanup and memory management.
         /// 
-        /// Future sub-tasks will add:
-        /// - GameManager event unsubscription
-        /// - Button event cleanup
-        /// - Any other resource cleanup
+        /// Cleanup includes:
+        /// - Button event handler removal
+        /// - Time.timeScale restoration
+        /// - Future: GameManager event unsubscription
         /// </summary>
         private void OnDestroy()
         {
-            // Placeholder for future cleanup implementation
-            // Event unsubscriptions will be added in future sub-tasks
+            // Clean up button event handlers to prevent memory leaks
+            CleanupButtonEventHandlers();
+            
+            // Restore normal time scale if game was paused
+            if (isGamePaused)
+            {
+                Time.timeScale = 1f;
+                Debug.Log("[ShopUI] Restored Time.timeScale to 1 on component destroy");
+            }
             
             Debug.Log("[ShopUI] Component destroyed - cleanup complete");
         }
@@ -287,7 +319,64 @@ namespace TabletopShop
                 timeDisplay.text = "Day 1 - 09:00";
             }
             
+            // Initialize pause button text
+            if (pauseButton != null)
+            {
+                var buttonText = pauseButton.GetComponentInChildren<TextMeshProUGUI>();
+                if (buttonText != null)
+                {
+                    buttonText.text = PAUSE_TEXT;
+                }
+            }
+            
             Debug.Log("[ShopUI] UI state initialized to default values");
+        }
+        
+        /// <summary>
+        /// Setup button event handlers for all interactive UI elements.
+        /// Connects button onClick events to their respective handler methods.
+        /// </summary>
+        private void SetupButtonEventHandlers()
+        {
+            // Find InventoryUI reference for inventory toggle functionality
+            inventoryUI = FindFirstObjectByType<InventoryUI>();
+            if (inventoryUI == null)
+            {
+                Debug.LogWarning("[ShopUI] InventoryUI not found in scene. Inventory toggle button will be disabled.");
+            }
+            
+            // Setup End Day button
+            if (endDayButton != null)
+            {
+                endDayButton.onClick.AddListener(OnEndDayButtonClicked);
+                Debug.Log("[ShopUI] End Day button event handler added");
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] End Day button reference is null - button functionality unavailable");
+            }
+            
+            // Setup Pause button
+            if (pauseButton != null)
+            {
+                pauseButton.onClick.AddListener(OnPauseButtonClicked);
+                Debug.Log("[ShopUI] Pause button event handler added");
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] Pause button reference is null - button functionality unavailable");
+            }
+            
+            // Setup Inventory Toggle button
+            if (inventoryToggleButton != null)
+            {
+                inventoryToggleButton.onClick.AddListener(OnInventoryToggleButtonClicked);
+                Debug.Log("[ShopUI] Inventory toggle button event handler added");
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] Inventory toggle button reference is null - button functionality unavailable");
+            }
         }
         
         #endregion
@@ -562,6 +651,159 @@ namespace TabletopShop
         /// </summary>
         public bool HasValidReferences => 
             moneyDisplay != null && salesDisplay != null && timeDisplay != null;
+        
+        #endregion
+        
+        #region Button Event Handlers
+        
+        /// <summary>
+        /// Handle end day button click - triggers GameManager to force advance to next day.
+        /// 
+        /// End Day Button Logic:
+        /// - Calls GameManager.ForceNextDay() to advance the game state
+        /// - Provides immediate feedback to player
+        /// - No confirmation dialog for MVP - direct action
+        /// 
+        /// Future enhancements could include:
+        /// - Confirmation dialog showing daily stats
+        /// - Summary of earnings and expenses
+        /// - Preview of next day objectives
+        /// </summary>
+        private void OnEndDayButtonClicked()
+        {
+            if (gameManager != null)
+            {
+                // Use ForceNextDay() which is the public method available
+                gameManager.ForceNextDay();
+                Debug.Log("[ShopUI] End day button clicked - forced next day in GameManager");
+            }
+            else
+            {
+                Debug.LogError("[ShopUI] GameManager is not available! Cannot end day.");
+            }
+        }
+        
+        /// <summary>
+        /// Handle pause button click - toggles game pause state using Time.timeScale.
+        /// 
+        /// Pause Button Logic:
+        /// - Toggles isGamePaused flag
+        /// - Updates button text to reflect current state
+        /// - Uses Time.timeScale to pause/resume all time-based systems
+        /// 
+        /// Visual Feedback:
+        /// - Changes button text between "Pause" and "Resume"
+        /// - Indicates current game state to the player
+        /// 
+        /// Time.timeScale Implementation:
+        /// - timeScale = 0: Pauses all time-based updates (physics, animations, etc.)
+        /// - timeScale = 1: Normal game speed
+        /// - Affects all Unity systems that use Time.deltaTime
+        /// </summary>
+        private void OnPauseButtonClicked()
+        {
+            if (pauseButton == null) return;
+            
+            // Toggle pause state
+            isGamePaused = !isGamePaused;
+            
+            // Update Time.timeScale to pause/resume the game
+            if (isGamePaused)
+            {
+                Time.timeScale = 0f; // Pause all time-based systems
+                UpdatePauseButtonText(RESUME_TEXT);
+                Debug.Log("[ShopUI] Game paused (Time.timeScale = 0)");
+            }
+            else
+            {
+                Time.timeScale = 1f; // Resume normal time
+                UpdatePauseButtonText(PAUSE_TEXT);
+                Debug.Log("[ShopUI] Game resumed (Time.timeScale = 1)");
+            }
+        }
+        
+        /// <summary>
+        /// Handle inventory toggle button click - toggles inventory panel visibility.
+        /// 
+        /// Inventory Toggle Logic:
+        /// - Calls InventoryUI.TogglePanel() to show/hide inventory
+        /// - Provides null-safe access to InventoryUI component
+        /// - Logs appropriate messages for debugging
+        /// 
+        /// Integration Notes:
+        /// - Uses existing InventoryUI.TogglePanel() method
+        /// - Maintains separation of concerns between UI systems
+        /// - No direct manipulation of inventory UI state
+        /// </summary>
+        private void OnInventoryToggleButtonClicked()
+        {
+            if (inventoryUI != null)
+            {
+                inventoryUI.TogglePanel();
+                Debug.Log("[ShopUI] Inventory toggle button clicked - toggled inventory panel");
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] InventoryUI reference is null! Cannot toggle inventory panel. " +
+                               "Ensure InventoryUI component exists in the scene.");
+            }
+        }
+        
+        /// <summary>
+        /// Update pause button text with null-safe TextMeshPro access.
+        /// 
+        /// Button Text Update Pattern:
+        /// - Finds TextMeshProUGUI component in button's children
+        /// - Updates text with appropriate pause/resume label
+        /// - Provides error logging if text component not found
+        /// 
+        /// UI Hierarchy Assumption:
+        /// - Button GameObject contains child with TextMeshProUGUI component
+        /// - Standard Unity button setup with text label
+        /// </summary>
+        /// <param name="newText">The text to display on the pause button</param>
+        private void UpdatePauseButtonText(string newText)
+        {
+            if (pauseButton == null) return;
+            
+            var buttonText = pauseButton.GetComponentInChildren<TextMeshProUGUI>();
+            if (buttonText != null)
+            {
+                buttonText.text = newText;
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] Pause button does not have a TextMeshProUGUI component in children. " +
+                               "Cannot update button text.");
+            }
+        }
+        
+        /// <summary>
+        /// Clean up button event handlers to prevent memory leaks.
+        /// Removes all onClick listeners that were added during initialization.
+        /// </summary>
+        private void CleanupButtonEventHandlers()
+        {
+            // Remove End Day button event handler
+            if (endDayButton != null)
+            {
+                endDayButton.onClick.RemoveListener(OnEndDayButtonClicked);
+            }
+            
+            // Remove Pause button event handler
+            if (pauseButton != null)
+            {
+                pauseButton.onClick.RemoveListener(OnPauseButtonClicked);
+            }
+            
+            // Remove Inventory Toggle button event handler
+            if (inventoryToggleButton != null)
+            {
+                inventoryToggleButton.onClick.RemoveListener(OnInventoryToggleButtonClicked);
+            }
+            
+            Debug.Log("[ShopUI] Button event handlers cleaned up");
+        }
         
         #endregion
     }
