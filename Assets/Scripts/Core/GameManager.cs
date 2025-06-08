@@ -354,6 +354,9 @@ namespace TabletopShop
             // Add money from purchase
             AddMoney(purchaseAmount, "Customer Purchase");
             
+            // Play purchase success audio
+            AudioManager.Instance.PlayPurchaseSuccess();
+            
             // Update customer metrics
             customersServedToday++;
             Debug.Log($"INCREMENTED customersServedToday to: {customersServedToday}");

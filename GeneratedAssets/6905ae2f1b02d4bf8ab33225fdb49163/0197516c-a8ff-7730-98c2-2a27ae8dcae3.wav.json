@@ -1,0 +1,12 @@
+{
+    "asset": "6905ae2f1b02d4bf8ab33225fdb49163",
+    "fileName": "0197516c-a8ff-7730-98c2-2a27ae8dcae3.wav",
+    "prompt": "Create a 1-2 second purchase success sound. Pleasant \"cha-ching\" or coin drop with slight magical sparkle. Positive, rewarding tone for cozy shop game. Satisfying but not overwhelming.\n",
+    "negativePrompt": "",
+    "model": "0ee39b33-2893-4e0f-8c46-0e0bdd4eda85",
+    "customSeed": -1,
+    "w3CTraceId": "fdee0f5945ca396fe156c15e1fc0bc75",
+    "duration": 10.0,
+    "autoTrim": false,
+    "hasReference": false
+}

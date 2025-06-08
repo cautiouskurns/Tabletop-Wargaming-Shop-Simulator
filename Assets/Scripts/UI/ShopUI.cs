@@ -39,6 +39,9 @@ namespace TabletopShop
         [Tooltip("Button to toggle inventory panel visibility")]
         [SerializeField] private Button inventoryToggleButton;
         
+        [Tooltip("Button to open settings/options panel")]
+        [SerializeField] private Button settingsButton;
+        
         [Header("Panel References")]
         [Tooltip("Panel containing daily summary information and statistics")]
         [SerializeField] private GameObject dailySummaryPanel;
@@ -102,6 +105,12 @@ namespace TabletopShop
         /// Cached for efficient access without repeated lookups.
         /// </summary>
         private InventoryUI inventoryUI;
+        
+        /// <summary>
+        /// Reference to SettingsUI for settings panel management.
+        /// Cached for efficient access to audio and game settings.
+        /// </summary>
+        private SettingsUI settingsUI;
         
         /// <summary>
         /// Current pause state of the game.
@@ -174,6 +183,9 @@ namespace TabletopShop
         {
             // Attempt to establish GameManager connection
             InitializeGameManagerConnection();
+            
+            // Initialize component references
+            InitializeComponentReferences();
             
             // Initialize UI panels to default state (hidden for now)
             InitializeUIState();
@@ -421,6 +433,41 @@ namespace TabletopShop
         }
         
         /// <summary>
+        /// Initialize references to other UI components in the scene.
+        /// Caches references to avoid repeated FindObjectOfType calls.
+        /// </summary>
+        private void InitializeComponentReferences()
+        {
+            // Cache InventoryUI reference for inventory toggle functionality
+            if (inventoryUI == null)
+            {
+                inventoryUI = FindFirstObjectByType<InventoryUI>();
+                if (inventoryUI == null)
+                {
+                    Debug.LogWarning("[ShopUI] InventoryUI component not found in scene. Inventory toggle will not function.");
+                }
+                else
+                {
+                    Debug.Log("[ShopUI] InventoryUI reference cached successfully");
+                }
+            }
+            
+            // Cache SettingsUI reference for settings panel management
+            if (settingsUI == null)
+            {
+                settingsUI = FindFirstObjectByType<SettingsUI>();
+                if (settingsUI == null)
+                {
+                    Debug.LogWarning("[ShopUI] SettingsUI component not found in scene. Settings button will not function.");
+                }
+                else
+                {
+                    Debug.Log("[ShopUI] SettingsUI reference cached successfully");
+                }
+            }
+        }
+        
+        /// <summary>
         /// Initialize UI panels and elements to their default state.
         /// Prepares UI for event-driven updates from GameManager in future sub-tasks.
         /// </summary>
@@ -510,6 +557,17 @@ namespace TabletopShop
             else
             {
                 Debug.LogWarning("[ShopUI] Inventory toggle button reference is null - button functionality unavailable");
+            }
+            
+            // Setup Settings button
+            if (settingsButton != null)
+            {
+                settingsButton.onClick.AddListener(OnSettingsButtonClicked);
+                Debug.Log("[ShopUI] Settings button event handler added");
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] Settings button reference is null - button functionality unavailable");
             }
             
             // Setup Daily Summary Continue button
@@ -1029,6 +1087,9 @@ namespace TabletopShop
         /// </summary>
         private void OnEndDayButtonClicked()
         {
+            // Play UI click sound
+            AudioManager.Instance.PlayUIClick();
+            
             if (gameManager != null)
             {
                 ShowDailySummary();
@@ -1059,6 +1120,9 @@ namespace TabletopShop
         /// </summary>
         private void OnPauseButtonClicked()
         {
+            // Play UI click sound
+            AudioManager.Instance.PlayUIClick();
+            
             if (pauseButton == null) return;
             
             // Toggle pause state
@@ -1094,6 +1158,9 @@ namespace TabletopShop
         /// </summary>
         private void OnInventoryToggleButtonClicked()
         {
+            // Play UI click sound
+            AudioManager.Instance.PlayUIClick();
+            
             if (inventoryUI != null)
             {
                 inventoryUI.TogglePanel();
@@ -1103,6 +1170,36 @@ namespace TabletopShop
             {
                 Debug.LogWarning("[ShopUI] InventoryUI reference is null! Cannot toggle inventory panel. " +
                                "Ensure InventoryUI component exists in the scene.");
+            }
+        }
+        
+        /// <summary>
+        /// Handle settings button click - toggles settings panel visibility.
+        /// 
+        /// Settings Toggle Logic:
+        /// - Calls SettingsUI.ToggleSettings() to show/hide settings
+        /// - Provides null-safe access to SettingsUI component
+        /// - Logs appropriate messages for debugging
+        /// 
+        /// Integration Notes:
+        /// - Uses existing SettingsUI.ToggleSettings() method
+        /// - Maintains separation of concerns between UI systems
+        /// - No direct manipulation of settings UI state
+        /// </summary>
+        private void OnSettingsButtonClicked()
+        {
+            // Play UI click sound
+            AudioManager.Instance.PlayUIClick();
+            
+            if (settingsUI != null)
+            {
+                settingsUI.ToggleSettings();
+                Debug.Log("[ShopUI] Settings button clicked - toggled settings panel");
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] SettingsUI reference is null! Cannot toggle settings panel. " +
+                               "Ensure SettingsUI component exists in the scene.");
             }
         }
         
@@ -1157,6 +1254,12 @@ namespace TabletopShop
             if (inventoryToggleButton != null)
             {
                 inventoryToggleButton.onClick.RemoveListener(OnInventoryToggleButtonClicked);
+            }
+            
+            // Remove Settings button event handler
+            if (settingsButton != null)
+            {
+                settingsButton.onClick.RemoveListener(OnSettingsButtonClicked);
             }
             
             // Remove Daily Summary Continue button event handler
@@ -1297,6 +1400,9 @@ namespace TabletopShop
         /// </summary>
         private void OnConfirmPriceButtonClicked()
         {
+            // Play UI click sound
+            AudioManager.Instance.PlayUIClick();
+            
             if (currentPricingProduct == null)
             {
                 Debug.LogError("[ShopUI] Cannot confirm price - no product selected!");
@@ -1361,6 +1467,9 @@ namespace TabletopShop
         /// </summary>
         private void OnCancelPriceButtonClicked()
         {
+            // Play UI click sound
+            AudioManager.Instance.PlayUIClick();
+            
             Debug.Log("[ShopUI] Price setting cancelled by user");
             HidePriceSetting();
         }
@@ -1523,6 +1632,9 @@ namespace TabletopShop
         /// </summary>
         private void OnDailySummaryContinueButtonClicked()
         {
+            // Play UI click sound
+            AudioManager.Instance.PlayUIClick();
+            
             HideDailySummary();
             Debug.Log("[ShopUI] Daily summary continue button clicked - proceeding to next day");
         }

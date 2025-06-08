@@ -555,6 +555,67 @@ Transform:
   - {fileID: 1054866599}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &227574062
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 227574063}
+  - component: {fileID: 227574064}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &227574063
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 227574062}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -1.2717402, y: -0.16689, z: -1.37847}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 970041456}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &227574064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 227574062}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae315dd7f32614ac483e39585c684bbe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.AudioManager
+  masterVolume: 1
+  sfxVolume: 1
+  uiVolume: 1
+  ambientVolume: 0.6
+  purchaseSuccessClip: {fileID: 8300000, guid: 7dda0538d2f6143dabb041d696522296, type: 3}
+  uiClickClip: {fileID: 8300000, guid: 218c3513a4464462a8b1181382917aed, type: 3}
+  shopAtmosphereClip: {fileID: 8300000, guid: 818d5b418d4ce4f47a79db456b39ef6b, type: 3}
+  ambientSource: {fileID: 0}
+  uiSource: {fileID: 0}
+  sfxPoolSize: 10
+  autoStartAmbient: 1
+  restartAmbientOnSceneLoad: 1
+  ambientStartDelay: 0
+  useRandomAmbientTriggers: 1
+  minTimeBetweenAmbient: 3
+  maxTimeBetweenAmbient: 10
+  ambientPlayDuration: 3
 --- !u!1 &233411256
 GameObject:
   m_ObjectHideFlags: 0
@@ -3251,6 +3312,7 @@ Transform:
   m_Children:
   - {fileID: 590490616}
   - {fileID: 962909633}
+  - {fileID: 227574063}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1047240624
@@ -4579,6 +4641,7 @@ MonoBehaviour:
   endDayButton: {fileID: 1771355785}
   pauseButton: {fileID: 1627449170}
   inventoryToggleButton: {fileID: 269696792}
+  settingsButton: {fileID: 0}
   dailySummaryPanel: {fileID: 1569155969}
   priceSettingPanel: {fileID: 1518744964}
   dailySummaryRevenueText: {fileID: 621557275}
@@ -7789,55 +7852,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 937171243}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2096654043
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2096654045}
-  - component: {fileID: 2096654044}
-  m_Layer: 0
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &2096654044
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2096654043}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 07159fb96cac346c9bf04fce217f52b8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.CustomerPurchaseIntegrationTest
-  runTestOnStart: 0
-  enableDebugLogs: 1
-  testCustomer: {fileID: 0}
-  testShelves: []
-  testProducts: []
---- !u!4 &2096654045
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2096654043}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.40066, y: -0, z: 2.93089}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2100442128
 GameObject:
   m_ObjectHideFlags: 0
@@ -8050,7 +8064,6 @@ SceneRoots:
   - {fileID: 682135406}
   - {fileID: 274469690}
   - {fileID: 1162074222}
-  - {fileID: 2096654045}
   - {fileID: 1988005990}
   - {fileID: 1047240625}
   - {fileID: 624411025}

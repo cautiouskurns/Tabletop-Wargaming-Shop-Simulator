@@ -1,0 +1,12 @@
+{
+    "asset": "eadcc0120712447968a3cad7ba8dd735",
+    "fileName": "01975171-c984-7aae-ac76-89f02a8ae4a2.wav",
+    "prompt": "Background conversation in a shop\n",
+    "negativePrompt": "",
+    "model": "0ee39b33-2893-4e0f-8c46-0e0bdd4eda85",
+    "customSeed": -1,
+    "w3CTraceId": "3a2734d942393fcf7f694814b1f65204",
+    "duration": 10.0,
+    "autoTrim": false,
+    "hasReference": false
+}

@@ -186,6 +186,9 @@ namespace TabletopShop
         /// </summary>
         public void OnProductButtonClick(int buttonIndex)
         {
+            // Play UI click sound
+            AudioManager.Instance.PlayUIClick();
+            
             // Map button index to ProductType
             ProductType[] productTypes = { ProductType.MiniatureBox, ProductType.PaintPot, ProductType.Rulebook };
             
