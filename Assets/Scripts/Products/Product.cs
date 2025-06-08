@@ -201,7 +201,7 @@ namespace TabletopShop
         #region Mouse Interactions
         
         /// <summary>
-        /// Handle mouse click on product
+        /// Handle mouse click on product (only triggered by left-click)
         /// </summary>
         private void OnMouseDown()
         {
@@ -217,32 +217,36 @@ namespace TabletopShop
                 return;
             }
             
+            // Handle left-click for purchase (existing behavior)
+            Debug.Log($"Customer clicked on {productData?.ProductName ?? name} (${currentPrice})");
+            
+            // Use the same economic validation as player interactions for consistency
+            bool canProcessTransaction = ValidateEconomicTransaction();
+            
+            if (canProcessTransaction)
+            {
+                ProcessPlayerPurchase();
+            }
+            else
+            {
+                // Fallback for mouse clicks - still allow purchase
+                Purchase();
+            }
+        }
+        
+        /// <summary>
+        /// Handle mouse input while over the product (for right-click detection)
+        /// </summary>
+        private void OnMouseOver()
+        {
+            if (isPurchased || !isOnShelf)
+                return;
+                
             // Check for right-click to open price setting popup
-            if (Input.GetMouseButtonDown(1)) // Right mouse button
+            if (Input.GetMouseButtonDown(1)) // Right mouse button pressed down
             {
                 Debug.Log($"Right-clicked on {productData?.ProductName ?? name} - opening price setting");
                 OpenPriceSettingPopup();
-                return;
-            }
-            
-            // Handle left-click for purchase (existing behavior)
-            if (Input.GetMouseButtonDown(0)) // Left mouse button
-            {
-                // Simulate customer purchase with economic validation
-                Debug.Log($"Customer clicked on {productData?.ProductName ?? name} (${currentPrice})");
-                
-                // Use the same economic validation as player interactions for consistency
-                bool canProcessTransaction = ValidateEconomicTransaction();
-                
-                if (canProcessTransaction)
-                {
-                    ProcessPlayerPurchase();
-                }
-                else
-                {
-                    // Fallback for mouse clicks - still allow purchase
-                    Purchase();
-                }
             }
         }
         
