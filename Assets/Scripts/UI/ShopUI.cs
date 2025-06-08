@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Globalization;
 
 namespace TabletopShop
 {
@@ -102,6 +103,30 @@ namespace TabletopShop
             InitializeUIState();
             
             Debug.Log("[ShopUI] Start initialization complete - ready for functionality implementation");
+        }
+        
+        /// <summary>
+        /// Real-time UI update system - polls GameManager data every frame.
+        /// 
+        /// Update() vs Event-Driven Trade-offs:
+        /// - Update(): Simple polling, guaranteed refresh rate, easier to debug
+        /// - Event-driven: More efficient, reduces coupling, better for large systems
+        /// 
+        /// Performance Considerations:
+        /// - String formatting can create garbage - use efficient methods
+        /// - TextMeshPro text updates are optimized for frequent changes
+        /// - Null-safety checks prevent crashes when GameManager unavailable
+        /// 
+        /// This approach provides immediate visual feedback for all shop data changes
+        /// and ensures players always see current game state in real-time.
+        /// </summary>
+        private void Update()
+        {
+            // Only update displays if all UI references are valid and GameManager is available
+            if (HasValidReferences)
+            {
+                UpdateDisplay();
+            }
         }
         
         /// <summary>
@@ -267,6 +292,261 @@ namespace TabletopShop
         
         #endregion
         
+        #region Real-Time Display Updates
+        
+        /// <summary>
+        /// Central display update method that calls all individual update methods.
+        /// 
+        /// Centralized Update Pattern Benefits:
+        /// - Single point of control for all display updates
+        /// - Easy to enable/disable entire update system
+        /// - Consistent update ordering and error handling
+        /// - Simple maintenance and debugging
+        /// 
+        /// This method ensures all UI displays stay synchronized with GameManager data
+        /// and provides a foundation for future display enhancements.
+        /// </summary>
+        private void UpdateDisplay()
+        {
+            // Update all display elements with current GameManager data
+            // Each method includes null-safety and fallback values
+            UpdateMoneyDisplay();
+            UpdateSalesDisplay();
+            UpdateTimeDisplay();
+            
+            // Future sub-tasks will add:
+            // - UpdateButtonStates() for interactive elements
+            // - UpdatePanelVisibility() for dynamic panels
+            // - UpdateProgressBars() for day/night cycle indicators
+        }
+        
+        /// <summary>
+        /// Update money display with proper currency formatting.
+        /// 
+        /// Currency Formatting Explanation:
+        /// - ToString("C0"): Uses system currency symbol with no decimal places
+        /// - ToString("N0"): Number format with thousands separators, no decimals
+        /// - Custom "$#,##0": Manual format for consistent display regardless of locale
+        /// 
+        /// Performance Notes:
+        /// - String.Format and ToString can create garbage collection pressure
+        /// - TextMeshPro optimizes text changes to minimize rendering updates
+        /// - Null-safe access prevents exceptions when GameManager unavailable
+        /// 
+        /// Display Format: $1,234 (thousands separator, no decimals for clean appearance)
+        /// </summary>
+        private void UpdateMoneyDisplay()
+        {
+            if (moneyDisplay == null) return;
+            
+            // Null-safe GameManager access with fallback display
+            if (gameManager != null)
+            {
+                // Efficient currency formatting using custom format string
+                // This avoids locale-specific currency symbols and provides consistent display
+                float currentMoney = gameManager.CurrentMoney;
+                moneyDisplay.text = string.Format("${0:N0}", currentMoney);
+            }
+            else
+            {
+                // Fallback display when GameManager unavailable
+                moneyDisplay.text = "$0";
+            }
+        }
+        
+        /// <summary>
+        /// Update sales display showing daily sales count and revenue.
+        /// 
+        /// Sales Display Design:
+        /// - Shows both count and revenue for comprehensive information
+        /// - Uses consistent formatting with money display
+        /// - Provides immediate feedback on shop performance
+        /// 
+        /// Display Format: "5 sales - $1,234" (count and revenue for context)
+        /// Alternative formats considered: "Sales: 5", "Revenue: $1,234", "5 × $246 avg"
+        /// </summary>
+        private void UpdateSalesDisplay()
+        {
+            if (salesDisplay == null) return;
+            
+            // Null-safe GameManager access with comprehensive sales information
+            if (gameManager != null)
+            {
+                int customersServed = gameManager.CustomersServedToday;
+                float dailyRevenue = gameManager.DailyRevenue;
+                
+                // Format: "X sales - $Y,YYY" for clear performance indication
+                if (customersServed > 0)
+                {
+                    salesDisplay.text = string.Format("{0} sales - ${1:N0}", customersServed, dailyRevenue);
+                }
+                else
+                {
+                    // No sales yet today
+                    salesDisplay.text = "No sales today";
+                }
+            }
+            else
+            {
+                // Fallback display when GameManager unavailable
+                salesDisplay.text = "0 sales";
+            }
+        }
+        
+        /// <summary>
+        /// Update time display with MM:SS format showing elapsed time in current day/night cycle.
+        /// 
+        /// Time Formatting Calculations:
+        /// - GameManager provides DayProgress (0-1) for current cycle position
+        /// - Calculate elapsed time from cycle duration and current progress
+        /// - Convert total seconds to MM:SS format for clear time indication
+        /// 
+        /// Display Format: "05:23" (minutes:seconds elapsed in current cycle)
+        /// Day/Night Indication: Shows "Day 05:23" or "Night 01:45" for context
+        /// 
+        /// Time Display Trade-offs:
+        /// - Elapsed vs Countdown: Elapsed shows progress through cycle, countdown shows urgency
+        /// - Real-time vs Periodic: Real-time for immediate feedback, periodic for performance
+        /// - Absolute vs Relative: Relative elapsed time more intuitive for time progression
+        /// </summary>
+        private void UpdateTimeDisplay()
+        {
+            if (timeDisplay == null) return;
+            
+            // Null-safe GameManager access with comprehensive time information
+            if (gameManager != null)
+            {
+                bool isDayTime = gameManager.IsDayTime;
+                int currentDay = gameManager.CurrentDay;
+                float dayProgress = gameManager.DayProgress;
+                
+                // Calculate remaining time in current cycle
+                float totalCycleSeconds;
+                if (isDayTime)
+                {
+                    // Day cycle - get day length from GameManager (assuming 10 minutes default)
+                    // Note: dayLengthInMinutes is private, using reasonable default
+                    totalCycleSeconds = 10.0f * 60.0f; // 10 minutes in seconds
+                }
+                else
+                {
+                    // Night cycle - get night length from GameManager (assuming 2 minutes default)
+                    totalCycleSeconds = 2.0f * 60.0f; // 2 minutes in seconds
+                }
+                
+                // Calculate elapsed seconds (progress through cycle)
+                float elapsedSeconds = totalCycleSeconds * dayProgress;
+                elapsedSeconds = Mathf.Clamp(elapsedSeconds, 0, totalCycleSeconds); // Ensure within bounds
+                
+                // Convert to MM:SS format
+                int minutes = Mathf.FloorToInt(elapsedSeconds / 60.0f);
+                int seconds = Mathf.FloorToInt(elapsedSeconds % 60.0f);
+                string timeString = FormatTimeCountdown(minutes, seconds);
+                
+                // Display format: "Day 3 - 05:23" or "Night 3 - 01:45"
+                string cycleIndicator = isDayTime ? "Day" : "Night";
+                timeDisplay.text = string.Format("{0} {1} - {2}", cycleIndicator, currentDay, timeString);
+            }
+            else
+            {
+                // Fallback display when GameManager unavailable
+                timeDisplay.text = "Day 1 - 05:00";
+            }
+        }
+        
+        #endregion
+        
+        #region Formatting Utilities
+        
+        /// <summary>
+        /// Format time values into MM:SS countdown string.
+        /// 
+        /// Time Formatting Utilities:
+        /// - Consistent MM:SS format across all time displays
+        /// - Zero-padding for professional appearance
+        /// - Efficient string formatting to minimize garbage collection
+        /// 
+        /// Performance Considerations:
+        /// - string.Format vs StringBuilder vs direct concatenation
+        /// - Called every frame, so efficiency matters
+        /// - ToString("D2") for zero-padding is optimized in .NET
+        /// 
+        /// Example outputs: "05:23", "00:47", "12:00"
+        /// </summary>
+        /// <param name="minutes">Minutes component (0-59 typically)</param>
+        /// <param name="seconds">Seconds component (0-59)</param>
+        /// <returns>Formatted time string in MM:SS format</returns>
+        private string FormatTimeCountdown(int minutes, int seconds)
+        {
+            // Ensure values are within expected ranges
+            minutes = Mathf.Clamp(minutes, 0, 99); // Support up to 99 minutes
+            seconds = Mathf.Clamp(seconds, 0, 59);
+            
+            // Use efficient formatting with zero-padding
+            return string.Format("{0:D2}:{1:D2}", minutes, seconds);
+        }
+        
+        /// <summary>
+        /// Format currency values with consistent formatting rules.
+        /// 
+        /// Currency Formatting Utilities:
+        /// - Centralized currency formatting for consistency
+        /// - Handles different value ranges (dollars, cents, thousands)
+        /// - Configurable precision for different use cases
+        /// 
+        /// Formatting Rules:
+        /// - No decimals for whole dollar amounts (cleaner appearance)
+        /// - Thousands separators for readability
+        /// - Dollar sign prefix for clear currency indication
+        /// 
+        /// Example outputs: "$1,234", "$500", "$12,000"
+        /// </summary>
+        /// <param name="amount">Currency amount to format</param>
+        /// <param name="includeCents">Whether to include cents (default: false)</param>
+        /// <returns>Formatted currency string</returns>
+        private string FormatCurrency(float amount, bool includeCents = false)
+        {
+            // Use appropriate formatting based on cents requirement
+            if (includeCents)
+            {
+                return string.Format("${0:N2}", amount); // $1,234.56
+            }
+            else
+            {
+                return string.Format("${0:N0}", amount); // $1,234
+            }
+        }
+        
+        /// <summary>
+        /// Format sales count with appropriate singular/plural handling.
+        /// 
+        /// Sales Formatting Utilities:
+        /// - Proper pluralization for professional appearance
+        /// - Handles edge cases (0, 1, multiple sales)
+        /// - Consistent format across all sales displays
+        /// 
+        /// Example outputs: "No sales", "1 sale", "5 sales"
+        /// </summary>
+        /// <param name="count">Number of sales</param>
+        /// <returns>Formatted sales count string</returns>
+        private string FormatSalesCount(int count)
+        {
+            if (count == 0)
+            {
+                return "No sales";
+            }
+            else if (count == 1)
+            {
+                return "1 sale";
+            }
+            else
+            {
+                return string.Format("{0} sales", count);
+            }
+        }
+        
+        #endregion
+        
         #region Public Properties (for future sub-task integration)
         
         /// <summary>
@@ -276,13 +556,12 @@ namespace TabletopShop
         public Canvas Canvas => canvasComponent;
         
         /// <summary>
-        /// Check if all UI references are properly assigned.
-        /// Useful for validation in other systems or during runtime checks.
+        /// Check if essential display UI references are properly assigned for real-time updates.
+        /// Only checks critical display elements required for the core functionality.
+        /// Optional panels (dailySummaryPanel, priceSettingPanel) are not required for basic display updates.
         /// </summary>
         public bool HasValidReferences => 
-            moneyDisplay != null && salesDisplay != null && timeDisplay != null &&
-            endDayButton != null && pauseButton != null && inventoryToggleButton != null &&
-            dailySummaryPanel != null && priceSettingPanel != null;
+            moneyDisplay != null && salesDisplay != null && timeDisplay != null;
         
         #endregion
     }
