@@ -217,20 +217,32 @@ namespace TabletopShop
                 return;
             }
             
-            // Simulate customer purchase with economic validation
-            Debug.Log($"Customer clicked on {productData?.ProductName ?? name} (${currentPrice})");
-            
-            // Use the same economic validation as player interactions for consistency
-            bool canProcessTransaction = ValidateEconomicTransaction();
-            
-            if (canProcessTransaction)
+            // Check for right-click to open price setting popup
+            if (Input.GetMouseButtonDown(1)) // Right mouse button
             {
-                ProcessPlayerPurchase();
+                Debug.Log($"Right-clicked on {productData?.ProductName ?? name} - opening price setting");
+                OpenPriceSettingPopup();
+                return;
             }
-            else
+            
+            // Handle left-click for purchase (existing behavior)
+            if (Input.GetMouseButtonDown(0)) // Left mouse button
             {
-                // Fallback for mouse clicks - still allow purchase
-                Purchase();
+                // Simulate customer purchase with economic validation
+                Debug.Log($"Customer clicked on {productData?.ProductName ?? name} (${currentPrice})");
+                
+                // Use the same economic validation as player interactions for consistency
+                bool canProcessTransaction = ValidateEconomicTransaction();
+                
+                if (canProcessTransaction)
+                {
+                    ProcessPlayerPurchase();
+                }
+                else
+                {
+                    // Fallback for mouse clicks - still allow purchase
+                    Purchase();
+                }
             }
         }
         
@@ -261,6 +273,24 @@ namespace TabletopShop
                 return;
             
             RemoveHoverEffect();
+        }
+        
+        /// <summary>
+        /// Open the price setting popup for this product
+        /// </summary>
+        private void OpenPriceSettingPopup()
+        {
+            // Find the ShopUI instance in the scene
+            ShopUI shopUI = FindFirstObjectByType<ShopUI>();
+            
+            if (shopUI == null)
+            {
+                Debug.LogError("ShopUI not found in scene! Cannot open price setting popup.");
+                return;
+            }
+            
+            // Show the price setting popup for this product
+            shopUI.ShowPriceSetting(this);
         }
         
         #endregion

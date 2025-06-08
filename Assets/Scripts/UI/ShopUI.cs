@@ -64,6 +64,22 @@ namespace TabletopShop
         [Tooltip("Button to continue to next day from daily summary")]
         [SerializeField] private Button dailySummaryContinueButton;
         
+        [Header("Price Setting UI Elements")]
+        [Tooltip("Input field for entering new product price")]
+        [SerializeField] private TMP_InputField priceInputField;
+        
+        [Tooltip("Text component displaying current price in price setting panel")]
+        [SerializeField] private TextMeshProUGUI currentPriceText;
+        
+        [Tooltip("Text component displaying suggested price range")]
+        [SerializeField] private TextMeshProUGUI suggestedPriceText;
+        
+        [Tooltip("Button to confirm price change")]
+        [SerializeField] private Button confirmPriceButton;
+        
+        [Tooltip("Button to cancel price change")]
+        [SerializeField] private Button cancelPriceButton;
+        
         #endregion
         
         #region Private Fields
@@ -97,6 +113,18 @@ namespace TabletopShop
         /// Used to track whether the daily summary is currently displayed.
         /// </summary>
         private bool isDailySummaryVisible = false;
+        
+        /// <summary>
+        /// Track whether the price setting panel is currently visible.
+        /// Used to prevent multiple simultaneous price setting displays.
+        /// </summary>
+        private bool isPriceSettingVisible = false;
+        
+        /// <summary>
+        /// Reference to the product currently being price-adjusted.
+        /// Used to apply price changes to the correct product.
+        /// </summary>
+        private Product currentPricingProduct = null;
         
         /// <summary>
         /// Original text for the pause button when the game is not paused.
@@ -176,6 +204,16 @@ namespace TabletopShop
             if (HasValidReferences)
             {
                 UpdateDisplay();
+            }
+            
+            // Handle keyboard input for price setting panel
+            if (isPriceSettingVisible)
+            {
+                // Escape key to cancel price setting
+                if (Input.GetKeyDown(KeyCode.Escape))
+                {
+                    OnCancelPriceButtonClicked();
+                }
             }
         }
         
@@ -304,6 +342,37 @@ namespace TabletopShop
             if (dailySummaryContinueButton == null)
             {
                 Debug.LogError("[ShopUI] Daily summary continue Button reference is missing! Please assign in Inspector.");
+                allReferencesValid = false;
+            }
+            
+            // Validate price setting UI elements
+            if (priceInputField == null)
+            {
+                Debug.LogError("[ShopUI] Price input field TMP_InputField reference is missing! Please assign in Inspector.");
+                allReferencesValid = false;
+            }
+            
+            if (currentPriceText == null)
+            {
+                Debug.LogError("[ShopUI] Current price TextMeshProUGUI reference is missing! Please assign in Inspector.");
+                allReferencesValid = false;
+            }
+            
+            if (suggestedPriceText == null)
+            {
+                Debug.LogError("[ShopUI] Suggested price TextMeshProUGUI reference is missing! Please assign in Inspector.");
+                allReferencesValid = false;
+            }
+            
+            if (confirmPriceButton == null)
+            {
+                Debug.LogError("[ShopUI] Confirm price Button reference is missing! Please assign in Inspector.");
+                allReferencesValid = false;
+            }
+            
+            if (cancelPriceButton == null)
+            {
+                Debug.LogError("[ShopUI] Cancel price Button reference is missing! Please assign in Inspector.");
                 allReferencesValid = false;
             }
             
@@ -449,6 +518,38 @@ namespace TabletopShop
             else
             {
                 Debug.LogWarning("[ShopUI] Daily summary continue button reference is null - button functionality unavailable");
+            }
+            
+            // Setup Price Setting buttons
+            if (confirmPriceButton != null)
+            {
+                confirmPriceButton.onClick.AddListener(OnConfirmPriceButtonClicked);
+                Debug.Log("[ShopUI] Confirm price button event handler added");
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] Confirm price button reference is null - button functionality unavailable");
+            }
+            
+            if (cancelPriceButton != null)
+            {
+                cancelPriceButton.onClick.AddListener(OnCancelPriceButtonClicked);
+                Debug.Log("[ShopUI] Cancel price button event handler added");
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] Cancel price button reference is null - button functionality unavailable");
+            }
+            
+            // Setup price input field event handlers
+            if (priceInputField != null)
+            {
+                priceInputField.onEndEdit.AddListener(OnPriceInputEndEdit);
+                Debug.Log("[ShopUI] Price input field event handler added");
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] Price input field reference is null - input functionality unavailable");
             }
         }
         
@@ -883,7 +984,227 @@ namespace TabletopShop
                 dailySummaryContinueButton.onClick.RemoveListener(OnDailySummaryContinueButtonClicked);
             }
             
+            // Remove Price Setting button event handlers
+            if (confirmPriceButton != null)
+            {
+                confirmPriceButton.onClick.RemoveListener(OnConfirmPriceButtonClicked);
+            }
+            
+            if (cancelPriceButton != null)
+            {
+                cancelPriceButton.onClick.RemoveListener(OnCancelPriceButtonClicked);
+            }
+            
+            if (priceInputField != null)
+            {
+                priceInputField.onEndEdit.RemoveListener(OnPriceInputEndEdit);
+            }
+            
             Debug.Log("[ShopUI] Button event handlers cleaned up");
+        }
+        
+        #endregion
+        
+        #region Price Setting System
+        
+        /// <summary>
+        /// Show the price setting popup for a specific product.
+        /// 
+        /// Price Setting Display:
+        /// - Shows current price of the product
+        /// - Provides input field for new price entry
+        /// - Displays suggested price range based on base price
+        /// - Offers confirm/cancel options for price changes
+        /// 
+        /// UI Flow:
+        /// 1. Store reference to product being priced
+        /// 2. Populate current price and suggested range
+        /// 3. Show the price setting panel
+        /// 4. Set visibility state flag
+        /// 5. Player can enter new price and confirm/cancel
+        /// </summary>
+        /// <param name="product">The product to set price for</param>
+        public void ShowPriceSetting(Product product)
+        {
+            if (product == null)
+            {
+                Debug.LogError("[ShopUI] Cannot show price setting - product is null!");
+                return;
+            }
+            
+            if (priceSettingPanel == null)
+            {
+                Debug.LogError("[ShopUI] Cannot show price setting - priceSettingPanel is not assigned!");
+                return;
+            }
+            
+            if (isPriceSettingVisible)
+            {
+                Debug.LogWarning("[ShopUI] Price setting panel is already visible. Closing current panel first.");
+                HidePriceSetting();
+            }
+            
+            // Store reference to product being priced
+            currentPricingProduct = product;
+            
+            // Populate current price display
+            if (currentPriceText != null)
+            {
+                currentPriceText.text = $"Current Price: {FormatCurrency(product.CurrentPrice)}";
+            }
+            
+            // Calculate and display suggested price range (±20% of base price)
+            if (suggestedPriceText != null)
+            {
+                float basePrice = product.ProductData.BasePrice;
+                float minSuggested = basePrice * 0.8f;
+                float maxSuggested = basePrice * 1.2f;
+                suggestedPriceText.text = $"Suggested: {FormatCurrency(minSuggested)} - {FormatCurrency(maxSuggested)}";
+            }
+            
+            // Initialize input field with current price
+            if (priceInputField != null)
+            {
+                priceInputField.text = product.CurrentPrice.ToString("F0");
+                priceInputField.Select();
+                priceInputField.ActivateInputField();
+            }
+            
+            // Show the price setting panel
+            priceSettingPanel.SetActive(true);
+            isPriceSettingVisible = true;
+            
+            Debug.Log($"[ShopUI] Price setting displayed for product: {product.ProductData.ProductName}, " +
+                     $"Current price: {FormatCurrency(product.CurrentPrice)}");
+        }
+        
+        /// <summary>
+        /// Hide the price setting popup and clear the current product reference.
+        /// 
+        /// Cancel Flow:
+        /// 1. Hide the price setting panel
+        /// 2. Reset visibility state flag
+        /// 3. Clear product reference
+        /// 4. Provide debug feedback
+        /// </summary>
+        public void HidePriceSetting()
+        {
+            if (priceSettingPanel != null)
+            {
+                priceSettingPanel.SetActive(false);
+            }
+            
+            isPriceSettingVisible = false;
+            currentPricingProduct = null;
+            
+            Debug.Log("[ShopUI] Price setting panel hidden");
+        }
+        
+        /// <summary>
+        /// Handle confirm price button click - applies the new price to the product.
+        /// 
+        /// Confirm Price Logic:
+        /// - Validates input field contains valid positive number
+        /// - Applies new price to current product using Product.SetPrice()
+        /// - Hides price setting panel
+        /// - Provides feedback on price change success/failure
+        /// 
+        /// Price Validation:
+        /// - Must be positive number (> 0)
+        /// - Reasonable range check (prevents extreme values)
+        /// - Error handling for invalid input
+        /// </summary>
+        private void OnConfirmPriceButtonClicked()
+        {
+            if (currentPricingProduct == null)
+            {
+                Debug.LogError("[ShopUI] Cannot confirm price - no product selected!");
+                HidePriceSetting();
+                return;
+            }
+            
+            if (priceInputField == null)
+            {
+                Debug.LogError("[ShopUI] Cannot confirm price - price input field is null!");
+                return;
+            }
+            
+            // Parse the input price
+            if (float.TryParse(priceInputField.text, out float newPrice))
+            {
+                // Validate price is positive and reasonable
+                if (newPrice > 0 && newPrice <= 10000) // Max $10,000 per item
+                {
+                    // Convert to int for Product.SetPrice() method
+                    int newPriceInt = Mathf.RoundToInt(newPrice);
+                    
+                    // Apply the new price using Product.SetPrice()
+                    currentPricingProduct.SetPrice(newPriceInt);
+                    
+                    Debug.Log($"[ShopUI] Price updated for {currentPricingProduct.ProductData.ProductName}: " +
+                             $"{FormatCurrency(newPriceInt)}");
+                    
+                    // Hide the price setting panel
+                    HidePriceSetting();
+                }
+                else
+                {
+                    Debug.LogWarning($"[ShopUI] Invalid price range: {newPrice}. Price must be between $1 and $10,000.");
+                    
+                    // Reset input field to current price
+                    if (priceInputField != null)
+                    {
+                        priceInputField.text = currentPricingProduct.CurrentPrice.ToString("F0");
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[ShopUI] Invalid price input: '{priceInputField.text}'. Please enter a valid number.");
+                
+                // Reset input field to current price
+                if (priceInputField != null)
+                {
+                    priceInputField.text = currentPricingProduct.CurrentPrice.ToString("F0");
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Handle cancel price button click - closes price setting without changes.
+        /// 
+        /// Cancel Price Logic:
+        /// - Closes price setting panel without applying changes
+        /// - Clears current product reference
+        /// - Provides user feedback
+        /// </summary>
+        private void OnCancelPriceButtonClicked()
+        {
+            Debug.Log("[ShopUI] Price setting cancelled by user");
+            HidePriceSetting();
+        }
+        
+        /// <summary>
+        /// Handle price input field end edit - supports Enter key to confirm.
+        /// 
+        /// Input Field Logic:
+        /// - Enter key confirms price change (same as clicking Confirm button)
+        /// - Escape key cancels price change (same as clicking Cancel button)
+        /// - Provides keyboard shortcuts for efficient price setting
+        /// </summary>
+        /// <param name="inputText">The text entered in the input field</param>
+        private void OnPriceInputEndEdit(string inputText)
+        {
+            // Check if Enter was pressed to confirm
+            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+            {
+                OnConfirmPriceButtonClicked();
+            }
+            // Check if Escape was pressed to cancel
+            else if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                OnCancelPriceButtonClicked();
+            }
         }
         
         #endregion
