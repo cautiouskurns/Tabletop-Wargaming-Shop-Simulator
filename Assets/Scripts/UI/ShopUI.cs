@@ -45,6 +45,25 @@ namespace TabletopShop
         [Tooltip("Panel for setting product prices and price adjustments")]
         [SerializeField] private GameObject priceSettingPanel;
         
+        [Header("Daily Summary UI Elements")]
+        [Tooltip("Text component displaying daily revenue in summary")]
+        [SerializeField] private TextMeshProUGUI dailySummaryRevenueText;
+        
+        [Tooltip("Text component displaying daily expenses in summary")]
+        [SerializeField] private TextMeshProUGUI dailySummaryExpensesText;
+        
+        [Tooltip("Text component displaying daily profit in summary")]
+        [SerializeField] private TextMeshProUGUI dailySummaryProfitText;
+        
+        [Tooltip("Text component displaying customers served in summary")]
+        [SerializeField] private TextMeshProUGUI dailySummaryCustomersText;
+        
+        [Tooltip("Text component displaying the current day number in summary")]
+        [SerializeField] private TextMeshProUGUI dailySummaryDayText;
+        
+        [Tooltip("Button to continue to next day from daily summary")]
+        [SerializeField] private Button dailySummaryContinueButton;
+        
         #endregion
         
         #region Private Fields
@@ -72,6 +91,12 @@ namespace TabletopShop
         /// Used to track whether the game is paused for visual feedback and state management.
         /// </summary>
         private bool isGamePaused = false;
+        
+        /// <summary>
+        /// Current state of the daily summary panel visibility.
+        /// Used to track whether the daily summary is currently displayed.
+        /// </summary>
+        private bool isDailySummaryVisible = false;
         
         /// <summary>
         /// Original text for the pause button when the game is not paused.
@@ -245,6 +270,43 @@ namespace TabletopShop
                 allReferencesValid = false;
             }
             
+            // Validate daily summary UI elements
+            if (dailySummaryRevenueText == null)
+            {
+                Debug.LogError("[ShopUI] Daily summary revenue TextMeshProUGUI reference is missing! Please assign in Inspector.");
+                allReferencesValid = false;
+            }
+            
+            if (dailySummaryExpensesText == null)
+            {
+                Debug.LogError("[ShopUI] Daily summary expenses TextMeshProUGUI reference is missing! Please assign in Inspector.");
+                allReferencesValid = false;
+            }
+            
+            if (dailySummaryProfitText == null)
+            {
+                Debug.LogError("[ShopUI] Daily summary profit TextMeshProUGUI reference is missing! Please assign in Inspector.");
+                allReferencesValid = false;
+            }
+            
+            if (dailySummaryCustomersText == null)
+            {
+                Debug.LogError("[ShopUI] Daily summary customers TextMeshProUGUI reference is missing! Please assign in Inspector.");
+                allReferencesValid = false;
+            }
+            
+            if (dailySummaryDayText == null)
+            {
+                Debug.LogError("[ShopUI] Daily summary day TextMeshProUGUI reference is missing! Please assign in Inspector.");
+                allReferencesValid = false;
+            }
+            
+            if (dailySummaryContinueButton == null)
+            {
+                Debug.LogError("[ShopUI] Daily summary continue Button reference is missing! Please assign in Inspector.");
+                allReferencesValid = false;
+            }
+            
             if (allReferencesValid)
             {
                 Debug.Log("[ShopUI] All UI references validated successfully");
@@ -376,6 +438,17 @@ namespace TabletopShop
             else
             {
                 Debug.LogWarning("[ShopUI] Inventory toggle button reference is null - button functionality unavailable");
+            }
+            
+            // Setup Daily Summary Continue button
+            if (dailySummaryContinueButton != null)
+            {
+                dailySummaryContinueButton.onClick.AddListener(OnDailySummaryContinueButtonClicked);
+                Debug.Log("[ShopUI] Daily summary continue button event handler added");
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] Daily summary continue button reference is null - button functionality unavailable");
             }
         }
         
@@ -657,29 +730,31 @@ namespace TabletopShop
         #region Button Event Handlers
         
         /// <summary>
-        /// Handle end day button click - triggers GameManager to force advance to next day.
+        /// Handle end day button click - shows daily summary popup before advancing to next day.
         /// 
         /// End Day Button Logic:
-        /// - Calls GameManager.ForceNextDay() to advance the game state
-        /// - Provides immediate feedback to player
-        /// - No confirmation dialog for MVP - direct action
+        /// - Shows daily summary panel with key statistics
+        /// - Displays revenue, expenses, profit, and customers served
+        /// - Waits for player to click Continue button before advancing day
+        /// - Provides comprehensive feedback on daily performance
         /// 
-        /// Future enhancements could include:
-        /// - Confirmation dialog showing daily stats
-        /// - Summary of earnings and expenses
-        /// - Preview of next day objectives
+        /// Daily Summary Flow:
+        /// 1. End Day button clicked
+        /// 2. Show daily summary panel with current day's data
+        /// 3. Player reviews statistics
+        /// 4. Player clicks Continue button
+        /// 5. Hide summary panel and advance to next day
         /// </summary>
         private void OnEndDayButtonClicked()
         {
             if (gameManager != null)
             {
-                // Use ForceNextDay() which is the public method available
-                gameManager.ForceNextDay();
-                Debug.Log("[ShopUI] End day button clicked - forced next day in GameManager");
+                ShowDailySummary();
+                Debug.Log("[ShopUI] End day button clicked - showing daily summary");
             }
             else
             {
-                Debug.LogError("[ShopUI] GameManager is not available! Cannot end day.");
+                Debug.LogError("[ShopUI] GameManager is not available! Cannot show daily summary.");
             }
         }
         
@@ -802,7 +877,152 @@ namespace TabletopShop
                 inventoryToggleButton.onClick.RemoveListener(OnInventoryToggleButtonClicked);
             }
             
+            // Remove Daily Summary Continue button event handler
+            if (dailySummaryContinueButton != null)
+            {
+                dailySummaryContinueButton.onClick.RemoveListener(OnDailySummaryContinueButtonClicked);
+            }
+            
             Debug.Log("[ShopUI] Button event handlers cleaned up");
+        }
+        
+        #endregion
+        
+        #region Daily Summary System
+        
+        /// <summary>
+        /// Display the daily summary popup with key statistics from the current day.
+        /// 
+        /// Daily Summary Display:
+        /// - Shows current day's revenue, expenses, profit, and customers served
+        /// - Uses existing GameManager economic data
+        /// - Formats currency values using the established FormatCurrency utility
+        /// - Activates the daily summary panel and populates all text fields
+        /// 
+        /// UI Flow:
+        /// 1. Populate all summary text elements with current day data
+        /// 2. Show the daily summary panel
+        /// 3. Set visibility state flag
+        /// 4. Player can review performance before continuing
+        /// </summary>
+        private void ShowDailySummary()
+        {
+            if (gameManager == null)
+            {
+                Debug.LogError("[ShopUI] Cannot show daily summary - GameManager is not available!");
+                return;
+            }
+            
+            if (dailySummaryPanel == null)
+            {
+                Debug.LogError("[ShopUI] Cannot show daily summary - dailySummaryPanel is not assigned!");
+                return;
+            }
+            
+            // Get current day's economic data from GameManager
+            float dailyRevenue = gameManager.DailyRevenue;
+            float dailyExpenses = gameManager.DailyExpenses;
+            float dailyProfit = gameManager.DailyProfit;
+            int customersServed = gameManager.CustomersServedToday;
+            int currentDay = gameManager.CurrentDay;
+            
+            // Populate summary text elements using existing formatting utilities
+            if (dailySummaryRevenueText != null)
+            {
+                dailySummaryRevenueText.text = FormatCurrency(dailyRevenue);
+            }
+            
+            if (dailySummaryExpensesText != null)
+            {
+                dailySummaryExpensesText.text = FormatCurrency(dailyExpenses);
+            }
+            
+            if (dailySummaryProfitText != null)
+            {
+                // Use color coding for profit/loss indication
+                string profitText = FormatCurrency(dailyProfit);
+                dailySummaryProfitText.text = profitText;
+                
+                // Optional: Add color coding for profit (green) vs loss (red)
+                if (dailyProfit >= 0)
+                {
+                    dailySummaryProfitText.color = Color.green;
+                }
+                else
+                {
+                    dailySummaryProfitText.color = Color.red;
+                }
+            }
+            
+            if (dailySummaryCustomersText != null)
+            {
+                dailySummaryCustomersText.text = FormatSalesCount(customersServed);
+            }
+            
+            if (dailySummaryDayText != null)
+            {
+                dailySummaryDayText.text = $"Day {currentDay} Summary";
+            }
+            
+            // Show the daily summary panel
+            dailySummaryPanel.SetActive(true);
+            isDailySummaryVisible = true;
+            
+            Debug.Log($"[ShopUI] Daily summary displayed - Revenue: {FormatCurrency(dailyRevenue)}, " +
+                     $"Expenses: {FormatCurrency(dailyExpenses)}, Profit: {FormatCurrency(dailyProfit)}, " +
+                     $"Customers: {customersServed}");
+        }
+        
+        /// <summary>
+        /// Hide the daily summary popup and proceed to the next day.
+        /// 
+        /// Continue Flow:
+        /// 1. Hide the daily summary panel
+        /// 2. Reset visibility state flag
+        /// 3. Call GameManager.ForceNextDay() to advance the game
+        /// 4. Provide debug feedback for the transition
+        /// 
+        /// This method completes the daily transition cycle that was initiated
+        /// by the End Day button click.
+        /// </summary>
+        private void HideDailySummary()
+        {
+            if (dailySummaryPanel != null)
+            {
+                dailySummaryPanel.SetActive(false);
+            }
+            
+            isDailySummaryVisible = false;
+            
+            // Now advance to the next day
+            if (gameManager != null)
+            {
+                gameManager.ForceNextDay();
+                Debug.Log("[ShopUI] Daily summary hidden - advanced to next day");
+            }
+            else
+            {
+                Debug.LogError("[ShopUI] Cannot advance to next day - GameManager is not available!");
+            }
+        }
+        
+        /// <summary>
+        /// Handle continue button click from daily summary panel.
+        /// 
+        /// Continue Button Logic:
+        /// - Called when player clicks Continue button in daily summary
+        /// - Closes the daily summary popup
+        /// - Proceeds to next day via HideDailySummary()
+        /// - Provides seamless transition from summary to next day
+        /// 
+        /// Event Flow:
+        /// End Day Button → ShowDailySummary() → Daily Summary Display → 
+        /// Continue Button → OnDailySummaryContinueButtonClicked() → HideDailySummary() → Next Day
+        /// </summary>
+        private void OnDailySummaryContinueButtonClicked()
+        {
+            HideDailySummary();
+            Debug.Log("[ShopUI] Daily summary continue button clicked - proceeding to next day");
         }
         
         #endregion
