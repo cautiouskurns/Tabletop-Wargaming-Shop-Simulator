@@ -216,6 +216,10 @@ namespace TabletopShop
             LogTest($"  Money: ${initialEconomicState.money:F2}");
             LogTest($"  Customers Served: {initialEconomicState.customers}");
             LogTest($"  Daily Revenue: ${initialEconomicState.revenue:F2}");
+            LogTest($"DEBUG: Initial state tuple = {initialEconomicState}");
+            
+            // Also directly check the property
+            LogTest($"DEBUG: Direct property check - CustomersServedToday = {GameManager.Instance.CustomersServedToday}");
             
             // Simulate a manual purchase to test the integration
             if (testCustomer.SelectedProducts.Count == 0)
@@ -273,6 +277,10 @@ namespace TabletopShop
             LogTest($"  Customers Served: {finalEconomicState.customers} (Change: +{finalEconomicState.customers - initialEconomicState.customers})");
             LogTest($"  Daily Revenue: ${finalEconomicState.revenue:F2} (Change: +${finalEconomicState.revenue - initialEconomicState.revenue:F2})");
             LogTest($"  Reputation: {finalEconomicState.reputation:F1}");
+            LogTest($"DEBUG: Final state tuple = {finalEconomicState}");
+            
+            // Also directly check the property
+            LogTest($"DEBUG: Direct property check - CustomersServedToday = {GameManager.Instance.CustomersServedToday}");
             
             // Verify the integration worked
             bool moneyIncreased = finalEconomicState.money > initialEconomicState.money;

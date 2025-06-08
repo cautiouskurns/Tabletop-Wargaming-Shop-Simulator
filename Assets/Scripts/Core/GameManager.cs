@@ -342,6 +342,9 @@ namespace TabletopShop
         /// <param name="customerSatisfaction">Customer satisfaction level (0-1)</param>
         public void ProcessCustomerPurchase(float purchaseAmount, float customerSatisfaction = 0.8f)
         {
+            Debug.Log($"ProcessCustomerPurchase CALLED: amount=${purchaseAmount:F2}, satisfaction={customerSatisfaction:F2}");
+            Debug.Log($"BEFORE: customersServedToday={customersServedToday}, currentMoney=${currentMoney:F2}, dailyRevenue=${dailyRevenue:F2}");
+            
             if (purchaseAmount <= 0)
             {
                 Debug.LogWarning("Invalid purchase amount received from customer");
@@ -353,11 +356,13 @@ namespace TabletopShop
             
             // Update customer metrics
             customersServedToday++;
+            Debug.Log($"INCREMENTED customersServedToday to: {customersServedToday}");
             
             // Update reputation based on customer satisfaction
             float reputationChange = (customerSatisfaction - 0.5f) * 2.0f; // -1 to +1 scale
             ModifyReputation(reputationChange);
             
+            Debug.Log($"AFTER: customersServedToday={customersServedToday}, currentMoney=${currentMoney:F2}, dailyRevenue=${dailyRevenue:F2}");
             Debug.Log($"Customer purchase processed: ${purchaseAmount:F2}, Satisfaction: {customerSatisfaction:F2}");
         }
         

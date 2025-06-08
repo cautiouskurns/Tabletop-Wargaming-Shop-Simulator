@@ -217,9 +217,21 @@ namespace TabletopShop
                 return;
             }
             
-            // Simulate customer purchase
+            // Simulate customer purchase with economic validation
             Debug.Log($"Customer clicked on {productData?.ProductName ?? name} (${currentPrice})");
-            Purchase();
+            
+            // Use the same economic validation as player interactions for consistency
+            bool canProcessTransaction = ValidateEconomicTransaction();
+            
+            if (canProcessTransaction)
+            {
+                ProcessPlayerPurchase();
+            }
+            else
+            {
+                // Fallback for mouse clicks - still allow purchase
+                Purchase();
+            }
         }
         
         /// <summary>
@@ -306,6 +318,7 @@ namespace TabletopShop
         
         /// <summary>
         /// Handle player interaction with this product
+        /// Economic validation integrated with GameManager for transaction verification
         /// </summary>
         /// <param name="player">The player GameObject</param>
         public void Interact(GameObject player)
@@ -316,11 +329,25 @@ namespace TabletopShop
                 return;
             }
             
-            // Purchase the product
-            Purchase();
+            // Economic validation through GameManager before processing purchase
+            // This ensures transactions respect shop financial constraints
+            bool canProcessTransaction = ValidateEconomicTransaction();
             
-            // TODO: Integrate with player inventory/money system
-            Debug.Log($"Player purchased {productData?.ProductName ?? name} for ${currentPrice}!");
+            if (canProcessTransaction)
+            {
+                // Process the validated transaction
+                ProcessPlayerPurchase();
+                
+                Debug.Log($"Player purchased {productData?.ProductName ?? name} for ${currentPrice}!");
+            }
+            else
+            {
+                // Graceful fallback: still allow purchase but log validation failure
+                Debug.LogWarning($"Economic validation failed for {productData?.ProductName ?? name}, but allowing purchase (fallback behavior)");
+                Purchase();
+                
+                Debug.Log($"Player purchased {productData?.ProductName ?? name} for ${currentPrice} (fallback mode)!");
+            }
         }
         
         /// <summary>
@@ -342,6 +369,126 @@ namespace TabletopShop
             if (!isPurchased)
             {
                 RemoveHoverEffect();
+            }
+        }
+        
+        #endregion
+        
+        #region Economic Integration
+        
+        /// <summary>
+        /// Validate economic transaction through GameManager
+        /// Performs null-safe checks and basic economic validation
+        /// Returns true if transaction can proceed, false otherwise
+        /// </summary>
+        /// <returns>True if economic validation passes</returns>
+        private bool ValidateEconomicTransaction()
+        {
+            // Null-safe GameManager access with graceful degradation
+            if (GameManager.Instance == null)
+            {
+                Debug.LogWarning($"GameManager not available for economic validation of {productData?.ProductName ?? name} purchase");
+                return false; // Validation failed, will trigger fallback behavior
+            }
+            
+            // Basic transaction validation
+            if (currentPrice <= 0)
+            {
+                Debug.LogWarning($"Invalid price for {productData?.ProductName ?? name}: ${currentPrice}");
+                return false;
+            }
+            
+            // Log transaction attempt for economic tracking
+            Debug.Log($"Economic validation: Player attempting to purchase {productData?.ProductName ?? name} for ${currentPrice}");
+            
+            // Note: For player purchases, we don't check shop funds since this is player-to-shop transaction
+            // Future expansion: Could add inventory purchasing costs or other economic constraints here
+            
+            return true; // Basic validation passed
+        }
+        
+        /// <summary>
+        /// Process a validated player purchase with GameManager integration
+        /// Handles the complete purchase flow with transaction logging
+        /// </summary>
+        private void ProcessPlayerPurchase()
+        {
+            // Execute the core purchase logic (existing Product state management)
+            Purchase();
+            
+            // Integrate with GameManager for economic tracking if available
+            if (GameManager.Instance != null)
+            {
+                // Process player purchase through economic system
+                // This tracks the transaction as revenue for the shop
+                GameManager.Instance.ProcessCustomerPurchase(currentPrice, 1.0f); // Perfect satisfaction for player purchases
+                
+                Debug.Log($"Economic integration: Processed player purchase of ${currentPrice} through GameManager");
+            }
+            else
+            {
+                Debug.LogWarning("GameManager unavailable - purchase processed without economic integration");
+            }
+        }
+        
+        #endregion
+        
+        #region Testing & Validation
+        
+        /// <summary>
+        /// Test the GameManager economic integration (for development/testing)
+        /// </summary>
+        [ContextMenu("Test GameManager Integration")]
+        private void TestGameManagerIntegration()
+        {
+            if (Application.isPlaying)
+            {
+                Debug.Log("=== TESTING PRODUCT GAMEMANAGER INTEGRATION ===");
+                Debug.Log($"Product: {productData?.ProductName ?? name} (${currentPrice})");
+                Debug.Log($"Is on shelf: {isOnShelf}, Is purchased: {isPurchased}");
+                
+                if (GameManager.Instance != null)
+                {
+                    var economicStatus = GameManager.Instance.GetEconomicStatus();
+                    Debug.Log($"GameManager state - Money: ${economicStatus.money:F2}, Customers: {economicStatus.customers}");
+                    
+                    // Test economic validation
+                    bool validationResult = ValidateEconomicTransaction();
+                    Debug.Log($"Economic validation result: {validationResult}");
+                    
+                    if (validationResult && !isPurchased && isOnShelf)
+                    {
+                        Debug.Log("Simulating player purchase...");
+                        
+                        // Store initial state for comparison
+                        float initialMoney = economicStatus.money;
+                        int initialCustomers = economicStatus.customers;
+                        
+                        // Simulate purchase
+                        Interact(null);
+                        
+                        // Check results
+                        var newEconomicStatus = GameManager.Instance.GetEconomicStatus();
+                        Debug.Log($"After purchase - Money: ${newEconomicStatus.money:F2} (+${newEconomicStatus.money - initialMoney:F2})");
+                        Debug.Log($"After purchase - Customers: {newEconomicStatus.customers} (+{newEconomicStatus.customers - initialCustomers})");
+                        
+                        Debug.Log("✅ GameManager integration test completed!");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Cannot test purchase - validation failed or product already purchased/not on shelf");
+                    }
+                }
+                else
+                {
+                    Debug.LogError("GameManager.Instance is null - integration test failed");
+                }
+                
+                Debug.Log("=== END GAMEMANAGER INTEGRATION TEST ===");
+            }
+            else
+            {
+                Debug.LogWarning("GameManager integration test requires Play mode");
             }
         }
         

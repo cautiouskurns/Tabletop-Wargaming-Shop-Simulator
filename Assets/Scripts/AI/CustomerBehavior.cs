@@ -371,21 +371,42 @@ namespace TabletopShop
         /// </summary>
         private void TrySelectProductsAtCurrentShelf()
         {
-            if (targetShelf == null) return;
+            if (targetShelf == null) 
+            {
+                Debug.Log($"CustomerBehavior {name} - No target shelf set for product selection");
+                return;
+            }
+            
+            Debug.Log($"CustomerBehavior {name} checking shelf {targetShelf.name} - IsEmpty: {targetShelf.IsEmpty}, HasCurrentProduct: {targetShelf.CurrentProduct != null}");
             
             // Check if the target shelf has any products
             if (!targetShelf.IsEmpty && targetShelf.CurrentProduct != null)
             {
                 Product availableProduct = targetShelf.CurrentProduct;
                 
+                Debug.Log($"CustomerBehavior {name} found product: {availableProduct.ProductData?.ProductName ?? "Unknown"} - Price: ${availableProduct.CurrentPrice}, IsPurchased: {availableProduct.IsPurchased}, IsOnShelf: {availableProduct.IsOnShelf}");
+                
+                bool canAfford = CanAffordProduct(availableProduct);
+                bool wantsProduct = WantsProduct(availableProduct);
+                
+                Debug.Log($"CustomerBehavior {name} - CanAfford: {canAfford}, WantsProduct: {wantsProduct}, RemainingBudget: ${baseSpendingPower - totalPurchaseAmount:F2}");
+                
                 // Check if customer can afford and wants this product
-                if (CanAffordProduct(availableProduct) && WantsProduct(availableProduct))
+                if (canAfford && wantsProduct)
                 {
                     selectedProducts.Add(availableProduct);
                     totalPurchaseAmount += availableProduct.CurrentPrice;
                     
-                    Debug.Log($"CustomerBehavior {name} selected {availableProduct.ProductData?.ProductName ?? "Product"} for ${availableProduct.CurrentPrice}");
+                    Debug.Log($"CustomerBehavior {name} ✅ SELECTED {availableProduct.ProductData?.ProductName ?? "Product"} for ${availableProduct.CurrentPrice} (Total: ${totalPurchaseAmount:F2}, Products: {selectedProducts.Count})");
                 }
+                else
+                {
+                    Debug.Log($"CustomerBehavior {name} ❌ DID NOT SELECT product due to CanAfford: {canAfford}, WantsProduct: {wantsProduct}");
+                }
+            }
+            else
+            {
+                Debug.Log($"CustomerBehavior {name} ❌ Shelf {targetShelf.name} has no available products (IsEmpty: {targetShelf.IsEmpty})");
             }
         }
         
@@ -409,10 +430,19 @@ namespace TabletopShop
         /// <returns>True if customer wants the product</returns>
         private bool WantsProduct(Product product)
         {
-            if (product == null || product.IsPurchased || !product.IsOnShelf) return false;
+            if (product == null || product.IsPurchased || !product.IsOnShelf) 
+            {
+                Debug.Log($"CustomerBehavior {name} - Product failed basic checks: IsNull: {product == null}, IsPurchased: {product?.IsPurchased}, IsOnShelf: {product?.IsOnShelf}");
+                return false;
+            }
             
             // Base probability of wanting any product
-            return UnityEngine.Random.value <= purchaseProbability;
+            float randomValue = UnityEngine.Random.value;
+            bool wants = randomValue <= purchaseProbability;
+            
+            Debug.Log($"CustomerBehavior {name} - Random value: {randomValue:F3}, Purchase probability: {purchaseProbability:F3}, Wants product: {wants}");
+            
+            return wants;
         }
         
         /// <summary>
