@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 7332391963179756141}
   - component: {fileID: 3812932879930484620}
   m_Layer: 0
-  m_Name: InventoryCanvas
+  m_Name: ShopUICanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
