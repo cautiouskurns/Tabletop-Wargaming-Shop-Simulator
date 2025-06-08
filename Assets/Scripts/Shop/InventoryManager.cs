@@ -46,6 +46,11 @@ namespace TabletopShop
         [SerializeField] private int startingQuantityPerProduct = 5;
         [SerializeField] private bool autoLoadProductsOnStart = true;
         
+        [Header("Economic Constraints")]
+        [SerializeField] private bool enableEconomicConstraints = true;
+        [SerializeField] private float restockCostMultiplier = 0.7f; // 70% of retail price for restocking
+        [SerializeField] private bool logEconomicTransactions = true;
+        
         [Header("Current Selection")]
         [SerializeField] private ProductData selectedProduct;
         
@@ -226,7 +231,8 @@ namespace TabletopShop
                 if (product != null)
                 {
                     Debug.Log($"Adding {startingQuantityPerProduct} of {product.ProductName} to inventory");
-                    AddProduct(product, startingQuantityPerProduct, false); // false = don't trigger events during initialization
+                    // Use legacy method without economic constraints during initialization
+                    AddProduct(product, startingQuantityPerProduct, false);
                 }
                 else
                 {
@@ -246,6 +252,134 @@ namespace TabletopShop
             
             Debug.Log($"Initialized starting inventory with {startingQuantityPerProduct} of each product type.");
             LogInventoryStatus();
+        }
+        
+        #endregion
+        
+        #region Economic Constraint Methods
+        
+        /// <summary>
+        /// Check if there are sufficient funds for restocking products at calculated cost
+        /// </summary>
+        /// <param name="product">The product to check restocking cost for</param>
+        /// <param name="amount">The amount to restock</param>
+        /// <returns>True if sufficient funds are available</returns>
+        public bool HasSufficientFundsForRestock(ProductData product, int amount = 1)
+        {
+            if (product == null)
+            {
+                Debug.LogWarning("Cannot check restock funds for null product.");
+                return false;
+            }
+            
+            if (!enableEconomicConstraints)
+            {
+                return true; // Economic constraints disabled
+            }
+            
+            float restockCost = CalculateRestockCost(product, amount);
+            
+            // Null-safe GameManager access with graceful degradation
+            if (GameManager.Instance == null)
+            {
+                if (logEconomicTransactions)
+                {
+                    Debug.LogWarning("GameManager not available for restock fund validation. Allowing operation.");
+                }
+                return true; // Graceful fallback when GameManager unavailable
+            }
+            
+            bool hasFunds = GameManager.Instance.HasSufficientFunds(restockCost);
+            
+            if (logEconomicTransactions)
+            {
+                Debug.Log($"Restock fund check for {amount} of {product.ProductName}: Cost=${restockCost:F2}, Available=${GameManager.Instance.CurrentMoney:F2}, HasFunds={hasFunds}");
+            }
+            
+            return hasFunds;
+        }
+        
+        /// <summary>
+        /// Calculate the cost to restock a product
+        /// </summary>
+        /// <param name="product">The product to calculate cost for</param>
+        /// <param name="amount">The amount to restock</param>
+        /// <returns>Total restock cost</returns>
+        public float CalculateRestockCost(ProductData product, int amount = 1)
+        {
+            if (product == null) return 0f;
+            return product.BasePrice * restockCostMultiplier * amount;
+        }
+        
+        /// <summary>
+        /// Validate an inventory purchase transaction
+        /// </summary>
+        /// <param name="product">Product being purchased</param>
+        /// <param name="amount">Amount being purchased</param>
+        /// <param name="totalCost">Total cost of the transaction</param>
+        /// <returns>True if transaction can proceed</returns>
+        private bool ValidateInventoryPurchase(ProductData product, int amount, float totalCost)
+        {
+            // Null-safe GameManager access with graceful degradation
+            if (GameManager.Instance == null)
+            {
+                if (logEconomicTransactions)
+                {
+                    Debug.LogWarning($"GameManager not available for inventory purchase validation of {product.ProductName}. Allowing operation.");
+                }
+                return true; // Graceful fallback
+            }
+            
+            // Basic validation
+            if (totalCost <= 0)
+            {
+                Debug.LogWarning($"Invalid total cost for inventory purchase: ${totalCost:F2}");
+                return false;
+            }
+            
+            // Check sufficient funds
+            bool hasFunds = GameManager.Instance.HasSufficientFunds(totalCost);
+            
+            if (logEconomicTransactions)
+            {
+                Debug.Log($"Inventory purchase validation: {amount} of {product.ProductName} for ${totalCost:F2}. HasFunds={hasFunds}");
+            }
+            
+            return hasFunds;
+        }
+        
+        /// <summary>
+        /// Process an inventory purchase transaction through GameManager
+        /// </summary>
+        /// <param name="product">Product being purchased</param>
+        /// <param name="amount">Amount being purchased</param>
+        /// <param name="totalCost">Total cost of the transaction</param>
+        /// <returns>True if transaction was successful</returns>
+        private bool ProcessInventoryPurchase(ProductData product, int amount, float totalCost)
+        {
+            // Null-safe GameManager access with graceful degradation
+            if (GameManager.Instance == null)
+            {
+                if (logEconomicTransactions)
+                {
+                    Debug.LogWarning($"GameManager not available for inventory purchase processing of {product.ProductName}. Allowing operation without economic impact.");
+                }
+                return true; // Graceful fallback
+            }
+            
+            // Process payment through GameManager
+            bool success = GameManager.Instance.SubtractMoney(totalCost, $"Inventory Purchase: {amount} x {product.ProductName}");
+            
+            if (success && logEconomicTransactions)
+            {
+                Debug.Log($"Processed inventory purchase: {amount} of {product.ProductName} for ${totalCost:F2}");
+            }
+            else if (!success)
+            {
+                Debug.LogError($"Failed to process inventory purchase: {amount} of {product.ProductName} for ${totalCost:F2}");
+            }
+            
+            return success;
         }
         
         #endregion
@@ -325,26 +459,51 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Add a product to inventory
+        /// Add a product to inventory with optional economic constraints
         /// </summary>
         /// <param name="product">The product to add</param>
         /// <param name="amount">The amount to add (default: 1)</param>
         /// <param name="triggerEvents">Whether to trigger change events (default: true)</param>
-        public void AddProduct(ProductData product, int amount = 1, bool triggerEvents = true)
+        /// <param name="cost">Optional cost per unit for economic validation. If null, calculated from restockCostMultiplier</param>
+        /// <returns>True if product was successfully added, false if economic constraints prevented it</returns>
+        public bool AddProduct(ProductData product, int amount = 1, bool triggerEvents = true, float? cost = null)
         {
             if (product == null)
             {
                 Debug.LogWarning("Cannot add null product to inventory.");
-                return;
+                return false;
             }
             
             if (amount <= 0)
             {
                 Debug.LogWarning($"Invalid amount {amount} for product addition. Amount must be positive.");
-                return;
+                return false;
             }
             
-            // Add to inventory
+            // Calculate total cost for economic validation
+            float totalCost = 0f;
+            if (enableEconomicConstraints && cost.HasValue)
+            {
+                totalCost = cost.Value * amount;
+                
+                // Validate economic transaction
+                if (!ValidateInventoryPurchase(product, amount, totalCost))
+                {
+                    if (logEconomicTransactions)
+                    {
+                        Debug.LogWarning($"Economic constraints prevented adding {amount} of {product.ProductName}. Cost: ${totalCost:F2}");
+                    }
+                    return false;
+                }
+                
+                // Process the economic transaction
+                if (!ProcessInventoryPurchase(product, amount, totalCost))
+                {
+                    return false;
+                }
+            }
+            
+            // Add to inventory (original logic preserved)
             if (productCounts.ContainsKey(product))
             {
                 productCounts[product] += amount;
@@ -367,7 +526,27 @@ namespace TabletopShop
                 onInventoryChanged?.Invoke();
             }
             
-            Debug.Log($"Added {amount} of {product.ProductName}. Total: {GetProductCount(product)}");
+            if (logEconomicTransactions && cost.HasValue)
+            {
+                Debug.Log($"Added {amount} of {product.ProductName} for ${totalCost:F2}. Total: {GetProductCount(product)}");
+            }
+            else
+            {
+                Debug.Log($"Added {amount} of {product.ProductName}. Total: {GetProductCount(product)}");
+            }
+            
+            return true;
+        }
+        
+        /// <summary>
+        /// Add a product to inventory (legacy method for backward compatibility)
+        /// </summary>
+        /// <param name="product">The product to add</param>
+        /// <param name="amount">The amount to add (default: 1)</param>
+        /// <param name="triggerEvents">Whether to trigger change events (default: true)</param>
+        public void AddProduct(ProductData product, int amount, bool triggerEvents)
+        {
+            AddProduct(product, amount, triggerEvents, null);
         }
         
         /// <summary>
@@ -505,6 +684,179 @@ namespace TabletopShop
         
         #endregion
         
+        #region Economic Configuration
+        
+        /// <summary>
+        /// Enable or disable economic constraints for inventory operations
+        /// </summary>
+        /// <param name="enabled">Whether to enable economic constraints</param>
+        public void SetEconomicConstraints(bool enabled)
+        {
+            enableEconomicConstraints = enabled;
+            Debug.Log($"Economic constraints {(enabled ? "enabled" : "disabled")} for InventoryManager");
+        }
+        
+        /// <summary>
+        /// Set the restock cost multiplier (percentage of retail price)
+        /// </summary>
+        /// <param name="multiplier">Multiplier value (e.g., 0.7 for 70% of retail price)</param>
+        public void SetRestockCostMultiplier(float multiplier)
+        {
+            if (multiplier < 0)
+            {
+                Debug.LogWarning("Restock cost multiplier cannot be negative. Setting to 0.");
+                multiplier = 0;
+            }
+            
+            float oldMultiplier = restockCostMultiplier;
+            restockCostMultiplier = multiplier;
+            
+            Debug.Log($"Restock cost multiplier changed: {oldMultiplier:F2} → {restockCostMultiplier:F2}");
+        }
+        
+        /// <summary>
+        /// Enable or disable economic transaction logging
+        /// </summary>
+        /// <param name="enabled">Whether to enable economic logging</param>
+        public void SetEconomicLogging(bool enabled)
+        {
+            logEconomicTransactions = enabled;
+            Debug.Log($"Economic transaction logging {(enabled ? "enabled" : "disabled")}");
+        }
+        
+        /// <summary>
+        /// Get current economic configuration as formatted string
+        /// </summary>
+        /// <returns>String representation of economic settings</returns>
+        public string GetEconomicConfiguration()
+        {
+            return $"Economic Configuration:\n" +
+                   $"- Constraints Enabled: {enableEconomicConstraints}\n" +
+                   $"- Restock Cost Multiplier: {restockCostMultiplier:F2} ({restockCostMultiplier * 100:F0}% of retail)\n" +
+                   $"- Transaction Logging: {logEconomicTransactions}\n" +
+                   $"- GameManager Available: {GameManager.Instance != null}";
+        }
+        
+        #endregion
+        
+        #region Economic Testing Methods
+        
+        /// <summary>
+        /// Test economic integration with GameManager
+        /// </summary>
+        [ContextMenu("Test Economic Integration")]
+        public void TestEconomicIntegration()
+        {
+            Debug.Log("=== INVENTORY ECONOMIC INTEGRATION TEST ===");
+            
+            // Test GameManager availability
+            bool gameManagerAvailable = GameManager.Instance != null;
+            Debug.Log($"GameManager Available: {gameManagerAvailable}");
+            
+            if (gameManagerAvailable)
+            {
+                var economicStatus = GameManager.Instance.GetEconomicStatus();
+                Debug.Log($"Current Money: ${economicStatus.money:F2}");
+                Debug.Log($"Economic Validation Enabled: {GameManager.Instance != null}");
+            }
+            
+            // Test economic configuration
+            Debug.Log(GetEconomicConfiguration());
+            
+            // Test restock cost calculations
+            if (availableProducts.Count > 0 && availableProducts[0] != null)
+            {
+                var testProduct = availableProducts[0];
+                float restockCost = CalculateRestockCost(testProduct, 5);
+                bool canAfford = HasSufficientFundsForRestock(testProduct, 5);
+                
+                Debug.Log($"Test Product: {testProduct.ProductName}");
+                Debug.Log($"Retail Price: ${testProduct.BasePrice}");
+                Debug.Log($"Restock Cost (5 units): ${restockCost:F2}");
+                Debug.Log($"Can Afford Restock: {canAfford}");
+            }
+            
+            Debug.Log("=== INTEGRATION TEST COMPLETE ===");
+        }
+        
+        /// <summary>
+        /// Test adding products with economic constraints
+        /// </summary>
+        [ContextMenu("Test Economic Product Addition")]
+        public void TestEconomicProductAddition()
+        {
+            Debug.Log("=== TESTING ECONOMIC PRODUCT ADDITION ===");
+            
+            if (availableProducts.Count == 0 || availableProducts[0] == null)
+            {
+                Debug.LogWarning("No products available for testing");
+                return;
+            }
+            
+            var testProduct = availableProducts[0];
+            float restockCost = CalculateRestockCost(testProduct, 1);
+            
+            Debug.Log($"Testing addition of 1 x {testProduct.ProductName}");
+            Debug.Log($"Calculated restock cost: ${restockCost:F2}");
+            
+            // Test with calculated cost
+            bool success = AddProduct(testProduct, 1, true, restockCost);
+            Debug.Log($"Economic addition result: {(success ? "SUCCESS" : "FAILED")}");
+            
+            // Test without cost (legacy behavior)
+            bool legacySuccess = AddProduct(testProduct, 1, true, null);
+            Debug.Log($"Legacy addition result: {(legacySuccess ? "SUCCESS" : "FAILED")}");
+            
+            Debug.Log("=== ECONOMIC ADDITION TEST COMPLETE ===");
+        }
+        
+        /// <summary>
+        /// Simulate inventory restocking with economic validation
+        /// </summary>
+        [ContextMenu("Simulate Inventory Restocking")]
+        public void SimulateInventoryRestocking()
+        {
+            Debug.Log("=== SIMULATING INVENTORY RESTOCKING ===");
+            
+            if (!enableEconomicConstraints)
+            {
+                Debug.Log("Economic constraints disabled - enabling for test");
+                SetEconomicConstraints(true);
+            }
+            
+            foreach (var product in availableProducts.Where(p => p != null))
+            {
+                int currentStock = GetProductCount(product);
+                int restockAmount = 10 - currentStock; // Restock to 10 units
+                
+                if (restockAmount > 0)
+                {
+                    float cost = CalculateRestockCost(product, restockAmount);
+                    bool canAfford = HasSufficientFundsForRestock(product, restockAmount);
+                    
+                    Debug.Log($"{product.ProductName}: Stock={currentStock}, Need={restockAmount}, Cost=${cost:F2}, CanAfford={canAfford}");
+                    
+                    if (canAfford)
+                    {
+                        bool success = AddProduct(product, restockAmount, true, cost);
+                        Debug.Log($"  Restocking result: {(success ? "SUCCESS" : "FAILED")}");
+                    }
+                    else
+                    {
+                        Debug.Log($"  Insufficient funds for restocking");
+                    }
+                }
+                else
+                {
+                    Debug.Log($"{product.ProductName}: Stock={currentStock} - No restocking needed");
+                }
+            }
+            
+            Debug.Log("=== RESTOCKING SIMULATION COMPLETE ===");
+        }
+        
+        #endregion
+        
         #region Validation and Testing
         
         /// <summary>
@@ -563,7 +915,8 @@ namespace TabletopShop
         {
             foreach (var product in availableProducts.Where(p => p != null))
             {
-                AddProduct(product, 10);
+                // Use legacy method without economic constraints for testing
+                AddProduct(product, 10, true);
             }
             
             Debug.Log("Added 10 of each available product for testing.");
