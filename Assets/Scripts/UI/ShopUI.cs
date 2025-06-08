@@ -167,7 +167,7 @@ namespace TabletopShop
         /// GameManager integration pattern:
         /// - Null-safe access to GameManager.Instance
         /// - Error logging for missing dependencies
-        /// - Preparation for event-driven updates in future sub-tasks
+        /// - Event-driven updates using GameManager events
         /// </summary>
         private void Start()
         {
@@ -180,32 +180,31 @@ namespace TabletopShop
             // Setup button event handlers
             SetupButtonEventHandlers();
             
-            Debug.Log("[ShopUI] Start initialization complete - ready for functionality implementation");
+            // Subscribe to GameManager events for real-time updates
+            SubscribeToGameManagerEvents();
+            
+            // Initial data refresh to populate UI
+            RefreshUIData();
+            
+            Debug.Log("[ShopUI] Start initialization complete - event-driven updates enabled");
         }
         
         /// <summary>
-        /// Real-time UI update system - polls GameManager data every frame.
+        /// Handle keyboard input for UI interactions.
+        /// Replaced polling-based UI updates with event-driven architecture.
         /// 
-        /// Update() vs Event-Driven Trade-offs:
-        /// - Update(): Simple polling, guaranteed refresh rate, easier to debug
-        /// - Event-driven: More efficient, reduces coupling, better for large systems
+        /// Performance Improvements:
+        /// - No longer polls GameManager data every frame
+        /// - UI updates only occur when data actually changes via events
+        /// - Reduced coupling between UI and GameManager
+        /// - Better scalability for complex UI systems
         /// 
-        /// Performance Considerations:
-        /// - String formatting can create garbage - use efficient methods
-        /// - TextMeshPro text updates are optimized for frequent changes
-        /// - Null-safety checks prevent crashes when GameManager unavailable
-        /// 
-        /// This approach provides immediate visual feedback for all shop data changes
-        /// and ensures players always see current game state in real-time.
+        /// Remaining Update() functionality:
+        /// - Keyboard input handling for price setting panel
+        /// - Other real-time input processing as needed
         /// </summary>
         private void Update()
         {
-            // Only update displays if all UI references are valid and GameManager is available
-            if (HasValidReferences)
-            {
-                UpdateDisplay();
-            }
-            
             // Handle keyboard input for price setting panel
             if (isPriceSettingVisible)
             {
@@ -224,10 +223,13 @@ namespace TabletopShop
         /// Cleanup includes:
         /// - Button event handler removal
         /// - Time.timeScale restoration
-        /// - Future: GameManager event unsubscription
+        /// - GameManager event unsubscription
         /// </summary>
         private void OnDestroy()
         {
+            // Unsubscribe from GameManager events to prevent memory leaks
+            UnsubscribeFromGameManagerEvents();
+            
             // Clean up button event handlers to prevent memory leaks
             CleanupButtonEventHandlers();
             
@@ -553,6 +555,184 @@ namespace TabletopShop
             }
         }
         
+        #endregion
+        
+        #region Event Subscription Management
+        
+        /// <summary>
+        /// Subscribe to GameManager UnityEvents for real-time updates.
+        /// Replaces polling-based UI updates with efficient event-driven architecture.
+        /// 
+        /// Event Subscription Pattern:
+        /// - OnMoneyChanged: Updates money display when transactions occur
+        /// - OnDayChanged: Updates day display and refreshes all daily data
+        /// - OnDayNightCycleChanged: Updates time display for cycle transitions
+        /// - OnReputationChanged: Future use for reputation displays
+        /// 
+        /// Error Handling:
+        /// - Null-safe GameManager.Instance access
+        /// - Retry logic for delayed initialization
+        /// - Debug logging for subscription status
+        /// </summary>
+        private void SubscribeToGameManagerEvents()
+        {
+            // Attempt event subscription with null-safety
+            if (GameManager.Instance != null)
+            {
+                // Subscribe to economic events for real-time updates
+                GameManager.Instance.OnMoneyChanged.AddListener(OnMoneyChanged);
+                GameManager.Instance.OnDayChanged.AddListener(OnDayChanged);
+                GameManager.Instance.OnDayNightCycleChanged.AddListener(OnDayNightCycleChanged);
+                GameManager.Instance.OnReputationChanged.AddListener(OnReputationChanged);
+                
+                Debug.Log("[ShopUI] Successfully subscribed to GameManager events");
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] GameManager.Instance is null during event subscription. Will retry on next refresh.");
+            }
+        }
+        
+        /// <summary>
+        /// Unsubscribe from GameManager events to prevent memory leaks.
+        /// Essential for proper component lifecycle and event management.
+        /// 
+        /// Memory Management:
+        /// - Prevents reference cycles that could cause memory leaks
+        /// - Ensures clean component destruction
+        /// - Follows Unity best practices for event lifecycle
+        /// </summary>
+        private void UnsubscribeFromGameManagerEvents()
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.OnMoneyChanged.RemoveListener(OnMoneyChanged);
+                GameManager.Instance.OnDayChanged.RemoveListener(OnDayChanged);
+                GameManager.Instance.OnDayNightCycleChanged.RemoveListener(OnDayNightCycleChanged);
+                GameManager.Instance.OnReputationChanged.RemoveListener(OnReputationChanged);
+                
+                Debug.Log("[ShopUI] Unsubscribed from GameManager events");
+            }
+        }
+        
+        /// <summary>
+        /// Initialize or refresh UI data from GameManager.
+        /// Used for initial load and when events might have been missed.
+        /// 
+        /// Initialization Strategy:
+        /// - Called during Start() for initial population
+        /// - Can be called manually for debugging or recovery
+        /// - Includes retry logic for event subscription
+        /// </summary>
+        private void RefreshUIData()
+        {
+            if (gameManager != null && HasValidReferences)
+            {
+                // Trigger manual updates for all displays
+                UpdateMoneyDisplay();
+                UpdateSalesDisplay();
+                UpdateTimeDisplay();
+                
+                // Retry event subscription if it failed earlier
+                if (GameManager.Instance != null)
+                {
+                    // Check if events are properly subscribed by testing listener count
+                    // Note: This is a basic check - UnityEvents don't expose listener count directly
+                    SubscribeToGameManagerEvents();
+                }
+                
+                Debug.Log("[ShopUI] UI data refreshed from GameManager");
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] Cannot refresh UI data - GameManager or UI references unavailable");
+            }
+        }
+        
+        #endregion
+        
+        #region Event Handlers
+        
+        /// <summary>
+        /// Handle money changes from GameManager.
+        /// Event-driven update triggered when money changes from transactions.
+        /// 
+        /// Benefits:
+        /// - Immediate UI response to economic changes
+        /// - No polling overhead
+        /// - Precise updates only when data changes
+        /// </summary>
+        private void OnMoneyChanged()
+        {
+            UpdateMoneyDisplay();
+            
+            // Also update sales display as it includes revenue information
+            UpdateSalesDisplay();
+            
+            Debug.Log("[ShopUI] Money changed - displays updated");
+        }
+        
+        /// <summary>
+        /// Handle day changes from GameManager.
+        /// Event-driven update triggered when day advances.
+        /// 
+        /// Day Change Actions:
+        /// - Update time display with new day number
+        /// - Refresh all daily data (sales, revenue, etc.)
+        /// - Prepare UI for new day metrics
+        /// </summary>
+        /// <param name="newDay">The new day number</param>
+        private void OnDayChanged(int newDay)
+        {
+            // Update time display to show new day
+            UpdateTimeDisplay();
+            
+            // Refresh sales display for new day (resets to 0)
+            UpdateSalesDisplay();
+            
+            // Future: Update any day-specific UI elements
+            
+            Debug.Log($"[ShopUI] Day changed to {newDay} - displays updated");
+        }
+        
+        /// <summary>
+        /// Handle day/night cycle changes from GameManager.
+        /// Event-driven update triggered when cycle transitions between day and night.
+        /// 
+        /// Cycle Change Actions:
+        /// - Update time display with current cycle state
+        /// - Future: Adjust UI themes or visibility based on day/night
+        /// </summary>
+        /// <param name="isDay">True if it's now day time, false for night</param>
+        private void OnDayNightCycleChanged(bool isDay)
+        {
+            UpdateTimeDisplay();
+            
+            // Future: Could adjust UI appearance based on day/night
+            // - Different color schemes
+            // - Visibility of certain elements
+            // - Animation states
+            
+            string timeOfDay = isDay ? "Day" : "Night";
+            Debug.Log($"[ShopUI] Day/Night cycle changed to {timeOfDay} - time display updated");
+        }
+        
+        /// <summary>
+        /// Handle reputation changes from GameManager.
+        /// Event-driven update triggered when shop reputation changes.
+        /// 
+        /// Currently unused but prepared for future reputation displays.
+        /// Reputation affects customer behavior and could influence UI feedback.
+        /// </summary>
+        /// <param name="newReputation">The new reputation value (0-100)</param>
+        private void OnReputationChanged(float newReputation)
+        {
+            // Future: Update reputation displays, visual feedback, etc.
+            // For now, just log the change for debugging
+            
+            Debug.Log($"[ShopUI] Reputation changed to {newReputation:F1} - ready for future UI integration");
+        }
+
         #endregion
         
         #region Real-Time Display Updates
