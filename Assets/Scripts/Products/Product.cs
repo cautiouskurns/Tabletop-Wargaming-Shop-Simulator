@@ -11,7 +11,8 @@ namespace TabletopShop
     {
         [Header("Product Configuration")]
         [SerializeField] private ProductData productData;
-        [SerializeField] private int currentPrice;
+        [SerializeField] private float currentPrice;
+        [SerializeField] private ProductState currentState = ProductState.Available;
         [SerializeField] private bool isOnShelf = false;
         [SerializeField] private bool isPurchased = false;
         
@@ -26,11 +27,16 @@ namespace TabletopShop
         private Material originalMaterial;
         private Material highlightMaterial;
         
+        // Shelf integration
+        private ShelfSlot currentShelfSlot;
+        
         // Properties
         public ProductData ProductData => productData;
-        public int CurrentPrice => currentPrice;
+        public float CurrentPrice => currentPrice;
         public bool IsOnShelf => isOnShelf;
         public bool IsPurchased => isPurchased;
+        public ProductState CurrentState => currentState;
+        public ShelfSlot CurrentShelfSlot => currentShelfSlot;
         
         // IInteractable Properties
         public string InteractionText => isPurchased ? "Already Purchased" : $"Buy {productData?.ProductName ?? "Product"} (${currentPrice})";
@@ -102,7 +108,7 @@ namespace TabletopShop
         /// Set a new price for this product instance
         /// </summary>
         /// <param name="newPrice">The new price to set</param>
-        public void SetPrice(int newPrice)
+        public void SetPrice(float newPrice)
         {
             if (newPrice < 0)
             {
@@ -110,7 +116,7 @@ namespace TabletopShop
                 return;
             }
             
-            int oldPrice = currentPrice;
+            float oldPrice = currentPrice;
             currentPrice = newPrice;
             
             Debug.Log($"Price changed for {productData?.ProductName ?? name}: ${oldPrice} → ${currentPrice}");
@@ -133,8 +139,10 @@ namespace TabletopShop
                 return;
             }
             
+            // Update state
             isPurchased = true;
             isOnShelf = false;
+            currentShelfSlot = null;
             
             // Disable visual and collision
             if (meshRenderer != null)
@@ -161,6 +169,7 @@ namespace TabletopShop
             }
             
             isOnShelf = false;
+            currentShelfSlot = null;
             
             Debug.Log($"Removed {productData?.ProductName ?? name} from shelf");
             
@@ -168,9 +177,10 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Place product on shelf
+        /// Place product on shelf with optional shelf slot reference
         /// </summary>
-        public void PlaceOnShelf()
+        /// <param name="shelfSlot">The shelf slot this product is being placed on (optional)</param>
+        public void PlaceOnShelf(ShelfSlot shelfSlot = null)
         {
             if (isOnShelf)
             {
@@ -185,6 +195,7 @@ namespace TabletopShop
             }
             
             isOnShelf = true;
+            currentShelfSlot = shelfSlot;
             
             // Ensure visual and collision are enabled
             if (meshRenderer != null)

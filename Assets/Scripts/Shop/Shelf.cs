@@ -237,6 +237,117 @@ namespace TabletopShop
         
         #endregion
         
+        #region Public Initialization
+        
+        /// <summary>
+        /// Public initialization method for external setup of the Shelf
+        /// Can be called to configure the shelf with specific parameters
+        /// </summary>
+        /// <param name="maxSlots">Maximum number of slots to create</param>
+        /// <param name="slotSpacing">Spacing between slots</param>
+        /// <param name="allowedProductType">The type of products allowed on this shelf</param>
+        /// <param name="allowAnyProductType">Whether to allow any product type</param>
+        /// <param name="forceRecreateSlots">Whether to recreate slots even if they already exist</param>
+        public void Initialize(int? maxSlots = null, float? slotSpacing = null, ProductType? allowedProductType = null, bool? allowAnyProductType = null, bool forceRecreateSlots = false)
+        {
+            // Update configuration if provided
+            if (maxSlots.HasValue && maxSlots.Value > 0)
+            {
+                this.maxSlots = maxSlots.Value;
+            }
+            
+            if (slotSpacing.HasValue && slotSpacing.Value >= 0.5f)
+            {
+                this.slotSpacing = slotSpacing.Value;
+            }
+            
+            if (allowedProductType.HasValue)
+            {
+                this.allowedProductType = allowedProductType.Value;
+            }
+            
+            if (allowAnyProductType.HasValue)
+            {
+                this.allowAnyProductType = allowAnyProductType.Value;
+            }
+            
+            // Create or recreate slots if needed
+            if (forceRecreateSlots || shelfSlots.Count == 0)
+            {
+                CreateShelfSlots();
+            }
+            else if (maxSlots.HasValue || slotSpacing.HasValue)
+            {
+                // Update existing slot positions if spacing or count changed
+                UpdateSlotPositions();
+            }
+            
+            // Setup visual representation
+            SetupShelfVisual();
+            
+            // Validate configuration
+            ValidateSlots();
+            
+            // Initialize all slots with the new Initialize function
+            InitializeAllSlots();
+            
+            Debug.Log($"Shelf '{name}' initialized with {TotalSlots} slots, spacing: {this.slotSpacing}, allows: {(this.allowAnyProductType ? "Any Product" : this.allowedProductType.ToString())}");
+        }
+        
+        /// <summary>
+        /// Simple initialization with just slot configuration
+        /// </summary>
+        /// <param name="maxSlots">Maximum number of slots to create</param>
+        /// <param name="slotSpacing">Spacing between slots</param>
+        public void Initialize(ShelfSlot[] slots)
+        {
+            Initialize(maxSlots, slotSpacing, null, null, false);
+        }
+        
+        /// <summary>
+        /// Initialize all slots using their new Initialize function
+        /// </summary>
+        private void InitializeAllSlots()
+        {
+            for (int i = 0; i < shelfSlots.Count; i++)
+            {
+                if (shelfSlots[i] != null)
+                {
+                    // Calculate position for this slot
+                    float totalWidth = (shelfSlots.Count - 1) * slotSpacing;
+                    float startX = -totalWidth / 2f;
+                    Vector3 slotPosition = new Vector3(startX + (i * slotSpacing), 0.1f, 0);
+                    
+                    // Initialize the slot with its position
+                    shelfSlots[i].Initialize(Vector3.zero); // Local offset is zero since position is handled by transform
+                    shelfSlots[i].gameObject.name = $"Slot_{i + 1}";
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Update positions of existing slots based on current spacing
+        /// </summary>
+        private void UpdateSlotPositions()
+        {
+            if (shelfSlots == null || shelfSlots.Count == 0)
+                return;
+            
+            float totalWidth = (shelfSlots.Count - 1) * slotSpacing;
+            float startX = -totalWidth / 2f;
+            
+            for (int i = 0; i < shelfSlots.Count; i++)
+            {
+                if (shelfSlots[i] != null)
+                {
+                    Vector3 slotPosition = new Vector3(startX + (i * slotSpacing), 0.1f, 0);
+                    shelfSlots[i].transform.localPosition = slotPosition;
+                }
+            }
+        }
+        
+        #endregion
+        
         #region Setup and Validation
         
         /// <summary>

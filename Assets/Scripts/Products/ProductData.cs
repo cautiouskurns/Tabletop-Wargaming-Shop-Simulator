@@ -9,10 +9,11 @@ namespace TabletopShop
     public class ProductData : ScriptableObject
     {
         [Header("Product Information")]
-        [SerializeField] private string productName;
-        [SerializeField] private int basePrice;
-        [SerializeField] private ProductType type;
-        [SerializeField] private string description;
+        [SerializeField] public string productName;
+        [SerializeField] public float basePrice;
+        [SerializeField] public float costPrice;
+        [SerializeField] public ProductType type;
+        [SerializeField] public string description;
         
         [Header("Visual Assets")]
         [SerializeField] private Sprite icon;
@@ -20,7 +21,10 @@ namespace TabletopShop
         
         // Public properties for accessing the data
         public string ProductName => productName;
-        public int BasePrice => basePrice;
+        public float BasePrice => basePrice;
+
+        public float CostPrice => costPrice;
+
         public ProductType Type => type;
         public string Description => description;
         public Sprite Icon => icon;

@@ -51,7 +51,8 @@ namespace TabletopShop
             product.transform.rotation = transform.rotation;
             
             // Make sure product is on shelf
-            product.PlaceOnShelf();
+            ShelfSlot parentSlot = GetComponent<ShelfSlot>();
+            product.PlaceOnShelf(parentSlot);
             
             // Notify observers
             OnProductPlaced?.Invoke();

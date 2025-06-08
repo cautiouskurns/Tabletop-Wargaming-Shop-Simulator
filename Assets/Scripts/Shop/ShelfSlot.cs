@@ -171,6 +171,69 @@ namespace TabletopShop
         
         #endregion
         
+        #region Public Initialization
+        
+        /// <summary>
+        /// Public initialization method for external setup of the ShelfSlot
+        /// Can be called to configure the slot with specific parameters
+        /// </summary>
+        /// <param name="position">Local position offset for the slot</param>
+        /// <param name="emptyColor">Color to display when slot is empty</param>
+        /// <param name="highlightColor">Color to display when slot is highlighted</param>
+        /// <param name="indicatorScale">Scale of the slot indicator GameObject</param>
+        public void Initialize(Vector3? position = null, Color? emptyColor = null, Color? highlightColor = null, Vector3? indicatorScale = null)
+        {
+            // Ensure all components are initialized first
+            InitializeComponents();
+            
+            // Apply position if provided
+            if (position.HasValue && EnsureLogicComponent())
+            {
+                slotLogic.SetSlotPosition(position.Value);
+            }
+            
+            // Apply visual settings if provided and visuals component is available
+            if (EnsureVisualsComponent())
+            {
+                // Use reflection to set visual properties if provided
+                var visualsType = typeof(ShelfSlotVisuals);
+                
+                if (emptyColor.HasValue)
+                {
+                    var emptySlotColorField = visualsType.GetField("emptySlotColor", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    emptySlotColorField?.SetValue(slotVisuals, emptyColor.Value);
+                }
+                
+                if (highlightColor.HasValue)
+                {
+                    var highlightColorField = visualsType.GetField("highlightColor", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    highlightColorField?.SetValue(slotVisuals, highlightColor.Value);
+                }
+                
+                if (indicatorScale.HasValue)
+                {
+                    var indicatorScaleField = visualsType.GetField("indicatorScale", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    indicatorScaleField?.SetValue(slotVisuals, indicatorScale.Value);
+                }
+            }
+            
+            #if UNITY_EDITOR
+            // Mark the object as dirty for editor serialization
+            UnityEditor.EditorUtility.SetDirty(this);
+            #endif
+        }
+        
+        /// <summary>
+        /// Simple initialization with just position
+        /// </summary>
+        /// <param name="position">Local position offset for the slot</param>
+        public void Initialize(Vector3 position)
+        {
+            Initialize(position, null, null, null);
+        }
+        
+        #endregion
+        
         #region Public Methods - Delegate to Logic Component
         
         /// <summary>
