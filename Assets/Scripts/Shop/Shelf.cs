@@ -410,6 +410,42 @@ namespace TabletopShop
             if (existingRenderer != null)
                 return;
             
+            // Check for and clean up any duplicate ShelfVisual children
+            var existingVisuals = new List<Transform>();
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                Transform child = transform.GetChild(i);
+                if (child.name == "ShelfVisual")
+                {
+                    existingVisuals.Add(child);
+                }
+            }
+            
+            // If we have duplicates, remove all but the first one
+            if (existingVisuals.Count > 1)
+            {
+                Debug.LogWarning($"Found {existingVisuals.Count} duplicate ShelfVisual objects on shelf {name}, cleaning up...");
+                for (int i = 1; i < existingVisuals.Count; i++)
+                {
+                    if (Application.isPlaying)
+                    {
+                        Destroy(existingVisuals[i].gameObject);
+                    }
+                    else
+                    {
+                        DestroyImmediate(existingVisuals[i].gameObject);
+                    }
+                }
+                Debug.Log($"Cleaned up {existingVisuals.Count - 1} duplicate ShelfVisual objects");
+            }
+            
+            // If we already have one ShelfVisual, we're good
+            if (existingVisuals.Count > 0)
+            {
+                Debug.Log($"ShelfVisual already exists for shelf {name}, skipping creation");
+                return;
+            }
+            
             // Create shelf visual
             GameObject shelfVisual = GameObject.CreatePrimitive(PrimitiveType.Cube);
             shelfVisual.name = "ShelfVisual";

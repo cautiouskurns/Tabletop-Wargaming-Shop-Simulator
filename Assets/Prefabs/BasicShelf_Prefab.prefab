@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1629350246249168267}
   - component: {fileID: 301385908647246023}
+  - component: {fileID: 6664199553602357744}
   m_Layer: 10
   m_Name: Slot_3
   m_TagString: Untagged
@@ -52,6 +53,21 @@ MonoBehaviour:
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
+  hasBeenMigrated: 0
+--- !u!114 &6664199553602357744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108092746729319724}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
 --- !u!1 &4028624419644958173
 GameObject:
   m_ObjectHideFlags: 0
@@ -80,7 +96,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 7.5, y: 0.2, z: 1}
+  m_LocalScale: {x: 7.5, y: 0.05, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1473008577561291774}
@@ -151,6 +167,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1237212235205480357}
   - component: {fileID: 3612627904194023414}
+  - component: {fileID: 287295576930288322}
   m_Layer: 10
   m_Name: Slot_1
   m_TagString: Untagged
@@ -193,6 +210,21 @@ MonoBehaviour:
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
+  hasBeenMigrated: 0
+--- !u!114 &287295576930288322
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5579423599213339003}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
 --- !u!1 &7392343468210614318
 GameObject:
   m_ObjectHideFlags: 0
@@ -203,6 +235,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7032157210456165468}
   - component: {fileID: 4953916212804980277}
+  - component: {fileID: 6944883352900943336}
   m_Layer: 10
   m_Name: Slot_5
   m_TagString: Untagged
@@ -245,6 +278,21 @@ MonoBehaviour:
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
+  hasBeenMigrated: 0
+--- !u!114 &6944883352900943336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7392343468210614318}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
 --- !u!1 &7647451544521864112
 GameObject:
   m_ObjectHideFlags: 0
@@ -319,6 +367,7 @@ GameObject:
   m_Component:
   - component: {fileID: 800048150188304937}
   - component: {fileID: 6092454070858641272}
+  - component: {fileID: 2599641760592834137}
   m_Layer: 10
   m_Name: Slot_4
   m_TagString: Untagged
@@ -361,6 +410,21 @@ MonoBehaviour:
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
+  hasBeenMigrated: 0
+--- !u!114 &2599641760592834137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7764066426610136478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
 --- !u!1 &9072554599393449449
 GameObject:
   m_ObjectHideFlags: 0
@@ -371,6 +435,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5883046904152599424}
   - component: {fileID: 7686742457222814376}
+  - component: {fileID: 1911741956486051437}
   m_Layer: 10
   m_Name: Slot_2
   m_TagString: Untagged
@@ -413,3 +478,18 @@ MonoBehaviour:
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
+  hasBeenMigrated: 0
+--- !u!114 &1911741956486051437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9072554599393449449}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
