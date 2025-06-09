@@ -238,6 +238,12 @@ namespace TabletopShop
         /// <param name="newState">The new state</param>
         private void OnStateChanged(CustomerState previousState, CustomerState newState)
         {
+            // Update visual color system based on new state
+            if (customerVisuals != null)
+            {
+                customerVisuals.UpdateColorForState(newState);
+            }
+            
             switch (newState)
             {
                 case CustomerState.Entering:

@@ -5,21 +5,46 @@ namespace TabletopShop
     /// <summary>
     /// Handles customer visual feedback, debug information, and gizmo drawing.
     /// Manages visual representation and debugging tools for customer AI.
+    /// Includes dynamic color system that changes customer appearance based on behavior phase.
     /// </summary>
     public class CustomerVisuals : MonoBehaviour
     {
+        [Header("State-Based Color System")]
+        [SerializeField] private Color enteringColor = new Color(0.3f, 0.7f, 1f, 1f);    // Light blue
+        [SerializeField] private Color shoppingColor = new Color(0.2f, 0.8f, 0.2f, 1f);  // Green
+        [SerializeField] private Color purchasingColor = new Color(1f, 0.7f, 0.1f, 1f);  // Orange
+        [SerializeField] private Color leavingColor = new Color(0.8f, 0.3f, 0.8f, 1f);   // Magenta
+        [SerializeField] private Color defaultColor = Color.white;
+        
+        [Header("Visual Settings")]
+        [SerializeField] private bool enableColorSystem = true;
+        [SerializeField] private float colorTransitionSpeed = 2f;
+        [SerializeField] private bool useEmissiveGlow = true;
+        [SerializeField] private float emissiveIntensity = 0.3f;
+        
         // Component references
         private CustomerMovement customerMovement;
         private Customer mainCustomer;
         
         // Visual state
         private bool showDebugGizmos = true;
+        private MeshRenderer[] customerRenderers;
+        private Material[] originalMaterials;
+        private Material[] customerMaterials;
+        private Color currentTargetColor;
+        private Color currentColor;
         
         // Properties
         public bool ShowDebugGizmos 
         { 
             get => showDebugGizmos; 
             set => showDebugGizmos = value; 
+        }
+        
+        public bool EnableColorSystem
+        {
+            get => enableColorSystem;
+            set => enableColorSystem = value;
         }
         
         #region Initialization
@@ -31,6 +56,195 @@ namespace TabletopShop
         {
             customerMovement = movement;
             mainCustomer = customer;
+            
+            // Initialize color system
+            SetupColorSystem();
+            
+            // Subscribe to state changes if possible
+            if (mainCustomer != null)
+            {
+                // Update initial color based on current state
+                UpdateColorForState(mainCustomer.CurrentState);
+            }
+        }
+        
+        private void Start()
+        {
+            // Fallback initialization if Initialize wasn't called
+            if (mainCustomer == null)
+            {
+                mainCustomer = GetComponent<Customer>();
+            }
+            if (customerMovement == null)
+            {
+                customerMovement = GetComponent<CustomerMovement>();
+            }
+            
+            if (customerRenderers == null)
+            {
+                SetupColorSystem();
+            }
+        }
+        
+        private void Update()
+        {
+            // Smooth color transitions
+            if (enableColorSystem && currentColor != currentTargetColor)
+            {
+                currentColor = Color.Lerp(currentColor, currentTargetColor, colorTransitionSpeed * Time.deltaTime);
+                ApplyColorToRenderers(currentColor);
+            }
+        }
+        
+        private void OnDestroy()
+        {
+            // Clean up created materials
+            CleanupMaterials();
+        }
+        
+        /// <summary>
+        /// Setup the color system by finding renderers and creating materials
+        /// </summary>
+        private void SetupColorSystem()
+        {
+            if (!enableColorSystem) return;
+            
+            // Find all MeshRenderers on this customer (including children)
+            customerRenderers = GetComponentsInChildren<MeshRenderer>();
+            
+            if (customerRenderers.Length == 0)
+            {
+                Debug.LogWarning($"CustomerVisuals {name}: No MeshRenderers found for color system");
+                return;
+            }
+            
+            // Store original materials and create copies for modification
+            originalMaterials = new Material[customerRenderers.Length];
+            customerMaterials = new Material[customerRenderers.Length];
+            
+            for (int i = 0; i < customerRenderers.Length; i++)
+            {
+                if (customerRenderers[i].material != null)
+                {
+                    originalMaterials[i] = customerRenderers[i].material;
+                    customerMaterials[i] = new Material(customerRenderers[i].material);
+                    customerRenderers[i].material = customerMaterials[i];
+                }
+            }
+            
+            // Set initial color
+            currentColor = defaultColor;
+            currentTargetColor = defaultColor;
+            ApplyColorToRenderers(currentColor);
+            
+            Debug.Log($"CustomerVisuals {name}: Color system initialized with {customerRenderers.Length} renderers");
+        }
+        
+        /// <summary>
+        /// Apply color to all customer renderers
+        /// </summary>
+        private void ApplyColorToRenderers(Color color)
+        {
+            if (customerMaterials == null) return;
+            
+            for (int i = 0; i < customerMaterials.Length; i++)
+            {
+                if (customerMaterials[i] != null)
+                {
+                    // Apply base color
+                    customerMaterials[i].color = color;
+                    
+                    // Apply emissive glow if enabled
+                    if (useEmissiveGlow && customerMaterials[i].HasProperty("_EmissionColor"))
+                    {
+                        customerMaterials[i].EnableKeyword("_EMISSION");
+                        customerMaterials[i].SetColor("_EmissionColor", color * emissiveIntensity);
+                    }
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Update color based on customer state
+        /// </summary>
+        public void UpdateColorForState(CustomerState state)
+        {
+            if (!enableColorSystem) return;
+            
+            Color newTargetColor = GetColorForState(state);
+            
+            if (newTargetColor != currentTargetColor)
+            {
+                currentTargetColor = newTargetColor;
+                Debug.Log($"CustomerVisuals {name}: Color changing to {newTargetColor} for state {state}");
+            }
+        }
+        
+        /// <summary>
+        /// Get the appropriate color for a given customer state
+        /// </summary>
+        private Color GetColorForState(CustomerState state)
+        {
+            switch (state)
+            {
+                case CustomerState.Entering:
+                    return enteringColor;
+                case CustomerState.Shopping:
+                    return shoppingColor;
+                case CustomerState.Purchasing:
+                    return purchasingColor;
+                case CustomerState.Leaving:
+                    return leavingColor;
+                default:
+                    return defaultColor;
+            }
+        }
+        
+        /// <summary>
+        /// Force immediate color change without transition
+        /// </summary>
+        public void SetColorImmediate(CustomerState state)
+        {
+            if (!enableColorSystem) return;
+            
+            Color newColor = GetColorForState(state);
+            currentColor = newColor;
+            currentTargetColor = newColor;
+            ApplyColorToRenderers(currentColor);
+        }
+        
+        /// <summary>
+        /// Reset customer to default appearance
+        /// </summary>
+        public void ResetToDefaultColor()
+        {
+            if (!enableColorSystem) return;
+            
+            currentTargetColor = defaultColor;
+        }
+        
+        /// <summary>
+        /// Clean up created materials to prevent memory leaks
+        /// </summary>
+        private void CleanupMaterials()
+        {
+            if (customerMaterials != null)
+            {
+                for (int i = 0; i < customerMaterials.Length; i++)
+                {
+                    if (customerMaterials[i] != null)
+                    {
+                        if (Application.isPlaying)
+                        {
+                            Destroy(customerMaterials[i]);
+                        }
+                        else
+                        {
+                            DestroyImmediate(customerMaterials[i]);
+                        }
+                    }
+                }
+            }
         }
         
         #endregion
