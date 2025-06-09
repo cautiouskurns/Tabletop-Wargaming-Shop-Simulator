@@ -57,9 +57,18 @@ namespace TabletopShop
         [SerializeField] private AudioClip uiClickClip;
         [SerializeField] private AudioClip shopAtmosphereClip;
         
+        [Header("Background Music")]
+        [SerializeField] private AudioClip[] backgroundMusicTracks;
+        [SerializeField] private bool shuffleMusic = true;
+        [SerializeField] private bool crossfadeMusic = true;
+        [SerializeField] private float crossfadeDuration = 2f;
+        [SerializeField] private float musicVolume = 0.7f;
+        
         [Header("Audio Sources")]
         [SerializeField] private AudioSource ambientSource;
         [SerializeField] private AudioSource uiSource;
+        [SerializeField] private AudioSource musicSourceA;
+        [SerializeField] private AudioSource musicSourceB;
         
         [Header("Audio Pool Settings")]
         [SerializeField] private int sfxPoolSize = 10;
@@ -78,6 +87,13 @@ namespace TabletopShop
         // Audio pooling for SFX to handle overlapping sounds
         private List<AudioSource> sfxAudioPool = new List<AudioSource>();
         private Queue<AudioSource> availableSfxSources = new Queue<AudioSource>();
+        
+        // Background music management
+        private int currentTrackIndex = 0;
+        private List<int> shuffledTrackOrder = new List<int>();
+        private bool isPlayingMusicA = true; // Which music source is currently active
+        private Coroutine musicCrossfadeCoroutine;
+        private bool isMusicPlaying = false;
         
         // Random ambient triggering
         private Coroutine randomAmbientCoroutine;
@@ -127,6 +143,17 @@ namespace TabletopShop
             } 
         }
         
+        public float MusicVolume 
+        { 
+            get => musicVolume; 
+            set 
+            { 
+                musicVolume = Mathf.Clamp01(value);
+                UpdateMusicVolume();
+                SaveAudioSettings();
+            } 
+        }
+        
         #endregion
         
         #region Unity Lifecycle
@@ -151,6 +178,12 @@ namespace TabletopShop
         {
             // Subscribe to game events for automatic audio triggering
             SubscribeToGameEvents();
+            
+            // Start background music if tracks are available
+            if (backgroundMusicTracks != null && backgroundMusicTracks.Length > 0)
+            {
+                StartBackgroundMusic(true);
+            }
             
             // Start ambient atmosphere (if enabled)
             if (autoStartAmbient)
@@ -261,6 +294,25 @@ namespace TabletopShop
                 uiSource = uiObject.AddComponent<AudioSource>();
                 uiSource.loop = false;
                 uiSource.playOnAwake = false;
+            }
+            
+            // Create music audio sources for background music (dual sources for crossfading)
+            if (musicSourceA == null)
+            {
+                GameObject musicObjectA = new GameObject("MusicAudioSource_A");
+                musicObjectA.transform.SetParent(transform);
+                musicSourceA = musicObjectA.AddComponent<AudioSource>();
+                musicSourceA.loop = false;
+                musicSourceA.playOnAwake = false;
+            }
+            
+            if (musicSourceB == null)
+            {
+                GameObject musicObjectB = new GameObject("MusicAudioSource_B");
+                musicObjectB.transform.SetParent(transform);
+                musicSourceB = musicObjectB.AddComponent<AudioSource>();
+                musicSourceB.loop = false;
+                musicSourceB.playOnAwake = false;
             }
         }
         
@@ -671,6 +723,7 @@ namespace TabletopShop
             UpdateSfxVolumes();
             UpdateUiVolume();
             UpdateAmbientVolume();
+            UpdateMusicVolume();
         }
         
         /// <summary>
@@ -706,6 +759,21 @@ namespace TabletopShop
         }
         
         /// <summary>
+        /// Update music audio sources volume
+        /// </summary>
+        private void UpdateMusicVolume()
+        {
+            if (musicSourceA != null)
+            {
+                musicSourceA.volume = musicVolume * masterVolume;
+            }
+            if (musicSourceB != null)
+            {
+                musicSourceB.volume = musicVolume * masterVolume;
+            }
+        }
+        
+        /// <summary>
         /// Save audio settings to PlayerPrefs for persistence
         /// Audio preferences are maintained between game sessions
         /// </summary>
@@ -715,6 +783,7 @@ namespace TabletopShop
             PlayerPrefs.SetFloat("AudioManager_SfxVolume", sfxVolume);
             PlayerPrefs.SetFloat("AudioManager_UiVolume", uiVolume);
             PlayerPrefs.SetFloat("AudioManager_AmbientVolume", ambientVolume);
+            PlayerPrefs.SetFloat("AudioManager_MusicVolume", musicVolume);
             PlayerPrefs.Save();
         }
         
@@ -728,6 +797,7 @@ namespace TabletopShop
             sfxVolume = PlayerPrefs.GetFloat("AudioManager_SfxVolume", 1f);
             uiVolume = PlayerPrefs.GetFloat("AudioManager_UiVolume", 1f);
             ambientVolume = PlayerPrefs.GetFloat("AudioManager_AmbientVolume", 0.6f);
+            musicVolume = PlayerPrefs.GetFloat("AudioManager_MusicVolume", 0.7f);
         }
         
         #endregion
@@ -749,6 +819,12 @@ namespace TabletopShop
             if (uiSource != null)
                 uiSource.volume = targetVolume * uiVolume;
             
+            if (musicSourceA != null)
+                musicSourceA.volume = targetVolume * musicVolume;
+            
+            if (musicSourceB != null)
+                musicSourceB.volume = targetVolume * musicVolume;
+            
             // Note: Active SFX will continue with their current volume
             // New SFX will respect the muted state
         }
@@ -762,6 +838,8 @@ namespace TabletopShop
         {
             if (ambientSource != null && ambientSource.isPlaying) return true;
             if (uiSource != null && uiSource.isPlaying) return true;
+            if (musicSourceA != null && musicSourceA.isPlaying) return true;
+            if (musicSourceB != null && musicSourceB.isPlaying) return true;
             
             foreach (var source in sfxAudioPool)
             {
@@ -806,6 +884,42 @@ namespace TabletopShop
             PlayUIClick();
         }
         
+        [ContextMenu("Start Background Music")]
+        private void TestStartBackgroundMusic()
+        {
+            StartBackgroundMusic();
+        }
+        
+        [ContextMenu("Stop Background Music")]
+        private void TestStopBackgroundMusic()
+        {
+            StopBackgroundMusic();
+        }
+        
+        [ContextMenu("Next Track")]
+        private void TestNextTrack()
+        {
+            NextTrack();
+        }
+        
+        [ContextMenu("Previous Track")]
+        private void TestPreviousTrack()
+        {
+            PreviousTrack();
+        }
+        
+        [ContextMenu("Toggle Shuffle")]
+        private void TestToggleShuffle()
+        {
+            SetMusicShuffle(!shuffleMusic);
+        }
+        
+        [ContextMenu("Print Current Track Info")]
+        private void TestPrintTrackInfo()
+        {
+            Debug.Log(GetCurrentTrackInfo());
+        }
+        
         [ContextMenu("Print Pool Status")]
         private void PrintPoolStatus()
         {
@@ -813,6 +927,394 @@ namespace TabletopShop
         }
         #endif
         
+        #endregion
+
+        #region Background Music System
+
+        /// <summary>
+        /// Start background music playlist
+        /// Automatically cycles through tracks with optional shuffle and crossfade
+        /// </summary>
+        /// <param name="autoStart">Whether to start immediately or wait for manual trigger</param>
+        public void StartBackgroundMusic(bool autoStart = true)
+        {
+            if (backgroundMusicTracks == null || backgroundMusicTracks.Length == 0)
+            {
+                Debug.LogWarning("No background music tracks assigned to AudioManager!");
+                return;
+            }
+            
+            // Initialize shuffle order if enabled
+            if (shuffleMusic)
+            {
+                GenerateShuffledPlayOrder();
+            }
+            
+            currentTrackIndex = 0;
+            isMusicPlaying = true;
+            
+            if (autoStart)
+            {
+                PlayCurrentTrack();
+            }
+            
+            Debug.Log($"Background music started with {backgroundMusicTracks.Length} tracks (shuffle: {shuffleMusic}, crossfade: {crossfadeMusic})");
+        }
+        
+        /// <summary>
+        /// Stop background music with optional fade out
+        /// </summary>
+        /// <param name="fadeOut">Whether to fade out gradually</param>
+        public void StopBackgroundMusic(bool fadeOut = true)
+        {
+            isMusicPlaying = false;
+            
+            if (musicCrossfadeCoroutine != null)
+            {
+                StopCoroutine(musicCrossfadeCoroutine);
+                musicCrossfadeCoroutine = null;
+            }
+            
+            if (fadeOut && crossfadeMusic)
+            {
+                StartCoroutine(FadeOutMusic());
+            }
+            else
+            {
+                if (musicSourceA != null && musicSourceA.isPlaying)
+                    musicSourceA.Stop();
+                if (musicSourceB != null && musicSourceB.isPlaying)
+                    musicSourceB.Stop();
+            }
+            
+            Debug.Log("Background music stopped");
+        }
+        
+        /// <summary>
+        /// Skip to next track in playlist
+        /// </summary>
+        public void NextTrack()
+        {
+            if (backgroundMusicTracks == null || backgroundMusicTracks.Length == 0) return;
+            
+            AdvanceToNextTrack();
+            
+            if (isMusicPlaying)
+            {
+                PlayCurrentTrack();
+            }
+        }
+        
+        /// <summary>
+        /// Skip to previous track in playlist
+        /// </summary>
+        public void PreviousTrack()
+        {
+            if (backgroundMusicTracks == null || backgroundMusicTracks.Length == 0) return;
+            
+            if (shuffleMusic && shuffledTrackOrder.Count > 0)
+            {
+                currentTrackIndex = (currentTrackIndex - 1 + shuffledTrackOrder.Count) % shuffledTrackOrder.Count;
+            }
+            else
+            {
+                currentTrackIndex = (currentTrackIndex - 1 + backgroundMusicTracks.Length) % backgroundMusicTracks.Length;
+            }
+            
+            if (isMusicPlaying)
+            {
+                PlayCurrentTrack();
+            }
+        }
+        
+        /// <summary>
+        /// Toggle music shuffle mode on/off
+        /// </summary>
+        /// <param name="enabled">True to enable shuffle, false for sequential playback</param>
+        public void SetMusicShuffle(bool enabled)
+        {
+            shuffleMusic = enabled;
+            
+            if (enabled)
+            {
+                GenerateShuffledPlayOrder();
+                currentTrackIndex = 0; // Reset to start of shuffled list
+            }
+            
+            Debug.Log($"Music shuffle {(enabled ? "enabled" : "disabled")}");
+        }
+        
+        /// <summary>
+        /// Get information about currently playing track
+        /// </summary>
+        /// <returns>Track info string</returns>
+        public string GetCurrentTrackInfo()
+        {
+            if (backgroundMusicTracks == null || backgroundMusicTracks.Length == 0 || !isMusicPlaying)
+            {
+                return "No music playing";
+            }
+            
+            AudioClip currentClip = GetCurrentTrack();
+            if (currentClip != null)
+            {
+                int trackNumber = shuffleMusic && shuffledTrackOrder.Count > 0 
+                    ? shuffledTrackOrder[currentTrackIndex] + 1 
+                    : currentTrackIndex + 1;
+                
+                return $"Track {trackNumber}/{backgroundMusicTracks.Length}: {currentClip.name}";
+            }
+            
+            return "Unknown track";
+        }
+        
+        /// <summary>
+        /// Check if background music is currently playing
+        /// </summary>
+        /// <returns>True if music is playing</returns>
+        public bool IsMusicPlaying()
+        {
+            return isMusicPlaying && ((musicSourceA != null && musicSourceA.isPlaying) || 
+                                      (musicSourceB != null && musicSourceB.isPlaying));
+        }
+        
+        /// <summary>
+        /// Set specific track by index (0-based)
+        /// </summary>
+        /// <param name="trackIndex">Index of track to play</param>
+        public void SetTrack(int trackIndex)
+        {
+            if (backgroundMusicTracks == null || trackIndex < 0 || trackIndex >= backgroundMusicTracks.Length)
+            {
+                Debug.LogWarning($"Invalid track index: {trackIndex}");
+                return;
+            }
+            
+            currentTrackIndex = shuffleMusic && shuffledTrackOrder.Count > 0
+                ? shuffledTrackOrder.FindIndex(x => x == trackIndex)
+                : trackIndex;
+            
+            if (currentTrackIndex < 0) currentTrackIndex = 0;
+            
+            if (isMusicPlaying)
+            {
+                PlayCurrentTrack();
+            }
+        }
+
+        /// <summary>
+        /// Play the current track in the playlist
+        /// Handles crossfading between music sources if enabled
+        /// </summary>
+        private void PlayCurrentTrack()
+        {
+            AudioClip trackToPlay = GetCurrentTrack();
+            if (trackToPlay == null) return;
+            
+            if (crossfadeMusic && (musicSourceA.isPlaying || musicSourceB.isPlaying))
+            {
+                // Crossfade to new track
+                StartCrossfade(trackToPlay);
+            }
+            else
+            {
+                // Direct play without crossfade
+                AudioSource activeSource = isPlayingMusicA ? musicSourceA : musicSourceB;
+                PlayMusicTrack(activeSource, trackToPlay);
+            }
+            
+            Debug.Log($"Playing track: {trackToPlay.name}");
+        }
+        
+        /// <summary>
+        /// Play a music track on specified audio source
+        /// </summary>
+        /// <param name="source">Audio source to use</param>
+        /// <param name="track">Track to play</param>
+        private void PlayMusicTrack(AudioSource source, AudioClip track)
+        {
+            if (source == null || track == null) return;
+            
+            source.clip = track;
+            source.volume = musicVolume * masterVolume;
+            source.loop = false;
+            source.Play();
+            
+            // Schedule next track when this one finishes
+            StartCoroutine(ScheduleNextTrack(track.length));
+        }
+        
+        /// <summary>
+        /// Start crossfade between current track and new track
+        /// </summary>
+        /// <param name="newTrack">New track to crossfade to</param>
+        private void StartCrossfade(AudioClip newTrack)
+        {
+            if (musicCrossfadeCoroutine != null)
+            {
+                StopCoroutine(musicCrossfadeCoroutine);
+            }
+            
+            musicCrossfadeCoroutine = StartCoroutine(CrossfadeToTrack(newTrack));
+        }
+        
+        /// <summary>
+        /// Coroutine to handle crossfading between tracks
+        /// </summary>
+        /// <param name="newTrack">Track to crossfade to</param>
+        /// <returns>Coroutine enumerator</returns>
+        private IEnumerator CrossfadeToTrack(AudioClip newTrack)
+        {
+            AudioSource currentSource = isPlayingMusicA ? musicSourceA : musicSourceB;
+            AudioSource newSource = isPlayingMusicA ? musicSourceB : musicSourceA;
+            
+            // Start new track at zero volume
+            newSource.clip = newTrack;
+            newSource.volume = 0f;
+            newSource.loop = false;
+            newSource.Play();
+            
+            // Crossfade volumes
+            float timer = 0f;
+            float initialVolume = currentSource.volume;
+            float targetVolume = musicVolume * masterVolume;
+            
+            while (timer < crossfadeDuration)
+            {
+                timer += Time.deltaTime;
+                float progress = timer / crossfadeDuration;
+                
+                // Fade out current, fade in new
+                currentSource.volume = Mathf.Lerp(initialVolume, 0f, progress);
+                newSource.volume = Mathf.Lerp(0f, targetVolume, progress);
+                
+                yield return null;
+            }
+            
+            // Ensure final volumes are set
+            currentSource.volume = 0f;
+            newSource.volume = targetVolume;
+            
+            // Stop the old track and switch active source
+            currentSource.Stop();
+            isPlayingMusicA = !isPlayingMusicA;
+            
+            // Schedule next track
+            StartCoroutine(ScheduleNextTrack(newTrack.length - crossfadeDuration));
+            
+            musicCrossfadeCoroutine = null;
+        }
+        
+        /// <summary>
+        /// Fade out music gradually
+        /// </summary>
+        /// <returns>Coroutine enumerator</returns>
+        private IEnumerator FadeOutMusic()
+        {
+            AudioSource activeSource = musicSourceA.isPlaying ? musicSourceA : musicSourceB;
+            if (activeSource == null || !activeSource.isPlaying) yield break;
+            
+            float initialVolume = activeSource.volume;
+            float timer = 0f;
+            
+            while (timer < crossfadeDuration)
+            {
+                timer += Time.deltaTime;
+                float progress = timer / crossfadeDuration;
+                activeSource.volume = Mathf.Lerp(initialVolume, 0f, progress);
+                yield return null;
+            }
+            
+            activeSource.volume = 0f;
+            activeSource.Stop();
+        }
+        
+        /// <summary>
+        /// Schedule the next track to play after current track finishes
+        /// </summary>
+        /// <param name="delay">Delay before next track (track length)</param>
+        /// <returns>Coroutine enumerator</returns>
+        private IEnumerator ScheduleNextTrack(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            
+            if (isMusicPlaying)
+            {
+                AdvanceToNextTrack();
+                PlayCurrentTrack();
+            }
+        }
+        
+        /// <summary>
+        /// Advance to the next track in the playlist
+        /// </summary>
+        private void AdvanceToNextTrack()
+        {
+            if (backgroundMusicTracks == null || backgroundMusicTracks.Length == 0) return;
+            
+            if (shuffleMusic && shuffledTrackOrder.Count > 0)
+            {
+                currentTrackIndex = (currentTrackIndex + 1) % shuffledTrackOrder.Count;
+                
+                // If we've played all tracks in shuffle, generate new order
+                if (currentTrackIndex == 0)
+                {
+                    GenerateShuffledPlayOrder();
+                }
+            }
+            else
+            {
+                currentTrackIndex = (currentTrackIndex + 1) % backgroundMusicTracks.Length;
+            }
+        }
+        
+        /// <summary>
+        /// Get the current track based on play order
+        /// </summary>
+        /// <returns>Current AudioClip or null</returns>
+        private AudioClip GetCurrentTrack()
+        {
+            if (backgroundMusicTracks == null || backgroundMusicTracks.Length == 0) return null;
+            
+            int actualTrackIndex = shuffleMusic && shuffledTrackOrder.Count > 0
+                ? shuffledTrackOrder[currentTrackIndex]
+                : currentTrackIndex;
+            
+            if (actualTrackIndex >= 0 && actualTrackIndex < backgroundMusicTracks.Length)
+            {
+                return backgroundMusicTracks[actualTrackIndex];
+            }
+            
+            return null;
+        }
+        
+        /// <summary>
+        /// Generate a new shuffled play order for tracks
+        /// </summary>
+        private void GenerateShuffledPlayOrder()
+        {
+            if (backgroundMusicTracks == null || backgroundMusicTracks.Length == 0) return;
+            
+            shuffledTrackOrder.Clear();
+            
+            // Add all track indices
+            for (int i = 0; i < backgroundMusicTracks.Length; i++)
+            {
+                shuffledTrackOrder.Add(i);
+            }
+            
+            // Shuffle using Fisher-Yates algorithm
+            for (int i = shuffledTrackOrder.Count - 1; i > 0; i--)
+            {
+                int randomIndex = Random.Range(0, i + 1);
+                int temp = shuffledTrackOrder[i];
+                shuffledTrackOrder[i] = shuffledTrackOrder[randomIndex];
+                shuffledTrackOrder[randomIndex] = temp;
+            }
+            
+            Debug.Log($"Generated new shuffle order with {shuffledTrackOrder.Count} tracks");
+        }
+
         #endregion
     }
 }
