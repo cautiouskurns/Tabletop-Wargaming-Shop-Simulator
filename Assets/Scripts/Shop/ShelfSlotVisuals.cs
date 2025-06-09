@@ -19,7 +19,11 @@ namespace TabletopShop
         
         [Header("Slot Indicator")]
         [SerializeField] private GameObject slotIndicator;
-        [SerializeField] private Vector3 indicatorScale = new Vector3(0.8f, 0.1f, 0.8f);
+        [SerializeField] private Vector3 indicatorScale = new Vector3(0.8f, 0.01f, 0.8f);
+        [SerializeField] private bool preservePrefabScale = true; // New field to control scale preservation
+        
+        // Runtime storage for the actual scale to use
+        private Vector3 actualIndicatorScale;
         
         // Component references
         private MeshRenderer indicatorRenderer;
@@ -93,16 +97,22 @@ namespace TabletopShop
             // If a prefab is assigned in inspector, instantiate it
             if (slotIndicator != null && isPrefabReference)
             {
+                // Store the prefab's original scale before instantiation
+                Vector3 prefabScale = slotIndicator.transform.localScale;
+                
                 // This is a prefab reference, instantiate it
                 GameObject prefabInstance = Instantiate(slotIndicator);
                 slotIndicator = prefabInstance;
                 slotIndicator.name = $"{name}_Indicator";
                 slotIndicator.transform.SetParent(transform, false);
                 
+                // Use prefab scale if preservePrefabScale is true, otherwise use indicatorScale
+                actualIndicatorScale = preservePrefabScale ? prefabScale : indicatorScale;
+                
                 // Position and scale the indicator
                 UpdateIndicatorTransform();
                 
-                Debug.Log($"Instantiated prefab indicator for slot {name}");
+                Debug.Log($"Instantiated prefab indicator for slot {name} with scale {actualIndicatorScale}");
             }
             // Create slot indicator if it doesn't exist
             else if (slotIndicator == null)
@@ -111,10 +121,13 @@ namespace TabletopShop
                 slotIndicator.name = $"{name}_Indicator";
                 slotIndicator.transform.SetParent(transform, false);
                 
+                // Use the indicatorScale for created primitives
+                actualIndicatorScale = indicatorScale;
+                
                 // Position and scale the indicator
                 UpdateIndicatorTransform();
                 
-                Debug.Log($"Created default cube indicator for slot {name}");
+                Debug.Log($"Created default cube indicator for slot {name} with scale {actualIndicatorScale}");
                 
                 // Remove collider from indicator (we want slot collider to handle interactions)
                 Collider indicatorCollider = slotIndicator.GetComponent<Collider>();
@@ -125,9 +138,12 @@ namespace TabletopShop
             }
             else
             {
-                // Indicator already exists in scene, just ensure proper positioning
+                // Indicator already exists in scene, preserve its current scale
+                actualIndicatorScale = slotIndicator.transform.localScale;
+                
+                // Just ensure proper positioning
                 UpdateIndicatorTransform();
-                Debug.Log($"Using existing scene indicator for slot {name}");
+                Debug.Log($"Using existing scene indicator for slot {name} with preserved scale {actualIndicatorScale}");
             }
             
             // Remove any colliders from the indicator (we want slot collider to handle interactions)
@@ -162,7 +178,10 @@ namespace TabletopShop
             {
                 Vector3 localSlotPosition = slotLogic.SlotPosition - transform.position;
                 slotIndicator.transform.localPosition = localSlotPosition;
-                slotIndicator.transform.localScale = indicatorScale;
+                
+                // Use actualIndicatorScale if it's been set, otherwise fall back to indicatorScale
+                Vector3 scaleToUse = actualIndicatorScale != Vector3.zero ? actualIndicatorScale : indicatorScale;
+                slotIndicator.transform.localScale = scaleToUse;
             }
         }
         
