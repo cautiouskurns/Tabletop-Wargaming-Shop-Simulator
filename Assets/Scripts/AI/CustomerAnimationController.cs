@@ -29,13 +29,20 @@ namespace TabletopShop
         private void Awake()
         {
             // Get required components
-            animator = GetComponent<Animator>();
+            animator = GetComponentInChildren<Animator>();
             navMeshAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
             customerMovement = GetComponent<CustomerMovement>();
             
             if (animator == null)
             {
-                Debug.LogWarning($"CustomerAnimationController on {name} could not find Animator component!");
+                Debug.LogWarning($"CustomerAnimationController on {name} could not find Animator component in children!");
+            }
+            else
+            {
+                Debug.Log($"CustomerAnimationController on {name} found Animator on {animator.name}");
+                
+                // Ensure root motion is disabled to prevent character displacement
+                animator.applyRootMotion = false;
             }
             
             if (navMeshAgent == null)
