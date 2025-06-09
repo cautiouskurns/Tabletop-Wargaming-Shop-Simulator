@@ -25,7 +25,7 @@ namespace TabletopShop
         
         [Header("Slot Indicator")]
         [SerializeField] private GameObject slotIndicator;
-        [SerializeField] private Vector3 indicatorScale = new Vector3(0.8f, 0.01f, 0.8f);
+        [SerializeField] private Vector3 indicatorScale = new Vector3(0.2f, 0.01f, 0.2f);
         
         // Component references
         private ShelfSlotLogic slotLogic;

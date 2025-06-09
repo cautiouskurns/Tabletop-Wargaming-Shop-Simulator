@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 2108092746729319724}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.1, z: 0}
+  m_LocalPosition: {x: -1.875, y: 0.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -68,6 +68,74 @@ MonoBehaviour:
   m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
   slotPosition: {x: 0, y: 0, z: 0}
   currentProduct: {fileID: 0}
+--- !u!1 &2831402895928025296
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2246814009642505600}
+  - component: {fileID: 8603714860073987272}
+  - component: {fileID: 4791009351993288837}
+  m_Layer: 10
+  m_Name: Slot_7
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2246814009642505600
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2831402895928025296}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.125, y: 0.1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1473008577561291774}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8603714860073987272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2831402895928025296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
+  indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
+  hasBeenMigrated: 0
+--- !u!114 &4791009351993288837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2831402895928025296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
 --- !u!1 &4028624419644958173
 GameObject:
   m_ObjectHideFlags: 0
@@ -95,7 +163,7 @@ Transform:
   m_GameObject: {fileID: 4028624419644958173}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.132, z: 0}
   m_LocalScale: {x: 7.5, y: 0.05, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -157,6 +225,74 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &4268074578832089806
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1792907038837539142}
+  - component: {fileID: 4545784934366442862}
+  - component: {fileID: 4266138022912377980}
+  m_Layer: 10
+  m_Name: Slot_6
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1792907038837539142
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4268074578832089806}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.375, y: 0.1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1473008577561291774}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4545784934366442862
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4268074578832089806}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
+  indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
+  hasBeenMigrated: 0
+--- !u!114 &4266138022912377980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4268074578832089806}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
 --- !u!1 &5579423599213339003
 GameObject:
   m_ObjectHideFlags: 0
@@ -184,7 +320,7 @@ Transform:
   m_GameObject: {fileID: 5579423599213339003}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3, y: 0.1, z: 0}
+  m_LocalPosition: {x: -3.375, y: 0.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -225,6 +361,175 @@ MonoBehaviour:
   m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
   slotPosition: {x: 0, y: 0, z: 0}
   currentProduct: {fileID: 0}
+--- !u!1 &5989259834867794020
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2090388403223889632}
+  - component: {fileID: 5367452373588881461}
+  - component: {fileID: 7310788529786150823}
+  m_Layer: 10
+  m_Name: Slot_9
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2090388403223889632
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5989259834867794020}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.625, y: 0.1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1473008577561291774}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5367452373588881461
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5989259834867794020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
+  indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
+  hasBeenMigrated: 0
+--- !u!114 &7310788529786150823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5989259834867794020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
+--- !u!1 &7129242850737497655
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4277228756137354289}
+  - component: {fileID: 4283058881063346203}
+  - component: {fileID: 8126035930560749093}
+  - component: {fileID: 2531892785554641841}
+  - component: {fileID: 1095647791931331359}
+  m_Layer: 10
+  m_Name: Slot_10
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4277228756137354289
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7129242850737497655}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.375, y: 0.1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1473008577561291774}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4283058881063346203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7129242850737497655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
+  indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
+  hasBeenMigrated: 0
+--- !u!114 &8126035930560749093
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7129242850737497655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
+--- !u!114 &2531892785554641841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7129242850737497655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &1095647791931331359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7129242850737497655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
 --- !u!1 &7392343468210614318
 GameObject:
   m_ObjectHideFlags: 0
@@ -252,7 +557,7 @@ Transform:
   m_GameObject: {fileID: 7392343468210614318}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3, y: 0.1, z: 0}
+  m_LocalPosition: {x: -0.375, y: 0.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -328,6 +633,11 @@ Transform:
   - {fileID: 1629350246249168267}
   - {fileID: 800048150188304937}
   - {fileID: 7032157210456165468}
+  - {fileID: 1792907038837539142}
+  - {fileID: 2246814009642505600}
+  - {fileID: 5090660807666927385}
+  - {fileID: 2090388403223889632}
+  - {fileID: 4277228756137354289}
   - {fileID: 1199984610279402530}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -349,8 +659,13 @@ MonoBehaviour:
   - {fileID: 301385908647246023}
   - {fileID: 6092454070858641272}
   - {fileID: 4953916212804980277}
-  maxSlots: 5
-  slotSpacing: 1.5
+  - {fileID: 4545784934366442862}
+  - {fileID: 8603714860073987272}
+  - {fileID: 7923834577820752335}
+  - {fileID: 5367452373588881461}
+  - {fileID: 4283058881063346203}
+  maxSlots: 10
+  slotSpacing: 0.75
   allowedProductType: 0
   allowAnyProductType: 1
   autoCreateSlots: 1
@@ -384,7 +699,7 @@ Transform:
   m_GameObject: {fileID: 7764066426610136478}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.5, y: 0.1, z: 0}
+  m_LocalPosition: {x: -1.125, y: 0.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -425,6 +740,74 @@ MonoBehaviour:
   m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
   slotPosition: {x: 0, y: 0, z: 0}
   currentProduct: {fileID: 0}
+--- !u!1 &7948688537641982193
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5090660807666927385}
+  - component: {fileID: 7923834577820752335}
+  - component: {fileID: 2193397673197902344}
+  m_Layer: 10
+  m_Name: Slot_8
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5090660807666927385
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7948688537641982193}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.875, y: 0.1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1473008577561291774}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7923834577820752335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7948688537641982193}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
+  indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
+  hasBeenMigrated: 0
+--- !u!114 &2193397673197902344
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7948688537641982193}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
 --- !u!1 &9072554599393449449
 GameObject:
   m_ObjectHideFlags: 0
@@ -452,7 +835,7 @@ Transform:
   m_GameObject: {fileID: 9072554599393449449}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.5, y: 0.1, z: 0}
+  m_LocalPosition: {x: -2.625, y: 0.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
