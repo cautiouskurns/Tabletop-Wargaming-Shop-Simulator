@@ -6358,6 +6358,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1533560455529903695, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1174955281}
+    - targetCorrespondingSourceObject: {fileID: 1533560455529903695, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1174955285}
   m_SourcePrefab: {fileID: 100100000, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
 --- !u!1 &1174955268 stripped
 GameObject:
@@ -6426,10 +6429,6 @@ MonoBehaviour:
   moneyDisplay: {fileID: 2085796238}
   salesDisplay: {fileID: 1449353885}
   timeDisplay: {fileID: 613042713}
-  endDayButton: {fileID: 1771355785}
-  pauseButton: {fileID: 1627449170}
-  inventoryToggleButton: {fileID: 269696792}
-  settingsButton: {fileID: 0}
   dailySummaryPanel: {fileID: 1569155969}
   priceSettingPanel: {fileID: 1518744964}
   dailySummaryRevenueText: {fileID: 621557275}
@@ -6437,12 +6436,41 @@ MonoBehaviour:
   dailySummaryProfitText: {fileID: 1413375256}
   dailySummaryCustomersText: {fileID: 1268882683}
   dailySummaryDayText: {fileID: 1593396316}
-  dailySummaryContinueButton: {fileID: 1754840688}
-  priceInputField: {fileID: 1080549692}
   currentPriceText: {fileID: 539290087}
   suggestedPriceText: {fileID: 561527669}
+  shopUIDisplay:
+    moneyDisplay: {fileID: 0}
+    salesDisplay: {fileID: 0}
+    timeDisplay: {fileID: 0}
+--- !u!114 &1174955285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1174955268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49a855cfb8af044efaf8197cc7800ae2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShopUIControls
+  OnShowDailySummary:
+    m_PersistentCalls:
+      m_Calls: []
+  OnHideDailySummary:
+    m_PersistentCalls:
+      m_Calls: []
+  OnHidePriceSetting:
+    m_PersistentCalls:
+      m_Calls: []
+  endDayButton: {fileID: 1771355785}
+  pauseButton: {fileID: 1627449170}
+  inventoryToggleButton: {fileID: 269696792}
+  settingsButton: {fileID: 0}
+  dailySummaryContinueButton: {fileID: 0}
   confirmPriceButton: {fileID: 2105342124}
   cancelPriceButton: {fileID: 1482723030}
+  priceInputField: {fileID: 1080549692}
 --- !u!1 &1199793511
 GameObject:
   m_ObjectHideFlags: 0

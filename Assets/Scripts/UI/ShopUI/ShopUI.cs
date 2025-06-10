@@ -13,6 +13,8 @@ namespace TabletopShop
     /// 
     /// Component-based design following existing UI patterns in the project.
     /// Requires Canvas component for proper UI hierarchy integration.
+    /// 
+    /// Updated to use composition pattern with ShopUIControls for button handling.
     /// </summary>
     [RequireComponent(typeof(Canvas))]
     public class ShopUI : MonoBehaviour
@@ -28,19 +30,6 @@ namespace TabletopShop
         
         [Tooltip("UI text component for displaying current game time")]
         [SerializeField] private TextMeshProUGUI timeDisplay;
-        
-        [Header("Control Buttons")]
-        [Tooltip("Button to end the current day and proceed to next day")]
-        [SerializeField] private Button endDayButton;
-        
-        [Tooltip("Button to pause/unpause the game simulation")]
-        [SerializeField] private Button pauseButton;
-        
-        [Tooltip("Button to toggle inventory panel visibility")]
-        [SerializeField] private Button inventoryToggleButton;
-        
-        [Tooltip("Button to open settings/options panel")]
-        [SerializeField] private Button settingsButton;
         
         [Header("Panel References")]
         [Tooltip("Panel containing daily summary information and statistics")]
@@ -65,24 +54,22 @@ namespace TabletopShop
         [Tooltip("Text component displaying the current day number in summary")]
         [SerializeField] private TextMeshProUGUI dailySummaryDayText;
         
-        [Tooltip("Button to continue to next day from daily summary")]
-        [SerializeField] private Button dailySummaryContinueButton;
-        
         [Header("Price Setting UI Elements")]
-        [Tooltip("Input field for entering new product price")]
-        [SerializeField] private TMP_InputField priceInputField;
-        
         [Tooltip("Text component displaying current price in price setting panel")]
         [SerializeField] private TextMeshProUGUI currentPriceText;
         
         [Tooltip("Text component displaying suggested price range")]
         [SerializeField] private TextMeshProUGUI suggestedPriceText;
         
-        [Tooltip("Button to confirm price change")]
-        [SerializeField] private Button confirmPriceButton;
+        #endregion
         
-        [Tooltip("Button to cancel price change")]
-        [SerializeField] private Button cancelPriceButton;
+        #region Component References
+        
+        /// <summary>
+        /// Controls component handling all button interactions and control logic.
+        /// Uses composition pattern for separation of concerns.
+        /// </summary>
+        private ShopUIControls shopUIControls;
         
         #endregion
         
@@ -107,24 +94,6 @@ namespace TabletopShop
         private Canvas canvasComponent;
         
         /// <summary>
-        /// Reference to InventoryUI for inventory panel toggle functionality.
-        /// Cached for efficient access without repeated lookups.
-        /// </summary>
-        private InventoryUI inventoryUI;
-        
-        /// <summary>
-        /// Reference to SettingsUI for settings panel management.
-        /// Cached for efficient access to audio and game settings.
-        /// </summary>
-        private SettingsUI settingsUI;
-        
-        /// <summary>
-        /// Current pause state of the game.
-        /// Used to track whether the game is paused for visual feedback and state management.
-        /// </summary>
-        private bool isGamePaused = false;
-        
-        /// <summary>
         /// Current state of the daily summary panel visibility.
         /// Used to track whether the daily summary is currently displayed.
         /// </summary>
@@ -135,22 +104,6 @@ namespace TabletopShop
         /// Used to prevent multiple simultaneous price setting displays.
         /// </summary>
         private bool isPriceSettingVisible = false;
-        
-        /// <summary>
-        /// Reference to the product currently being price-adjusted.
-        /// Used to apply price changes to the correct product.
-        /// </summary>
-        private Product currentPricingProduct = null;
-        
-        /// <summary>
-        /// Original text for the pause button when the game is not paused.
-        /// </summary>
-        private const string PAUSE_TEXT = "Pause";
-        
-        /// <summary>
-        /// Text for the pause button when the game is paused.
-        /// </summary>
-        private const string RESUME_TEXT = "Resume";
         
         #endregion
         
@@ -169,6 +122,14 @@ namespace TabletopShop
         {
             // Cache the required Canvas component
             canvasComponent = GetComponent<Canvas>();
+            
+            // Get the ShopUIControls component
+            shopUIControls = GetComponent<ShopUIControls>();
+            if (shopUIControls == null)
+            {
+                Debug.LogError("[ShopUI] ShopUIControls component not found! Adding component automatically.");
+                shopUIControls = gameObject.AddComponent<ShopUIControls>();
+            }
             
             // Validate UI element references with detailed error logging
             ValidateUIReferences();
@@ -190,14 +151,8 @@ namespace TabletopShop
             // Attempt to establish GameManager connection
             InitializeGameManagerConnection();
             
-            // Initialize component references
-            InitializeComponentReferences();
-            
             // Initialize UI panels to default state (hidden for now)
             InitializeUIState();
-            
-            // Setup button event handlers
-            SetupButtonEventHandlers();
             
             // Subscribe to GameManager events for real-time updates
             SubscribeToGameManagerEvents();
@@ -230,7 +185,10 @@ namespace TabletopShop
                 // Escape key to cancel price setting
                 if (Input.GetKeyDown(KeyCode.Escape))
                 {
-                    OnCancelPriceButtonClicked();
+                    if (shopUIControls != null)
+                    {
+                        shopUIControls.TriggerAction(ShopUIAction.CancelPrice);
+                    }
                 }
             }
         }
@@ -240,24 +198,12 @@ namespace TabletopShop
         /// Following existing UI pattern for proper cleanup and memory management.
         /// 
         /// Cleanup includes:
-        /// - Button event handler removal
-        /// - Time.timeScale restoration
         /// - GameManager event unsubscription
         /// </summary>
         private void OnDestroy()
         {
             // Unsubscribe from GameManager events to prevent memory leaks
             UnsubscribeFromGameManagerEvents();
-            
-            // Clean up button event handlers to prevent memory leaks
-            CleanupButtonEventHandlers();
-            
-            // Restore normal time scale if game was paused
-            if (isGamePaused)
-            {
-                Time.timeScale = 1f;
-                Debug.Log("[ShopUI] Restored Time.timeScale to 1 on component destroy");
-            }
             
             Debug.Log("[ShopUI] Component destroyed - cleanup complete");
         }
@@ -294,25 +240,6 @@ namespace TabletopShop
             if (timeDisplay == null)
             {
                 Debug.LogError("[ShopUI] Time display TextMeshProUGUI reference is missing! Please assign in Inspector.");
-                allReferencesValid = false;
-            }
-            
-            // Validate control buttons
-            if (endDayButton == null)
-            {
-                Debug.LogError("[ShopUI] End day Button reference is missing! Please assign in Inspector.");
-                allReferencesValid = false;
-            }
-            
-            if (pauseButton == null)
-            {
-                Debug.LogError("[ShopUI] Pause Button reference is missing! Please assign in Inspector.");
-                allReferencesValid = false;
-            }
-            
-            if (inventoryToggleButton == null)
-            {
-                Debug.LogError("[ShopUI] Inventory toggle Button reference is missing! Please assign in Inspector.");
                 allReferencesValid = false;
             }
             
@@ -360,19 +287,7 @@ namespace TabletopShop
                 allReferencesValid = false;
             }
             
-            if (dailySummaryContinueButton == null)
-            {
-                Debug.LogError("[ShopUI] Daily summary continue Button reference is missing! Please assign in Inspector.");
-                allReferencesValid = false;
-            }
-            
             // Validate price setting UI elements
-            if (priceInputField == null)
-            {
-                Debug.LogError("[ShopUI] Price input field TMP_InputField reference is missing! Please assign in Inspector.");
-                allReferencesValid = false;
-            }
-            
             if (currentPriceText == null)
             {
                 Debug.LogError("[ShopUI] Current price TextMeshProUGUI reference is missing! Please assign in Inspector.");
@@ -382,18 +297,6 @@ namespace TabletopShop
             if (suggestedPriceText == null)
             {
                 Debug.LogError("[ShopUI] Suggested price TextMeshProUGUI reference is missing! Please assign in Inspector.");
-                allReferencesValid = false;
-            }
-            
-            if (confirmPriceButton == null)
-            {
-                Debug.LogError("[ShopUI] Confirm price Button reference is missing! Please assign in Inspector.");
-                allReferencesValid = false;
-            }
-            
-            if (cancelPriceButton == null)
-            {
-                Debug.LogError("[ShopUI] Cancel price Button reference is missing! Please assign in Inspector.");
                 allReferencesValid = false;
             }
             
@@ -453,47 +356,12 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Initialize references to other UI components in the scene.
-        /// Caches references to avoid repeated FindObjectOfType calls.
-        /// </summary>
-        private void InitializeComponentReferences()
-        {
-            // Cache InventoryUI reference for inventory toggle functionality
-            if (inventoryUI == null)
-            {
-                inventoryUI = FindFirstObjectByType<InventoryUI>();
-                if (inventoryUI == null)
-                {
-                    Debug.LogWarning("[ShopUI] InventoryUI component not found in scene. Inventory toggle will not function.");
-                }
-                else
-                {
-                    Debug.Log("[ShopUI] InventoryUI reference cached successfully");
-                }
-            }
-            
-            // Cache SettingsUI reference for settings panel management
-            if (settingsUI == null)
-            {
-                settingsUI = FindFirstObjectByType<SettingsUI>();
-                if (settingsUI == null)
-                {
-                    Debug.LogWarning("[ShopUI] SettingsUI component not found in scene. Settings button will not function.");
-                }
-                else
-                {
-                    Debug.Log("[ShopUI] SettingsUI reference cached successfully");
-                }
-            }
-        }
-        
-        /// <summary>
         /// Initialize UI panels and elements to their default state.
         /// Prepares UI for event-driven updates from GameManager in future sub-tasks.
         /// </summary>
         private void InitializeUIState()
         {
-            // Initialize panels to hidden state (will be controlled by buttons in future sub-tasks)
+            // Initialize panels to hidden state
             if (dailySummaryPanel != null)
             {
                 dailySummaryPanel.SetActive(false);
@@ -504,7 +372,7 @@ namespace TabletopShop
                 priceSettingPanel.SetActive(false);
             }
             
-            // Initialize display texts to default values (will be updated from GameManager in future sub-tasks)
+            // Initialize display texts to default values (will be updated from GameManager)
             if (moneyDisplay != null)
             {
                 moneyDisplay.text = "$0.00";
@@ -520,118 +388,7 @@ namespace TabletopShop
                 timeDisplay.text = "Day 1 - 09:00";
             }
             
-            // Initialize pause button text
-            if (pauseButton != null)
-            {
-                var buttonText = pauseButton.GetComponentInChildren<TextMeshProUGUI>();
-                if (buttonText != null)
-                {
-                    buttonText.text = PAUSE_TEXT;
-                }
-            }
-            
             Debug.Log("[ShopUI] UI state initialized to default values");
-        }
-        
-        /// <summary>
-        /// Setup button event handlers for all interactive UI elements.
-        /// Connects button onClick events to their respective handler methods.
-        /// </summary>
-        private void SetupButtonEventHandlers()
-        {
-            // Find InventoryUI reference for inventory toggle functionality
-            inventoryUI = FindFirstObjectByType<InventoryUI>();
-            if (inventoryUI == null)
-            {
-                Debug.LogWarning("[ShopUI] InventoryUI not found in scene. Inventory toggle button will be disabled.");
-            }
-            
-            // Setup End Day button
-            if (endDayButton != null)
-            {
-                endDayButton.onClick.AddListener(OnEndDayButtonClicked);
-                Debug.Log("[ShopUI] End Day button event handler added");
-            }
-            else
-            {
-                Debug.LogWarning("[ShopUI] End Day button reference is null - button functionality unavailable");
-            }
-            
-            // Setup Pause button
-            if (pauseButton != null)
-            {
-                pauseButton.onClick.AddListener(OnPauseButtonClicked);
-                Debug.Log("[ShopUI] Pause button event handler added");
-            }
-            else
-            {
-                Debug.LogWarning("[ShopUI] Pause button reference is null - button functionality unavailable");
-            }
-            
-            // Setup Inventory Toggle button
-            if (inventoryToggleButton != null)
-            {
-                inventoryToggleButton.onClick.AddListener(OnInventoryToggleButtonClicked);
-                Debug.Log("[ShopUI] Inventory toggle button event handler added");
-            }
-            else
-            {
-                Debug.LogWarning("[ShopUI] Inventory toggle button reference is null - button functionality unavailable");
-            }
-            
-            // Setup Settings button
-            if (settingsButton != null)
-            {
-                settingsButton.onClick.AddListener(OnSettingsButtonClicked);
-                Debug.Log("[ShopUI] Settings button event handler added");
-            }
-            else
-            {
-                Debug.LogWarning("[ShopUI] Settings button reference is null - button functionality unavailable");
-            }
-            
-            // Setup Daily Summary Continue button
-            if (dailySummaryContinueButton != null)
-            {
-                dailySummaryContinueButton.onClick.AddListener(OnDailySummaryContinueButtonClicked);
-                Debug.Log("[ShopUI] Daily summary continue button event handler added");
-            }
-            else
-            {
-                Debug.LogWarning("[ShopUI] Daily summary continue button reference is null - button functionality unavailable");
-            }
-            
-            // Setup Price Setting buttons
-            if (confirmPriceButton != null)
-            {
-                confirmPriceButton.onClick.AddListener(OnConfirmPriceButtonClicked);
-                Debug.Log("[ShopUI] Confirm price button event handler added");
-            }
-            else
-            {
-                Debug.LogWarning("[ShopUI] Confirm price button reference is null - button functionality unavailable");
-            }
-            
-            if (cancelPriceButton != null)
-            {
-                cancelPriceButton.onClick.AddListener(OnCancelPriceButtonClicked);
-                Debug.Log("[ShopUI] Cancel price button event handler added");
-            }
-            else
-            {
-                Debug.LogWarning("[ShopUI] Cancel price button reference is null - button functionality unavailable");
-            }
-            
-            // Setup price input field event handlers
-            if (priceInputField != null)
-            {
-                priceInputField.onEndEdit.AddListener(OnPriceInputEndEdit);
-                Debug.Log("[ShopUI] Price input field event handler added");
-            }
-            else
-            {
-                Debug.LogWarning("[ShopUI] Price input field reference is null - input functionality unavailable");
-            }
         }
         
         #endregion
@@ -844,8 +601,6 @@ namespace TabletopShop
             // - UpdateProgressBars() for day/night cycle indicators
         }
         
-
-        
         #endregion
         
         #region Display Updates (Extracted to ShopUIDisplay)
@@ -878,228 +633,6 @@ namespace TabletopShop
         
         #endregion
         
-        #region Button Event Handlers
-        
-        /// <summary>
-        /// Handle end day button click - shows daily summary popup before advancing to next day.
-        /// 
-        /// End Day Button Logic:
-        /// - Shows daily summary panel with key statistics
-        /// - Displays revenue, expenses, profit, and customers served
-        /// - Waits for player to click Continue button before advancing day
-        /// - Provides comprehensive feedback on daily performance
-        /// 
-        /// Daily Summary Flow:
-        /// 1. End Day button clicked
-        /// 2. Show daily summary panel with current day's data
-        /// 3. Player reviews statistics
-        /// 4. Player clicks Continue button
-        /// 5. Hide summary panel and advance to next day
-        /// </summary>
-        private void OnEndDayButtonClicked()
-        {
-            // Play UI click sound
-            AudioManager.Instance.PlayUIClick();
-            
-            if (gameManager != null)
-            {
-                ShowDailySummary();
-                Debug.Log("[ShopUI] End day button clicked - showing daily summary");
-            }
-            else
-            {
-                Debug.LogError("[ShopUI] GameManager is not available! Cannot show daily summary.");
-            }
-        }
-        
-        /// <summary>
-        /// Handle pause button click - toggles game pause state using Time.timeScale.
-        /// 
-        /// Pause Button Logic:
-        /// - Toggles isGamePaused flag
-        /// - Updates button text to reflect current state
-        /// - Uses Time.timeScale to pause/resume all time-based systems
-        /// 
-        /// Visual Feedback:
-        /// - Changes button text between "Pause" and "Resume"
-        /// - Indicates current game state to the player
-        /// 
-        /// Time.timeScale Implementation:
-        /// - timeScale = 0: Pauses all time-based updates (physics, animations, etc.)
-        /// - timeScale = 1: Normal game speed
-        /// - Affects all Unity systems that use Time.deltaTime
-        /// </summary>
-        private void OnPauseButtonClicked()
-        {
-            // Play UI click sound
-            AudioManager.Instance.PlayUIClick();
-            
-            if (pauseButton == null) return;
-            
-            // Toggle pause state
-            isGamePaused = !isGamePaused;
-            
-            // Update Time.timeScale to pause/resume the game
-            if (isGamePaused)
-            {
-                Time.timeScale = 0f; // Pause all time-based systems
-                UpdatePauseButtonText(RESUME_TEXT);
-                Debug.Log("[ShopUI] Game paused (Time.timeScale = 0)");
-            }
-            else
-            {
-                Time.timeScale = 1f; // Resume normal time
-                UpdatePauseButtonText(PAUSE_TEXT);
-                Debug.Log("[ShopUI] Game resumed (Time.timeScale = 1)");
-            }
-        }
-        
-        /// <summary>
-        /// Handle inventory toggle button click - toggles inventory panel visibility.
-        /// 
-        /// Inventory Toggle Logic:
-        /// - Calls InventoryUI.TogglePanel() to show/hide inventory
-        /// - Provides null-safe access to InventoryUI component
-        /// - Logs appropriate messages for debugging
-        /// 
-        /// Integration Notes:
-        /// - Uses existing InventoryUI.TogglePanel() method
-        /// - Maintains separation of concerns between UI systems
-        /// - No direct manipulation of inventory UI state
-        /// </summary>
-        private void OnInventoryToggleButtonClicked()
-        {
-            // Play UI click sound
-            AudioManager.Instance.PlayUIClick();
-            
-            if (inventoryUI != null)
-            {
-                inventoryUI.TogglePanel();
-                Debug.Log("[ShopUI] Inventory toggle button clicked - toggled inventory panel");
-            }
-            else
-            {
-                Debug.LogWarning("[ShopUI] InventoryUI reference is null! Cannot toggle inventory panel. " +
-                               "Ensure InventoryUI component exists in the scene.");
-            }
-        }
-        
-        /// <summary>
-        /// Handle settings button click - toggles settings panel visibility.
-        /// 
-        /// Settings Toggle Logic:
-        /// - Calls SettingsUI.ToggleSettings() to show/hide settings
-        /// - Provides null-safe access to SettingsUI component
-        /// - Logs appropriate messages for debugging
-        /// 
-        /// Integration Notes:
-        /// - Uses existing SettingsUI.ToggleSettings() method
-        /// - Maintains separation of concerns between UI systems
-        /// - No direct manipulation of settings UI state
-        /// </summary>
-        private void OnSettingsButtonClicked()
-        {
-            // Play UI click sound
-            AudioManager.Instance.PlayUIClick();
-            
-            if (settingsUI != null)
-            {
-                settingsUI.ToggleSettings();
-                Debug.Log("[ShopUI] Settings button clicked - toggled settings panel");
-            }
-            else
-            {
-                Debug.LogWarning("[ShopUI] SettingsUI reference is null! Cannot toggle settings panel. " +
-                               "Ensure SettingsUI component exists in the scene.");
-            }
-        }
-        
-        /// <summary>
-        /// Update pause button text with null-safe TextMeshPro access.
-        /// 
-        /// Button Text Update Pattern:
-        /// - Finds TextMeshProUGUI component in button's children
-        /// - Updates text with appropriate pause/resume label
-        /// - Provides error logging if text component not found
-        /// 
-        /// UI Hierarchy Assumption:
-        /// - Button GameObject contains child with TextMeshProUGUI component
-        /// - Standard Unity button setup with text label
-        /// </summary>
-        /// <param name="newText">The text to display on the pause button</param>
-        private void UpdatePauseButtonText(string newText)
-        {
-            if (pauseButton == null) return;
-            
-            var buttonText = pauseButton.GetComponentInChildren<TextMeshProUGUI>();
-            if (buttonText != null)
-            {
-                buttonText.text = newText;
-            }
-            else
-            {
-                Debug.LogWarning("[ShopUI] Pause button does not have a TextMeshProUGUI component in children. " +
-                               "Cannot update button text.");
-            }
-        }
-        
-        /// <summary>
-        /// Clean up button event handlers to prevent memory leaks.
-        /// Removes all onClick listeners that were added during initialization.
-        /// </summary>
-        private void CleanupButtonEventHandlers()
-        {
-            // Remove End Day button event handler
-            if (endDayButton != null)
-            {
-                endDayButton.onClick.RemoveListener(OnEndDayButtonClicked);
-            }
-            
-            // Remove Pause button event handler
-            if (pauseButton != null)
-            {
-                pauseButton.onClick.RemoveListener(OnPauseButtonClicked);
-            }
-            
-            // Remove Inventory Toggle button event handler
-            if (inventoryToggleButton != null)
-            {
-                inventoryToggleButton.onClick.RemoveListener(OnInventoryToggleButtonClicked);
-            }
-            
-            // Remove Settings button event handler
-            if (settingsButton != null)
-            {
-                settingsButton.onClick.RemoveListener(OnSettingsButtonClicked);
-            }
-            
-            // Remove Daily Summary Continue button event handler
-            if (dailySummaryContinueButton != null)
-            {
-                dailySummaryContinueButton.onClick.RemoveListener(OnDailySummaryContinueButtonClicked);
-            }
-            
-            // Remove Price Setting button event handlers
-            if (confirmPriceButton != null)
-            {
-                confirmPriceButton.onClick.RemoveListener(OnConfirmPriceButtonClicked);
-            }
-            
-            if (cancelPriceButton != null)
-            {
-                cancelPriceButton.onClick.RemoveListener(OnCancelPriceButtonClicked);
-            }
-            
-            if (priceInputField != null)
-            {
-                priceInputField.onEndEdit.RemoveListener(OnPriceInputEndEdit);
-            }
-            
-            Debug.Log("[ShopUI] Button event handlers cleaned up");
-        }
-        
-        #endregion
-        
         #region Price Setting System
         
         /// <summary>
@@ -1112,7 +645,7 @@ namespace TabletopShop
         /// - Offers confirm/cancel options for price changes
         /// 
         /// UI Flow:
-        /// 1. Store reference to product being priced
+        /// 1. Store reference to product being priced in controls component
         /// 2. Populate current price and suggested range
         /// 3. Show the price setting panel
         /// 4. Set visibility state flag
@@ -1139,8 +672,11 @@ namespace TabletopShop
                 HidePriceSetting();
             }
             
-            // Store reference to product being priced
-            currentPricingProduct = product;
+            // Set product reference in controls component
+            if (shopUIControls != null)
+            {
+                shopUIControls.SetCurrentPricingProduct(product);
+            }
             
             // Populate current price display
             if (currentPriceText != null)
@@ -1157,14 +693,6 @@ namespace TabletopShop
                 suggestedPriceText.text = $"Suggested: {UIFormatting.FormatCurrency(minSuggested)} - {UIFormatting.FormatCurrency(maxSuggested)}";
             }
             
-            // Initialize input field with current price
-            if (priceInputField != null)
-            {
-                priceInputField.text = product.CurrentPrice.ToString("F0");
-                priceInputField.Select();
-                priceInputField.ActivateInputField();
-            }
-            
             // Show the price setting panel
             priceSettingPanel.SetActive(true);
             isPriceSettingVisible = true;
@@ -1179,7 +707,7 @@ namespace TabletopShop
         /// Cancel Flow:
         /// 1. Hide the price setting panel
         /// 2. Reset visibility state flag
-        /// 3. Clear product reference
+        /// 3. Clear product reference in controls component
         /// 4. Provide debug feedback
         /// </summary>
         public void HidePriceSetting()
@@ -1190,122 +718,14 @@ namespace TabletopShop
             }
             
             isPriceSettingVisible = false;
-            currentPricingProduct = null;
+            
+            // Clear product reference in controls component
+            if (shopUIControls != null)
+            {
+                shopUIControls.ClearCurrentPricingProduct();
+            }
             
             Debug.Log("[ShopUI] Price setting panel hidden");
-        }
-        
-        /// <summary>
-        /// Handle confirm price button click - applies the new price to the product.
-        /// 
-        /// Confirm Price Logic:
-        /// - Validates input field contains valid positive number
-        /// - Applies new price to current product using Product.SetPrice()
-        /// - Hides price setting panel
-        /// - Provides feedback on price change success/failure
-        /// 
-        /// Price Validation:
-        /// - Must be positive number (> 0)
-        /// - Reasonable range check (prevents extreme values)
-        /// - Error handling for invalid input
-        /// </summary>
-        private void OnConfirmPriceButtonClicked()
-        {
-            // Play UI click sound
-            AudioManager.Instance.PlayUIClick();
-            
-            if (currentPricingProduct == null)
-            {
-                Debug.LogError("[ShopUI] Cannot confirm price - no product selected!");
-                HidePriceSetting();
-                return;
-            }
-            
-            if (priceInputField == null)
-            {
-                Debug.LogError("[ShopUI] Cannot confirm price - price input field is null!");
-                return;
-            }
-            
-            // Parse the input price
-            if (float.TryParse(priceInputField.text, out float newPrice))
-            {
-                // Validate price is positive and reasonable
-                if (newPrice > 0 && newPrice <= 10000) // Max $10,000 per item
-                {
-                    // Convert to int for Product.SetPrice() method
-                    int newPriceInt = Mathf.RoundToInt(newPrice);
-                    
-                    // Apply the new price using Product.SetPrice()
-                    currentPricingProduct.SetPrice(newPriceInt);
-                    
-                    Debug.Log($"[ShopUI] Price updated for {currentPricingProduct.ProductData.ProductName}: " +
-                             $"{UIFormatting.FormatCurrency(newPriceInt)}");
-                    
-                    // Hide the price setting panel
-                    HidePriceSetting();
-                }
-                else
-                {
-                    Debug.LogWarning($"[ShopUI] Invalid price range: {newPrice}. Price must be between $1 and $10,000.");
-                    
-                    // Reset input field to current price
-                    if (priceInputField != null)
-                    {
-                        priceInputField.text = currentPricingProduct.CurrentPrice.ToString("F0");
-                    }
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"[ShopUI] Invalid price input: '{priceInputField.text}'. Please enter a valid number.");
-                
-                // Reset input field to current price
-                if (priceInputField != null)
-                {
-                    priceInputField.text = currentPricingProduct.CurrentPrice.ToString("F0");
-                }
-            }
-        }
-        
-        /// <summary>
-        /// Handle cancel price button click - closes price setting without changes.
-        /// 
-        /// Cancel Price Logic:
-        /// - Closes price setting panel without applying changes
-        /// - Clears current product reference
-        /// - Provides user feedback
-        /// </summary>
-        private void OnCancelPriceButtonClicked()
-        {
-            // Play UI click sound
-            AudioManager.Instance.PlayUIClick();
-            
-            Debug.Log("[ShopUI] Price setting cancelled by user");
-            HidePriceSetting();
-        }
-        
-        /// <summary>
-        /// Handle price input field end edit - supports Enter key to confirm.
-        /// 
-        /// Input Field Logic:
-        /// - Enter key confirms price change (same as clicking Confirm button)
-        /// - Escape key cancels price change (same as clicking Cancel button)
-        /// - Provides keyboard shortcuts for efficient price setting
-        /// </summary>
-        /// <param name="inputText">The text entered in the input field</param>
-        private void OnPriceInputEndEdit(string inputText)
-        {
-            // Check if Enter was pressed to confirm
-            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
-            {
-                OnConfirmPriceButtonClicked();
-            }
-            // Check if Escape was pressed to cancel
-            else if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                OnCancelPriceButtonClicked();
-            }
         }
         
         #endregion
@@ -1327,7 +747,7 @@ namespace TabletopShop
         /// 3. Set visibility state flag
         /// 4. Player can review performance before continuing
         /// </summary>
-        private void ShowDailySummary()
+        public void ShowDailySummary()
         {
             if (gameManager == null)
             {
@@ -1407,7 +827,7 @@ namespace TabletopShop
         /// This method completes the daily transition cycle that was initiated
         /// by the End Day button click.
         /// </summary>
-        private void HideDailySummary()
+        public void HideDailySummary()
         {
             if (dailySummaryPanel != null)
             {
@@ -1426,28 +846,6 @@ namespace TabletopShop
             {
                 Debug.LogError("[ShopUI] Cannot advance to next day - GameManager is not available!");
             }
-        }
-        
-        /// <summary>
-        /// Handle continue button click from daily summary panel.
-        /// 
-        /// Continue Button Logic:
-        /// - Called when player clicks Continue button in daily summary
-        /// - Closes the daily summary popup
-        /// - Proceeds to next day via HideDailySummary()
-        /// - Provides seamless transition from summary to next day
-        /// 
-        /// Event Flow:
-        /// End Day Button → ShowDailySummary() → Daily Summary Display → 
-        /// Continue Button → OnDailySummaryContinueButtonClicked() → HideDailySummary() → Next Day
-        /// </summary>
-        private void OnDailySummaryContinueButtonClicked()
-        {
-            // Play UI click sound
-            AudioManager.Instance.PlayUIClick();
-            
-            HideDailySummary();
-            Debug.Log("[ShopUI] Daily summary continue button clicked - proceeding to next day");
         }
         
         #endregion
