@@ -125,7 +125,14 @@ namespace TabletopShop
                 Collider indicatorCollider = slotIndicator.GetComponent<Collider>();
                 if (indicatorCollider != null)
                 {
-                    DestroyImmediate(indicatorCollider);
+                    if (Application.isPlaying)
+                    {
+                        Destroy(indicatorCollider);
+                    }
+                    else
+                    {
+                        DestroyImmediate(indicatorCollider);
+                    }
                 }
             }
             else

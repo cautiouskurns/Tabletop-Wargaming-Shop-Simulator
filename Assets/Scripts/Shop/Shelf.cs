@@ -63,10 +63,33 @@ namespace TabletopShop
                 }
             }
             
-            if (autoCreateSlots && shelfSlots.Count == 0)
+            // Only auto-create slots during play mode to avoid SendMessage errors
+            // Check both the shelfSlots list AND actual child objects to avoid duplicate creation
+            int listCount = shelfSlots.Count;
+            int childCount = GetComponentsInChildren<ShelfSlot>().Length;
+            bool hasExistingSlots = listCount > 0 || childCount > 0;
+            
+            Debug.Log($"Shelf {name} Awake: listCount={listCount}, childCount={childCount}, hasExistingSlots={hasExistingSlots}, autoCreateSlots={autoCreateSlots}");
+            
+            if (autoCreateSlots && !hasExistingSlots && Application.isPlaying)
             {
+                Debug.Log($"Creating slots for {name} in play mode");
                 CreateSlots();
             }
+            #if UNITY_EDITOR
+            // In edit mode, defer slot creation to avoid SendMessage errors during Awake
+            else if (autoCreateSlots && !hasExistingSlots && !Application.isPlaying)
+            {
+                Debug.Log($"Deferring slot creation for {name} in edit mode");
+                UnityEditor.EditorApplication.delayCall += () => {
+                    if (this != null) // Check if object still exists
+                    {
+                        Debug.Log($"Deferred creating slots for {name}");
+                        CreateSlots();
+                    }
+                };
+            }
+            #endif
             
             ValidateSlots();
         }
@@ -280,38 +303,49 @@ namespace TabletopShop
         #region Setup and Validation
         
         /// <summary>
+        /// Calculate position for a slot at given index
+        /// </summary>
+        /// <param name="index">Slot index</param>
+        /// <returns>Local position for the slot</returns>
+        private Vector3 CalculateSlotPosition(int index)
+        {
+            float totalWidth = (maxSlots - 1) * slotSpacing;
+            float startX = -totalWidth / 2f;
+            return new Vector3(startX + (index * slotSpacing), 0.1f, 0);
+        }
+        
+        /// <summary>
         /// Create and position all shelf slots
         /// </summary>
         private void CreateSlots()
         {
-            // Clear existing slots
+            Debug.Log($"CreateSlots() called for {name} - Application.isPlaying: {Application.isPlaying}");
+            
+            #if UNITY_EDITOR
+            // Don't create slots if this is a prefab asset (prevents data corruption)
+            if (UnityEditor.PrefabUtility.IsPartOfPrefabAsset(this))
+            {
+                Debug.Log($"Skipping slot creation for prefab asset {name}");
+                return;
+            }
+            #endif
+            
+            Debug.Log($"Clearing existing {shelfSlots.Count} slots and creating {maxSlots} new slots for {name}");
             shelfSlots.Clear();
             
-            // Calculate positioning
-            float totalWidth = (maxSlots - 1) * slotSpacing;
-            float startX = -totalWidth / 2f;
-            
-            // Create slots
             for (int i = 0; i < maxSlots; i++)
             {
-                // Create slot GameObject
+                // Create slot GameObject - use prefab if available, otherwise create basic GameObject
                 GameObject slotObject = slotPrefab != null 
                     ? Instantiate(slotPrefab, transform)
                     : new GameObject($"Slot_{i + 1}");
                 
-                if (slotPrefab == null)
-                {
-                    slotObject.transform.SetParent(transform, false);
-                }
-                
-                // Position the slot
-                Vector3 slotPosition = new Vector3(startX + (i * slotSpacing), 0.1f, 0);
-                slotObject.transform.localPosition = slotPosition;
+                slotObject.transform.SetParent(transform, false);
+                slotObject.transform.localPosition = CalculateSlotPosition(i);
                 slotObject.name = $"Slot_{i + 1}";
                 
                 // Setup ShelfSlot component
                 ShelfSlot slot = slotObject.GetComponent<ShelfSlot>() ?? slotObject.AddComponent<ShelfSlot>();
-                slot.SetSlotPosition(Vector3.zero);
                 slot.Initialize(Vector3.zero);
                 
                 shelfSlots.Add(slot);
@@ -321,24 +355,22 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Validate that all slots are properly configured
+        /// Simple slot validation - remove null references and sync with child components
         /// </summary>
         private void ValidateSlots()
         {
-            // Remove any null references
+            // Remove null references
             shelfSlots.RemoveAll(slot => slot == null);
             
-            // Ensure we don't exceed max slots
-            if (shelfSlots.Count > maxSlots)
-            {
-                Debug.LogWarning($"Shelf {name} has more slots ({shelfSlots.Count}) than max allowed ({maxSlots})");
-                shelfSlots = shelfSlots.Take(maxSlots).ToList();
-            }
-            
-            // Warn if no slots
+            // If list is empty but we have ShelfSlot children, rebuild the list
             if (shelfSlots.Count == 0)
             {
-                Debug.LogWarning($"Shelf {name} has no slots! Consider enabling autoCreateSlots or manually adding ShelfSlot components.");
+                ShelfSlot[] childSlots = GetComponentsInChildren<ShelfSlot>();
+                if (childSlots.Length > 0)
+                {
+                    shelfSlots.AddRange(childSlots);
+                    Debug.Log($"Rebuilt slot list for {name} - found {childSlots.Length} existing slots");
+                }
             }
         }
         
@@ -426,14 +458,15 @@ namespace TabletopShop
             if (slotSpacing < 0.5f)
                 slotSpacing = 0.5f;
             
-            // Recreate slots if spacing changed and we have slots
-            if (shelfSlots != null && shelfSlots.Count > 0 && Application.isPlaying)
-            {
-                CreateSlots();
-            }
+            // Do NOT create slots during OnValidate to avoid Unity lifecycle errors
+            // Parameter validation only - slots will be created when:
+            // - Game starts (via Awake())  
+            // - Initialize() is called programmatically
+            // - Manual slot creation in inspector
             
             // Sync visual settings with ShelfVisuals component if it exists
-            if (shelfVisuals != null)
+            // Only do this during play mode to avoid component creation issues during OnValidate
+            if (shelfVisuals != null && Application.isPlaying)
             {
                 shelfVisuals.InitializeComponent(shelfMaterial, shelfDimensions, showShelfGizmos);
             }

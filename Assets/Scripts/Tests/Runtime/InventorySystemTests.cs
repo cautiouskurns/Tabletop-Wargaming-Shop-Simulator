@@ -130,25 +130,22 @@ namespace TabletopShop.Tests
             shelfObject.transform.SetParent(testSceneRoot.transform);
             shelf = shelfObject.AddComponent<Shelf>();
             
-            // Create multiple shelf slots for capacity testing (3 slots)
-            shelfSlots = new ShelfSlot[3];
-            for (int i = 0; i < shelfSlots.Length; i++)
-            {
-                var slotObject = new GameObject($"ShelfSlot_{i}");
-                slotObject.transform.SetParent(shelfObject.transform);
-                
-                // Add ShelfSlotLogic for business rule enforcement
-                var slotLogic = slotObject.AddComponent<ShelfSlotLogic>();
-                
-                // Add ShelfSlot for product placement management
-                shelfSlots[i] = slotObject.AddComponent<ShelfSlot>();
-                
-                // Initialize ShelfSlot with default position
-                shelfSlots[i].Initialize(null);  // Pass null for default position, or specify Vector3 if needed
-            }
+            // Initialize shelf with 3 slots for capacity testing
+            // The new consolidated Initialize() method creates slots automatically
+            shelf.Initialize(maxSlots: 3, slotSpacing: 1.5f, allowedType: ProductType.MiniatureBox, allowAnyType: true);
             
-            // Initialize shelf with slots
-            shelf.Initialize(shelfSlots);
+            // Get the automatically created slots for testing
+            shelfSlots = new ShelfSlot[3];
+            for (int i = 0; i < 3; i++)
+            {
+                shelfSlots[i] = shelf.GetSlot(i);
+                
+                // Verify slot was created properly
+                if (shelfSlots[i] == null)
+                {
+                    Debug.LogError($"Slot {i} was not created properly by shelf initialization");
+                }
+            }
         }
         
         /// <summary>

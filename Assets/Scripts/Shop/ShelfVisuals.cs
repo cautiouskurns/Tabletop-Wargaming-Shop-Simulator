@@ -207,7 +207,14 @@ namespace TabletopShop
             Collider visualCollider = shelfVisual.GetComponent<Collider>();
             if (visualCollider != null)
             {
-                DestroyImmediate(visualCollider);
+                if (Application.isPlaying)
+                {
+                    Destroy(visualCollider);
+                }
+                else
+                {
+                    DestroyImmediate(visualCollider);
+                }
             }
             
             Debug.Log($"Created ShelfVisual for shelf {name}");
