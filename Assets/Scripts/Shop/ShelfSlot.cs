@@ -183,25 +183,15 @@ namespace TabletopShop
             // Apply visual settings if provided and visuals component is available
             if (EnsureVisualsComponent())
             {
-                // Use reflection to set visual properties if provided
-                var visualsType = typeof(ShelfSlotVisuals);
-                
-                if (emptyColor.HasValue)
+                // Direct initialization without reflection
+                if (emptyColor.HasValue || highlightColor.HasValue || indicatorScale.HasValue)
                 {
-                    var emptySlotColorField = visualsType.GetField("emptySlotColor", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    emptySlotColorField?.SetValue(slotVisuals, emptyColor.Value);
-                }
-                
-                if (highlightColor.HasValue)
-                {
-                    var highlightColorField = visualsType.GetField("highlightColor", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    highlightColorField?.SetValue(slotVisuals, highlightColor.Value);
-                }
-                
-                if (indicatorScale.HasValue)
-                {
-                    var indicatorScaleField = visualsType.GetField("indicatorScale", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    indicatorScaleField?.SetValue(slotVisuals, indicatorScale.Value);
+                    slotVisuals.InitializeComponent(
+                        emptyColor ?? emptySlotColor,
+                        highlightColor ?? this.highlightColor,
+                        slotIndicator,
+                        indicatorScale ?? this.indicatorScale
+                    );
                 }
             }
             
