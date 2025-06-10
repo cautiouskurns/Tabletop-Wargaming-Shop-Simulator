@@ -11,6 +11,9 @@ namespace TabletopShop
     /// </summary>
     public class CustomerBehavior : MonoBehaviour
     {
+    [Header("State Management")]
+    [SerializeField] private CustomerState currentState = CustomerState.Entering;
+    
     [Header("Shopping Configuration")]
     [SerializeField] private float shoppingTime;
     [SerializeField] private ShelfSlot targetShelf;
@@ -35,6 +38,7 @@ namespace TabletopShop
         public event Action<ShelfSlot> OnTargetShelfChanged;
         
         // Properties
+        public CustomerState CurrentState => currentState;
         public float ShoppingTime => shoppingTime;
         public ShelfSlot TargetShelf => targetShelf;
         public List<Product> SelectedProducts => selectedProducts;
@@ -80,6 +84,44 @@ namespace TabletopShop
         
         #endregion
         
+        #region State Management
+        
+        /// <summary>
+        /// Change the customer state and notify listeners
+        /// </summary>
+        /// <param name="newState">The new state to transition to</param>
+        public void ChangeState(CustomerState newState)
+        {
+            CustomerState previousState = currentState;
+            currentState = newState;
+            
+            Debug.Log($"CustomerBehavior {name} state changed: {previousState} -> {currentState}");
+            
+            // Notify listeners of state change
+            OnStateChangeRequested?.Invoke(previousState, currentState);
+        }
+        
+        /// <summary>
+        /// Get the current customer state
+        /// </summary>
+        /// <returns>Current CustomerState</returns>
+        public CustomerState GetCurrentState()
+        {
+            return currentState;
+        }
+        
+        /// <summary>
+        /// Check if customer is currently in a specific state
+        /// </summary>
+        /// <param name="state">State to check</param>
+        /// <returns>True if customer is in the specified state</returns>
+        public bool IsInState(CustomerState state)
+        {
+            return currentState == state;
+        }
+        
+        #endregion
+        
         #region Customer Lifecycle State Machine
         
         /// <summary>
@@ -112,32 +154,32 @@ namespace TabletopShop
         /// Coroutine to handle the complete customer lifecycle automatically
         /// Progresses through: Entering → Shopping → Purchasing → Leaving
         /// </summary>
-        private IEnumerator CustomerLifecycleCoroutine(CustomerState currentState)
+        private IEnumerator CustomerLifecycleCoroutine(CustomerState initialState)
         {
+            // Set the initial state
+            ChangeState(initialState);
+            
             Debug.Log($"CustomerBehavior {name} starting lifecycle in state: {currentState}");
             
             // Phase 1: Entering the shop
             if (currentState == CustomerState.Entering)
             {
                 yield return StartCoroutine(HandleEnteringState());
-                currentState = CustomerState.Shopping;
-                OnStateChangeRequested?.Invoke(CustomerState.Entering, CustomerState.Shopping);
+                ChangeState(CustomerState.Shopping);
             }
             
             // Phase 2: Shopping behavior
             if (currentState == CustomerState.Shopping)
             {
                 yield return StartCoroutine(HandleShoppingState());
-                currentState = CustomerState.Purchasing;
-                OnStateChangeRequested?.Invoke(CustomerState.Shopping, CustomerState.Purchasing);
+                ChangeState(CustomerState.Purchasing);
             }
             
             // Phase 3: Purchasing (move to checkout area)
             if (currentState == CustomerState.Purchasing)
             {
                 yield return StartCoroutine(HandlePurchasingState());
-                currentState = CustomerState.Leaving;
-                OnStateChangeRequested?.Invoke(CustomerState.Purchasing, CustomerState.Leaving);
+                ChangeState(CustomerState.Leaving);
             }
             
             // Phase 4: Leaving the shop

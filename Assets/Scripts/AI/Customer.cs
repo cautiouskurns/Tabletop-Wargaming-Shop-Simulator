@@ -22,34 +22,20 @@ namespace TabletopShop
     [RequireComponent(typeof(NavMeshAgent))]
     public class Customer : MonoBehaviour
     {
-        [Header("Customer State")]
-        [SerializeField] private CustomerState currentState = CustomerState.Entering;
-        
-        [Header("Shopping Configuration")]
-        [SerializeField] private float shoppingTime;
-        [SerializeField] private ShelfSlot targetShelf;
-        
-        [Header("Movement Settings")]
-        [SerializeField] private float movementSpeed = 1.5f;
-        [SerializeField] private float stoppingDistance = 1f;
-        
-        // Component references - composition pattern
-        private CustomerMovement customerMovement;
-        private CustomerBehavior customerBehavior;
-        private CustomerVisuals customerVisuals;
-        
-        // Legacy component reference (kept for minimal compatibility)
-        private NavMeshAgent navMeshAgent;
+        [Header("Required Components")]
+        [SerializeField] private CustomerMovement customerMovement;
+        [SerializeField] private CustomerBehavior customerBehavior;
+        [SerializeField] private CustomerVisuals customerVisuals;
         
         // Component access properties - expose components directly for better flexibility
         public CustomerMovement Movement => customerMovement;
         public CustomerBehavior Behavior => customerBehavior;
         public CustomerVisuals Visuals => customerVisuals;
         
-        // Legacy properties for backward compatibility (delegate to components or fallback)
-        public CustomerState CurrentState => currentState;
-        public float ShoppingTime => customerBehavior?.ShoppingTime ?? shoppingTime;
-        public ShelfSlot TargetShelf => customerBehavior?.TargetShelf ?? targetShelf;
+        // Legacy properties for backward compatibility (delegate to components)
+        public CustomerState CurrentState => customerBehavior?.CurrentState ?? CustomerState.Entering;
+        public float ShoppingTime => customerBehavior?.ShoppingTime ?? 15f; // Default fallback
+        public ShelfSlot TargetShelf => customerBehavior?.TargetShelf;
         public bool IsMoving => customerMovement?.IsMoving ?? false;
         public Vector3 CurrentDestination => customerMovement?.CurrentDestination ?? Vector3.zero;
         public bool HasDestination => customerMovement?.HasDestination ?? false;
@@ -64,12 +50,12 @@ namespace TabletopShop
         
         private void Start()
         {
-            Debug.Log($"Customer {name} initialized with state: {currentState}, shopping time: {ShoppingTime:F1}s");
+            Debug.Log($"Customer {name} initialized with state: {CurrentState}, shopping time: {ShoppingTime:F1}s");
             
             // Start the customer lifecycle state machine (delegate to behavior component)
             if (customerBehavior != null)
             {
-                customerBehavior.StartCustomerLifecycle(currentState);
+                customerBehavior.StartCustomerLifecycle(CurrentState);
             }
             else
             {
@@ -88,35 +74,30 @@ namespace TabletopShop
         #region Component Initialization
         
         /// <summary>
-        /// Initialize and setup components using composition pattern
+        /// Initialize and setup components using dependency injection
         /// </summary>
         private void InitializeComponents()
         {
-            // Get or create movement component
-            customerMovement = EnsureMovementComponent();
-            
-            // Get or create behavior component  
-            customerBehavior = EnsureBehaviorComponent();
-            
-            // Get or create visuals component
-            customerVisuals = EnsureVisualsComponent();
+            // Validate required dependencies
+            if (customerMovement == null || customerBehavior == null || customerVisuals == null)
+            {
+                Debug.LogError($"Customer {name} is missing required components! Use OnValidate to auto-assign or manually assign in inspector.");
+                return;
+            }
             
             // Initialize cross-component references
-            if (customerMovement != null && customerBehavior != null && customerVisuals != null)
-            {
-                customerMovement.Initialize();
-                customerBehavior.Initialize(customerMovement, this);
-                customerVisuals.Initialize(customerMovement, this);
-                
-                // Subscribe to component events
-                customerBehavior.OnStateChangeRequested += HandleStateChangeRequest;
-                customerBehavior.OnTargetShelfChanged += HandleTargetShelfChanged;
-                
-                // Migrate legacy field values
-                MigrateLegacyFields();
-                
-                Debug.Log($"Customer {name} components initialized successfully");
-            }
+            customerMovement.Initialize();
+            customerBehavior.Initialize(customerMovement, this);
+            customerVisuals.Initialize(customerMovement, this);
+            
+            // Subscribe to component events
+            customerBehavior.OnStateChangeRequested += HandleStateChangeRequest;
+            customerBehavior.OnTargetShelfChanged += HandleTargetShelfChanged;
+            
+            // Migrate legacy field values
+            MigrateLegacyFields();
+            
+            Debug.Log($"Customer {name} components initialized successfully");
         }
         
         /// <summary>
@@ -124,56 +105,8 @@ namespace TabletopShop
         /// </summary>
         private void InitializeLegacyFallbacks()
         {
-            // Keep NavMeshAgent reference for basic compatibility
-            navMeshAgent = GetComponent<NavMeshAgent>();
-            
-            // Initialize legacy shopping time if not set
-            if (shoppingTime <= 0)
-            {
-                shoppingTime = UnityEngine.Random.Range(10f, 30f);
-            }
-        }
-        
-        /// <summary>
-        /// Ensure CustomerMovement component exists and return reference
-        /// </summary>
-        private CustomerMovement EnsureMovementComponent()
-        {
-            CustomerMovement movement = GetComponent<CustomerMovement>();
-            if (movement == null)
-            {
-                movement = gameObject.AddComponent<CustomerMovement>();
-                Debug.Log($"Customer {name} created CustomerMovement component");
-            }
-            return movement;
-        }
-        
-        /// <summary>
-        /// Ensure CustomerBehavior component exists and return reference
-        /// </summary>
-        private CustomerBehavior EnsureBehaviorComponent()
-        {
-            CustomerBehavior behavior = GetComponent<CustomerBehavior>();
-            if (behavior == null)
-            {
-                behavior = gameObject.AddComponent<CustomerBehavior>();
-                Debug.Log($"Customer {name} created CustomerBehavior component");
-            }
-            return behavior;
-        }
-        
-        /// <summary>
-        /// Ensure CustomerVisuals component exists and return reference
-        /// </summary>
-        private CustomerVisuals EnsureVisualsComponent()
-        {
-            CustomerVisuals visuals = GetComponent<CustomerVisuals>();
-            if (visuals == null)
-            {
-                visuals = gameObject.AddComponent<CustomerVisuals>();
-                Debug.Log($"Customer {name} created CustomerVisuals component");
-            }
-            return visuals;
+            // Ensure components are properly initialized
+            // Legacy fallbacks are now handled through component delegation
         }
         
         /// <summary>
@@ -189,7 +122,8 @@ namespace TabletopShop
         /// </summary>
         private void HandleTargetShelfChanged(ShelfSlot shelf)
         {
-            targetShelf = shelf;
+            // Target shelf is now managed by the behavior component
+            // This event handler can be used for additional coordination if needed
         }
         
         /// <summary>
@@ -199,7 +133,9 @@ namespace TabletopShop
         {
             if (customerBehavior != null)
             {
-                customerBehavior.MigrateLegacyFields(shoppingTime, targetShelf);
+                // Migration now handled by component initialization
+                // Components initialize with their own default values
+                customerBehavior.MigrateLegacyFields(UnityEngine.Random.Range(10f, 30f), null);
             }
             
             if (customerVisuals != null)
@@ -218,13 +154,23 @@ namespace TabletopShop
         /// <param name="newState">The new state to transition to</param>
         public void ChangeState(CustomerState newState)
         {
-            CustomerState previousState = currentState;
-            currentState = newState;
+            CustomerState previousState = CurrentState;
             
-            Debug.Log($"Customer {name} state changed: {previousState} -> {currentState}");
+            // Delegate state change to behavior component
+            if (customerBehavior != null)
+            {
+                customerBehavior.ChangeState(newState);
+            }
+            else
+            {
+                Debug.LogWarning($"Customer {name} cannot change state - CustomerBehavior component not found!");
+                return;
+            }
+            
+            Debug.Log($"Customer {name} state changed: {previousState} -> {CurrentState}");
             
             // Handle state-specific initialization
-            OnStateChanged(previousState, currentState);
+            OnStateChanged(previousState, CurrentState);
         }
         
         /// <summary>
@@ -233,7 +179,7 @@ namespace TabletopShop
         /// <returns>Current CustomerState</returns>
         public CustomerState GetCurrentState()
         {
-            return currentState;
+            return CurrentState;
         }
         
         /// <summary>
@@ -256,7 +202,7 @@ namespace TabletopShop
                     break;
                     
                 case CustomerState.Shopping:
-                    Debug.Log($"Customer {name} started shopping (duration: {shoppingTime:F1}s)");
+                    Debug.Log($"Customer {name} started shopping (duration: {ShoppingTime:F1}s)");
                     break;
                     
                 case CustomerState.Purchasing:
@@ -334,7 +280,11 @@ namespace TabletopShop
         /// <param name="shelf">Target shelf slot</param>
         public void SetTargetShelf(ShelfSlot shelf)
         {
-            targetShelf = shelf;
+            // Delegate to behavior component for target shelf management
+            if (customerBehavior != null)
+            {
+                customerBehavior.SetTargetShelf(shelf);
+            }
             
             if (shelf != null)
             {
@@ -364,7 +314,7 @@ namespace TabletopShop
         /// <returns>NavMeshAgent component</returns>
         public NavMeshAgent GetNavMeshAgent()
         {
-            return navMeshAgent;
+            return customerMovement?.NavMeshAgent ?? GetComponent<NavMeshAgent>();
         }
         
         /// <summary>
@@ -374,7 +324,7 @@ namespace TabletopShop
         /// <returns>True if customer is in the specified state</returns>
         public bool IsInState(CustomerState state)
         {
-            return currentState == state;
+            return CurrentState == state;
         }
         
         #endregion
@@ -397,10 +347,15 @@ namespace TabletopShop
         
         private void OnValidate()
         {
-            // Ensure valid ranges in editor
-            movementSpeed = Mathf.Max(0.1f, movementSpeed);
-            stoppingDistance = Mathf.Max(0.1f, stoppingDistance);
-            shoppingTime = Mathf.Max(1f, shoppingTime);
+            // Validate dependencies are assigned and auto-assign if missing
+            if (!customerMovement) customerMovement = GetComponent<CustomerMovement>();
+            if (!customerBehavior) customerBehavior = GetComponent<CustomerBehavior>();
+            if (!customerVisuals) customerVisuals = GetComponent<CustomerVisuals>();
+            
+            // Warn if dependencies are still missing after auto-assignment attempt
+            if (!customerMovement) Debug.LogWarning($"Customer {name} is missing CustomerMovement component!");
+            if (!customerBehavior) Debug.LogWarning($"Customer {name} is missing CustomerBehavior component!");
+            if (!customerVisuals) Debug.LogWarning($"Customer {name} is missing CustomerVisuals component!");
         }
         
         #endregion
