@@ -943,7 +943,7 @@ namespace TabletopShop
                 // Convert to MM:SS format
                 int minutes = Mathf.FloorToInt(elapsedSeconds / 60.0f);
                 int seconds = Mathf.FloorToInt(elapsedSeconds % 60.0f);
-                string timeString = FormatTimeCountdown(minutes, seconds);
+                string timeString = UIFormatting.FormatTimeCountdown(minutes, seconds);
                 
                 // Display format: "Day 3 - 05:23" or "Night 3 - 01:45"
                 string cycleIndicator = isDayTime ? "Day" : "Night";
@@ -958,94 +958,11 @@ namespace TabletopShop
         
         #endregion
         
-        #region Formatting Utilities
+        #region Formatting Utilities (Moved to UIFormatting static class)
         
-        /// <summary>
-        /// Format time values into MM:SS countdown string.
-        /// 
-        /// Time Formatting Utilities:
-        /// - Consistent MM:SS format across all time displays
-        /// - Zero-padding for professional appearance
-        /// - Efficient string formatting to minimize garbage collection
-        /// 
-        /// Performance Considerations:
-        /// - string.Format vs StringBuilder vs direct concatenation
-        /// - Called every frame, so efficiency matters
-        /// - ToString("D2") for zero-padding is optimized in .NET
-        /// 
-        /// Example outputs: "05:23", "00:47", "12:00"
-        /// </summary>
-        /// <param name="minutes">Minutes component (0-59 typically)</param>
-        /// <param name="seconds">Seconds component (0-59)</param>
-        /// <returns>Formatted time string in MM:SS format</returns>
-        private string FormatTimeCountdown(int minutes, int seconds)
-        {
-            // Ensure values are within expected ranges
-            minutes = Mathf.Clamp(minutes, 0, 99); // Support up to 99 minutes
-            seconds = Mathf.Clamp(seconds, 0, 59);
-            
-            // Use efficient formatting with zero-padding
-            return string.Format("{0:D2}:{1:D2}", minutes, seconds);
-        }
-        
-        /// <summary>
-        /// Format currency values with consistent formatting rules.
-        /// 
-        /// Currency Formatting Utilities:
-        /// - Centralized currency formatting for consistency
-        /// - Handles different value ranges (dollars, cents, thousands)
-        /// - Configurable precision for different use cases
-        /// 
-        /// Formatting Rules:
-        /// - No decimals for whole dollar amounts (cleaner appearance)
-        /// - Thousands separators for readability
-        /// - Dollar sign prefix for clear currency indication
-        /// 
-        /// Example outputs: "$1,234", "$500", "$12,000"
-        /// </summary>
-        /// <param name="amount">Currency amount to format</param>
-        /// <param name="includeCents">Whether to include cents (default: false)</param>
-        /// <returns>Formatted currency string</returns>
-        private string FormatCurrency(float amount, bool includeCents = false)
-        {
-            // Use appropriate formatting based on cents requirement
-            if (includeCents)
-            {
-                return string.Format("${0:N2}", amount); // $1,234.56
-            }
-            else
-            {
-                return string.Format("${0:N0}", amount); // $1,234
-            }
-        }
-        
-        /// <summary>
-        /// Format sales count with appropriate singular/plural handling.
-        /// 
-        /// Sales Formatting Utilities:
-        /// - Proper pluralization for professional appearance
-        /// - Handles edge cases (0, 1, multiple sales)
-        /// - Consistent format across all sales displays
-        /// 
-        /// Example outputs: "No sales", "1 sale", "5 sales"
-        /// </summary>
-        /// <param name="count">Number of sales</param>
-        /// <returns>Formatted sales count string</returns>
-        private string FormatSalesCount(int count)
-        {
-            if (count == 0)
-            {
-                return "No sales";
-            }
-            else if (count == 1)
-            {
-                return "1 sale";
-            }
-            else
-            {
-                return string.Format("{0} sales", count);
-            }
-        }
+        // Note: Formatting methods have been moved to UIFormatting static utility class
+        // for better reusability and centralized formatting logic.
+        // See Assets/Scripts/Utilities/UIFormatting.cs for implementation.
         
         #endregion
         
@@ -1334,7 +1251,7 @@ namespace TabletopShop
             // Populate current price display
             if (currentPriceText != null)
             {
-                currentPriceText.text = $"Current Price: {FormatCurrency(product.CurrentPrice)}";
+                currentPriceText.text = $"Current Price: {UIFormatting.FormatCurrency(product.CurrentPrice)}";
             }
             
             // Calculate and display suggested price range (±20% of base price)
@@ -1343,7 +1260,7 @@ namespace TabletopShop
                 float basePrice = product.ProductData.BasePrice;
                 float minSuggested = basePrice * 0.8f;
                 float maxSuggested = basePrice * 1.2f;
-                suggestedPriceText.text = $"Suggested: {FormatCurrency(minSuggested)} - {FormatCurrency(maxSuggested)}";
+                suggestedPriceText.text = $"Suggested: {UIFormatting.FormatCurrency(minSuggested)} - {UIFormatting.FormatCurrency(maxSuggested)}";
             }
             
             // Initialize input field with current price
@@ -1359,7 +1276,7 @@ namespace TabletopShop
             isPriceSettingVisible = true;
             
             Debug.Log($"[ShopUI] Price setting displayed for product: {product.ProductData.ProductName}, " +
-                     $"Current price: {FormatCurrency(product.CurrentPrice)}");
+                     $"Current price: {UIFormatting.FormatCurrency(product.CurrentPrice)}");
         }
         
         /// <summary>
@@ -1429,7 +1346,7 @@ namespace TabletopShop
                     currentPricingProduct.SetPrice(newPriceInt);
                     
                     Debug.Log($"[ShopUI] Price updated for {currentPricingProduct.ProductData.ProductName}: " +
-                             $"{FormatCurrency(newPriceInt)}");
+                             $"{UIFormatting.FormatCurrency(newPriceInt)}");
                     
                     // Hide the price setting panel
                     HidePriceSetting();
@@ -1540,18 +1457,18 @@ namespace TabletopShop
             // Populate summary text elements using existing formatting utilities
             if (dailySummaryRevenueText != null)
             {
-                dailySummaryRevenueText.text = FormatCurrency(dailyRevenue);
+                dailySummaryRevenueText.text = UIFormatting.FormatCurrency(dailyRevenue);
             }
             
             if (dailySummaryExpensesText != null)
             {
-                dailySummaryExpensesText.text = FormatCurrency(dailyExpenses);
+                dailySummaryExpensesText.text = UIFormatting.FormatCurrency(dailyExpenses);
             }
             
             if (dailySummaryProfitText != null)
             {
                 // Use color coding for profit/loss indication
-                string profitText = FormatCurrency(dailyProfit);
+                string profitText = UIFormatting.FormatCurrency(dailyProfit);
                 dailySummaryProfitText.text = profitText;
                 
                 // Optional: Add color coding for profit (green) vs loss (red)
@@ -1567,7 +1484,7 @@ namespace TabletopShop
             
             if (dailySummaryCustomersText != null)
             {
-                dailySummaryCustomersText.text = FormatSalesCount(customersServed);
+                dailySummaryCustomersText.text = UIFormatting.FormatSalesCount(customersServed);
             }
             
             if (dailySummaryDayText != null)
@@ -1579,8 +1496,8 @@ namespace TabletopShop
             dailySummaryPanel.SetActive(true);
             isDailySummaryVisible = true;
             
-            Debug.Log($"[ShopUI] Daily summary displayed - Revenue: {FormatCurrency(dailyRevenue)}, " +
-                     $"Expenses: {FormatCurrency(dailyExpenses)}, Profit: {FormatCurrency(dailyProfit)}, " +
+            Debug.Log($"[ShopUI] Daily summary displayed - Revenue: {UIFormatting.FormatCurrency(dailyRevenue)}, " +
+                     $"Expenses: {UIFormatting.FormatCurrency(dailyExpenses)}, Profit: {UIFormatting.FormatCurrency(dailyProfit)}, " +
                      $"Customers: {customersServed}");
         }
         
