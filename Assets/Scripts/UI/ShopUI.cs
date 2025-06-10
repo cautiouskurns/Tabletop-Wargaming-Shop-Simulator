@@ -95,6 +95,12 @@ namespace TabletopShop
         private GameManager gameManager;
         
         /// <summary>
+        /// Display component that handles all display update logic using composition pattern.
+        /// Separates display concerns from UI coordination and event handling.
+        /// </summary>
+        [SerializeField] private ShopUIDisplay shopUIDisplay = new ShopUIDisplay();
+        
+        /// <summary>
         /// Cached Canvas component reference for UI hierarchy management.
         /// Required component ensures this is always available.
         /// </summary>
@@ -424,12 +430,26 @@ namespace TabletopShop
             {
                 Debug.Log("[ShopUI] GameManager connection established successfully");
                 
-                // Preparation for GameManager integration in future sub-tasks:
-                // - Event subscription for money updates
-                // - Event subscription for time updates  
-                // - Event subscription for sales data updates
-                // - Event subscription for game state changes
+                // Initialize the display component with references
+                InitializeDisplayComponent();
             }
+        }
+        
+        /// <summary>
+        /// Initialize the ShopUIDisplay component with UI references and GameManager.
+        /// Uses composition pattern to separate display logic from UI coordination.
+        /// </summary>
+        private void InitializeDisplayComponent()
+        {
+            if (shopUIDisplay == null)
+            {
+                shopUIDisplay = new ShopUIDisplay();
+            }
+            
+            shopUIDisplay.Initialize(moneyDisplay, salesDisplay, timeDisplay, gameManager);
+            shopUIDisplay.InitializeDisplayTexts();
+            
+            Debug.Log("[ShopUI] Display component initialized successfully");
         }
         
         /// <summary>
@@ -687,10 +707,11 @@ namespace TabletopShop
         {
             if (gameManager != null && HasValidReferences)
             {
-                // Trigger manual updates for all displays
-                UpdateMoneyDisplay();
-                UpdateSalesDisplay();
-                UpdateTimeDisplay();
+                // Use display component for coordinated updates via composition pattern
+                if (shopUIDisplay != null)
+                {
+                    shopUIDisplay.RefreshDisplays();
+                }
                 
                 // Retry event subscription if it failed earlier
                 if (GameManager.Instance != null)
@@ -700,7 +721,7 @@ namespace TabletopShop
                     SubscribeToGameManagerEvents();
                 }
                 
-                Debug.Log("[ShopUI] UI data refreshed from GameManager");
+                Debug.Log("[ShopUI] UI data refreshed from GameManager via ShopUIDisplay");
             }
             else
             {
@@ -723,12 +744,13 @@ namespace TabletopShop
         /// </summary>
         private void OnMoneyChanged()
         {
-            UpdateMoneyDisplay();
+            // Delegate to display component using composition pattern
+            if (shopUIDisplay != null)
+            {
+                shopUIDisplay.OnMoneyChanged();
+            }
             
-            // Also update sales display as it includes revenue information
-            UpdateSalesDisplay();
-            
-            Debug.Log("[ShopUI] Money changed - displays updated");
+            Debug.Log("[ShopUI] Money changed - displays updated via ShopUIDisplay");
         }
         
         /// <summary>
@@ -743,15 +765,13 @@ namespace TabletopShop
         /// <param name="newDay">The new day number</param>
         private void OnDayChanged(int newDay)
         {
-            // Update time display to show new day
-            UpdateTimeDisplay();
+            // Delegate to display component using composition pattern
+            if (shopUIDisplay != null)
+            {
+                shopUIDisplay.OnDayChanged(newDay);
+            }
             
-            // Refresh sales display for new day (resets to 0)
-            UpdateSalesDisplay();
-            
-            // Future: Update any day-specific UI elements
-            
-            Debug.Log($"[ShopUI] Day changed to {newDay} - displays updated");
+            Debug.Log($"[ShopUI] Day changed to {newDay} - displays updated via ShopUIDisplay");
         }
         
         /// <summary>
@@ -765,15 +785,14 @@ namespace TabletopShop
         /// <param name="isDay">True if it's now day time, false for night</param>
         private void OnDayNightCycleChanged(bool isDay)
         {
-            UpdateTimeDisplay();
-            
-            // Future: Could adjust UI appearance based on day/night
-            // - Different color schemes
-            // - Visibility of certain elements
-            // - Animation states
+            // Delegate to display component using composition pattern
+            if (shopUIDisplay != null)
+            {
+                shopUIDisplay.OnDayNightCycleChanged(isDay);
+            }
             
             string timeOfDay = isDay ? "Day" : "Night";
-            Debug.Log($"[ShopUI] Day/Night cycle changed to {timeOfDay} - time display updated");
+            Debug.Log($"[ShopUI] Day/Night cycle changed to {timeOfDay} - displays updated via ShopUIDisplay");
         }
         
         /// <summary>
@@ -786,10 +805,13 @@ namespace TabletopShop
         /// <param name="newReputation">The new reputation value (0-100)</param>
         private void OnReputationChanged(float newReputation)
         {
-            // Future: Update reputation displays, visual feedback, etc.
-            // For now, just log the change for debugging
+            // Delegate to display component using composition pattern
+            if (shopUIDisplay != null)
+            {
+                shopUIDisplay.OnReputationChanged(newReputation);
+            }
             
-            Debug.Log($"[ShopUI] Reputation changed to {newReputation:F1} - ready for future UI integration");
+            Debug.Log($"[ShopUI] Reputation changed to {newReputation:F1} - ready for future UI integration via ShopUIDisplay");
         }
 
         #endregion
@@ -810,11 +832,11 @@ namespace TabletopShop
         /// </summary>
         private void UpdateDisplay()
         {
-            // Update all display elements with current GameManager data
-            // Each method includes null-safety and fallback values
-            UpdateMoneyDisplay();
-            UpdateSalesDisplay();
-            UpdateTimeDisplay();
+            // Delegate all display updates to ShopUIDisplay component using composition pattern
+            if (shopUIDisplay != null)
+            {
+                shopUIDisplay.UpdateAllDisplays();
+            }
             
             // Future sub-tasks will add:
             // - UpdateButtonStates() for interactive elements
@@ -822,147 +844,19 @@ namespace TabletopShop
             // - UpdateProgressBars() for day/night cycle indicators
         }
         
-        /// <summary>
-        /// Update money display with proper currency formatting.
-        /// 
-        /// Currency Formatting Explanation:
-        /// - ToString("C0"): Uses system currency symbol with no decimal places
-        /// - ToString("N0"): Number format with thousands separators, no decimals
-        /// - Custom "$#,##0": Manual format for consistent display regardless of locale
-        /// 
-        /// Performance Notes:
-        /// - String.Format and ToString can create garbage collection pressure
-        /// - TextMeshPro optimizes text changes to minimize rendering updates
-        /// - Null-safe access prevents exceptions when GameManager unavailable
-        /// 
-        /// Display Format: $1,234 (thousands separator, no decimals for clean appearance)
-        /// </summary>
-        private void UpdateMoneyDisplay()
-        {
-            if (moneyDisplay == null) return;
-            
-            // Null-safe GameManager access with fallback display
-            if (gameManager != null)
-            {
-                // Efficient currency formatting using custom format string
-                // This avoids locale-specific currency symbols and provides consistent display
-                float currentMoney = gameManager.CurrentMoney;
-                moneyDisplay.text = string.Format("${0:N0}", currentMoney);
-            }
-            else
-            {
-                // Fallback display when GameManager unavailable
-                moneyDisplay.text = "$0";
-            }
-        }
-        
-        /// <summary>
-        /// Update sales display showing daily sales count and revenue.
-        /// 
-        /// Sales Display Design:
-        /// - Shows both count and revenue for comprehensive information
-        /// - Uses consistent formatting with money display
-        /// - Provides immediate feedback on shop performance
-        /// 
-        /// Display Format: "5 sales - $1,234" (count and revenue for context)
-        /// Alternative formats considered: "Sales: 5", "Revenue: $1,234", "5 × $246 avg"
-        /// </summary>
-        private void UpdateSalesDisplay()
-        {
-            if (salesDisplay == null) return;
-            
-            // Null-safe GameManager access with comprehensive sales information
-            if (gameManager != null)
-            {
-                int customersServed = gameManager.CustomersServedToday;
-                float dailyRevenue = gameManager.DailyRevenue;
-                
-                // Format: "X sales - $Y,YYY" for clear performance indication
-                if (customersServed > 0)
-                {
-                    salesDisplay.text = string.Format("{0} sales - ${1:N0}", customersServed, dailyRevenue);
-                }
-                else
-                {
-                    // No sales yet today
-                    salesDisplay.text = "No sales today";
-                }
-            }
-            else
-            {
-                // Fallback display when GameManager unavailable
-                salesDisplay.text = "0 sales";
-            }
-        }
-        
-        /// <summary>
-        /// Update time display with MM:SS format showing elapsed time in current day/night cycle.
-        /// 
-        /// Time Formatting Calculations:
-        /// - GameManager provides DayProgress (0-1) for current cycle position
-        /// - Calculate elapsed time from cycle duration and current progress
-        /// - Convert total seconds to MM:SS format for clear time indication
-        /// 
-        /// Display Format: "05:23" (minutes:seconds elapsed in current cycle)
-        /// Day/Night Indication: Shows "Day 05:23" or "Night 01:45" for context
-        /// 
-        /// Time Display Trade-offs:
-        /// - Elapsed vs Countdown: Elapsed shows progress through cycle, countdown shows urgency
-        /// - Real-time vs Periodic: Real-time for immediate feedback, periodic for performance
-        /// - Absolute vs Relative: Relative elapsed time more intuitive for time progression
-        /// </summary>
-        private void UpdateTimeDisplay()
-        {
-            if (timeDisplay == null) return;
-            
-            // Null-safe GameManager access with comprehensive time information
-            if (gameManager != null)
-            {
-                bool isDayTime = gameManager.IsDayTime;
-                int currentDay = gameManager.CurrentDay;
-                float dayProgress = gameManager.DayProgress;
-                
-                // Calculate remaining time in current cycle
-                float totalCycleSeconds;
-                if (isDayTime)
-                {
-                    // Day cycle - get day length from GameManager (assuming 10 minutes default)
-                    // Note: dayLengthInMinutes is private, using reasonable default
-                    totalCycleSeconds = 10.0f * 60.0f; // 10 minutes in seconds
-                }
-                else
-                {
-                    // Night cycle - get night length from GameManager (assuming 2 minutes default)
-                    totalCycleSeconds = 2.0f * 60.0f; // 2 minutes in seconds
-                }
-                
-                // Calculate elapsed seconds (progress through cycle)
-                float elapsedSeconds = totalCycleSeconds * dayProgress;
-                elapsedSeconds = Mathf.Clamp(elapsedSeconds, 0, totalCycleSeconds); // Ensure within bounds
-                
-                // Convert to MM:SS format
-                int minutes = Mathf.FloorToInt(elapsedSeconds / 60.0f);
-                int seconds = Mathf.FloorToInt(elapsedSeconds % 60.0f);
-                string timeString = UIFormatting.FormatTimeCountdown(minutes, seconds);
-                
-                // Display format: "Day 3 - 05:23" or "Night 3 - 01:45"
-                string cycleIndicator = isDayTime ? "Day" : "Night";
-                timeDisplay.text = string.Format("{0} {1} - {2}", cycleIndicator, currentDay, timeString);
-            }
-            else
-            {
-                // Fallback display when GameManager unavailable
-                timeDisplay.text = "Day 1 - 05:00";
-            }
-        }
+
         
         #endregion
         
-        #region Formatting Utilities (Moved to UIFormatting static class)
+        #region Display Updates (Extracted to ShopUIDisplay)
         
-        // Note: Formatting methods have been moved to UIFormatting static utility class
-        // for better reusability and centralized formatting logic.
-        // See Assets/Scripts/Utilities/UIFormatting.cs for implementation.
+        // Note: Display update methods have been extracted to ShopUIDisplay component
+        // using the composition pattern for better separation of concerns.
+        // See Assets/Scripts/UI/ShopUIDisplay.cs for implementation:
+        // - UpdateMoneyDisplay() -> shopUIDisplay.UpdateMoneyDisplay()
+        // - UpdateSalesDisplay() -> shopUIDisplay.UpdateSalesDisplay()  
+        // - UpdateTimeDisplay() -> shopUIDisplay.UpdateTimeDisplay()
+        // - UpdateAllDisplays() -> shopUIDisplay.UpdateAllDisplays()
         
         #endregion
         
