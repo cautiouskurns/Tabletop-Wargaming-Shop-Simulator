@@ -188,10 +188,25 @@ namespace TabletopShop
         #region Editor Support
         
         /// <summary>
-        /// Draw gizmos in editor for slot position visualization
+        /// Configuration for gizmo drawing (controlled by main ShelfSlot component)
+        /// </summary>
+        [SerializeField] private bool enableGizmos = false;
+
+        /// <summary>
+        /// Enable or disable gizmo drawing for this component
+        /// </summary>
+        public void SetGizmoDrawing(bool enabled)
+        {
+            enableGizmos = enabled;
+        }
+        
+        /// <summary>
+        /// Draw gizmos in editor for slot position visualization (only if enabled)
         /// </summary>
         private void OnDrawGizmos()
         {
+            if (!enableGizmos) return;
+            
             // Draw slot position
             Gizmos.color = IsEmpty ? Color.green : Color.red;
             Gizmos.DrawWireCube(SlotPosition, Vector3.one * 0.5f);
@@ -212,5 +227,27 @@ namespace TabletopShop
         }
         
         #endregion
+
+        /// <summary>
+        /// Initialize component with existing product (replaces reflection-based migration)
+        /// </summary>
+        /// <param name="product">Existing product to initialize with</param>
+        public void InitializeWithProduct(Product product)
+        {
+            currentProduct = product;
+            OnVisualStateChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// Initialize component with position and product data (replaces reflection-based migration)
+        /// </summary>
+        /// <param name="position">Slot position offset</param>
+        /// <param name="product">Existing product (can be null)</param>
+        public void InitializeComponent(Vector3 position, Product product = null)
+        {
+            slotPosition = position;
+            currentProduct = product;
+            OnVisualStateChanged?.Invoke();
+        }
     }
 }

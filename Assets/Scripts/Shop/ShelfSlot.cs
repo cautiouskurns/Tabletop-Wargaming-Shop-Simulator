@@ -27,6 +27,9 @@ namespace TabletopShop
         [SerializeField] private GameObject slotIndicator;
         [SerializeField] private Vector3 indicatorScale = new Vector3(0.2f, 0.01f, 0.2f);
         
+        [Header("Debug")]
+        [SerializeField] private bool showSlotGizmos = true;
+        
         // Component references
         private ShelfSlotLogic slotLogic;
         private ShelfSlotVisuals slotVisuals;
@@ -51,16 +54,57 @@ namespace TabletopShop
         public bool CanInteract => EnsureInteractionComponent() ? slotInteraction.CanInteract : true;
         
         #region Unity Lifecycle
-        
-        private void Awake()
+         private void Awake()
         {
-            // Initialize components if they don't exist
-            InitializeComponents();
+            // Phase 1: Ensure all components exist (but don't initialize them yet)
+            EnsureComponentsExist();
         }
-        
+
         private void Start()
         {
-            // Components handle their own initialization
+            // Phase 2: Initialize components with proper order after all components exist
+            InitializeComponentsInOrder();
+        }
+
+        /// <summary>
+        /// Ensure all required components exist without initializing them
+        /// </summary>
+        private void EnsureComponentsExist()
+        {
+            if (slotLogic == null)
+                slotLogic = GetComponent<ShelfSlotLogic>() ?? gameObject.AddComponent<ShelfSlotLogic>();
+                
+            if (slotVisuals == null)
+                slotVisuals = GetComponent<ShelfSlotVisuals>() ?? gameObject.AddComponent<ShelfSlotVisuals>();
+                
+            if (slotInteraction == null)
+                slotInteraction = GetComponent<ShelfSlotInteraction>() ?? gameObject.AddComponent<ShelfSlotInteraction>();
+        }
+
+        /// <summary>
+        /// Initialize components in the correct order to prevent timing issues
+        /// </summary>
+        private void InitializeComponentsInOrder()
+        {
+            if (hasBeenMigrated) return;
+
+            // 1. Initialize logic first (core state)
+            InitializeLogicComponent();
+            
+            // 2. Then visuals (depends on logic state)
+            InitializeVisualsComponent();
+            
+            // 3. Finally interaction (depends on both logic and visuals)
+            // (ShelfSlotInteraction initializes itself)
+
+            // 4. Configure gizmo drawing (only logic component draws gizmos)
+            if (slotLogic != null)
+            {
+                slotLogic.SetGizmoDrawing(showSlotGizmos);
+            }
+
+            hasBeenMigrated = true;
+            Debug.Log($"Components initialized in order for slot {name}");
         }
         
         #endregion
@@ -93,85 +137,24 @@ namespace TabletopShop
                 slotInteraction = gameObject.AddComponent<ShelfSlotInteraction>();
             }
             
-            // Handle migration of legacy fields to components
-            MigrateLegacyFields();
+            // Initialize all components with current data
+            InitializeAllComponents();
         }
         
         /// <summary>
-        /// Migrate legacy serialized fields to the appropriate components
+        /// Initialize all components with current configuration (replaces complex migration)
         /// </summary>
-        private void MigrateLegacyFields()
+        private void InitializeAllComponents()
         {
             if (hasBeenMigrated) return;
-            
-            // Migrate logic fields using reflection to access private fields
-            var logicType = typeof(ShelfSlotLogic);
-            var visualsType = typeof(ShelfSlotVisuals);
-            
-            // Migrate slotPosition to logic component
-            var slotPositionField = logicType.GetField("slotPosition", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (slotPositionField != null)
-            {
-                slotPositionField.SetValue(slotLogic, slotPosition);
-            }
-            
-            // Migrate currentProduct to logic component
-            var currentProductField = logicType.GetField("currentProduct", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (currentProductField != null)
-            {
-                currentProductField.SetValue(slotLogic, currentProduct);
-            }
-            
-            // Migrate visual fields to visuals component
-            var highlightMaterialField = visualsType.GetField("highlightMaterial", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (highlightMaterialField != null)
-            {
-                highlightMaterialField.SetValue(slotVisuals, highlightMaterial);
-            }
-            
-            var normalMaterialField = visualsType.GetField("normalMaterial", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (normalMaterialField != null)
-            {
-                normalMaterialField.SetValue(slotVisuals, normalMaterial);
-            }
-            
-            var emptySlotColorField = visualsType.GetField("emptySlotColor", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (emptySlotColorField != null)
-            {
-                emptySlotColorField.SetValue(slotVisuals, emptySlotColor);
-            }
-            
-            var highlightColorField = visualsType.GetField("highlightColor", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (highlightColorField != null)
-            {
-                highlightColorField.SetValue(slotVisuals, highlightColor);
-            }
-            
-            var slotIndicatorField = visualsType.GetField("slotIndicator", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (slotIndicatorField != null)
-            {
-                slotIndicatorField.SetValue(slotVisuals, slotIndicator);
-            }
-            
-            var indicatorScaleField = visualsType.GetField("indicatorScale", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (indicatorScaleField != null)
-            {
-                indicatorScaleField.SetValue(slotVisuals, indicatorScale);
-            }
-            
+
+            // Ensure all components exist
+            EnsureLogicComponent();
+            EnsureVisualsComponent();
+            EnsureInteractionComponent();
+
             hasBeenMigrated = true;
-            
-            // Clear legacy fields to avoid confusion
-            slotPosition = Vector3.zero;
-            currentProduct = null;
-            highlightMaterial = null;
-            normalMaterial = null;
-            slotIndicator = null;
-            
-            #if UNITY_EDITOR
-            // Mark the object as dirty for editor serialization
-            UnityEditor.EditorUtility.SetDirty(this);
-            #endif
+            Debug.Log($"Initialized all components for slot {name}");
         }
         
         #endregion
@@ -322,8 +305,8 @@ namespace TabletopShop
                 if (slotLogic == null)
                 {
                     slotLogic = gameObject.AddComponent<ShelfSlotLogic>();
-                    // Immediately migrate legacy data to the new component
-                    MigrateLegacyDataToLogic();
+                    // Initialize with current data instead of reflection migration
+                    InitializeLogicComponent();
                 }
             }
             return slotLogic != null;
@@ -358,87 +341,42 @@ namespace TabletopShop
                 if (slotVisuals == null)
                 {
                     slotVisuals = gameObject.AddComponent<ShelfSlotVisuals>();
-                    // Immediately migrate legacy visual data to the new component
-                    MigrateLegacyDataToVisuals();
+                    // Initialize with current data instead of reflection migration
+                    InitializeVisualsComponent();
                 }
             }
             return slotVisuals != null;
         }
 
         /// <summary>
-        /// Migrate legacy data specifically to the logic component (called when component is created)
+        /// Initialize logic component with current data (no reflection needed)
         /// </summary>
-        private void MigrateLegacyDataToLogic()
+        private void InitializeLogicComponent()
         {
             if (slotLogic == null) return;
 
-            // Migrate logic fields using reflection to access private fields
-            var logicType = typeof(ShelfSlotLogic);
+            // Direct initialization without reflection
+            slotLogic.SetSlotPosition(slotPosition);
             
-            // Migrate slotPosition to logic component
-            var slotPositionField = logicType.GetField("slotPosition", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (slotPositionField != null)
+            if (currentProduct != null)
             {
-                slotPositionField.SetValue(slotLogic, slotPosition);
+                slotLogic.InitializeWithProduct(currentProduct);
+                Debug.Log($"Initialized logic component with product {currentProduct.ProductData?.ProductName} for slot {name}");
             }
             
-            // Migrate currentProduct to logic component - this is the critical fix!
-            var currentProductField = logicType.GetField("currentProduct", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (currentProductField != null)
-            {
-                currentProductField.SetValue(slotLogic, currentProduct);
-                Debug.Log($"Migrated product {currentProduct?.ProductData?.ProductName ?? "null"} to ShelfSlotLogic for slot {name}");
-            }
-            
-            // Mark as migrated to prevent duplicate migration in MigrateLegacyFields()
             hasBeenMigrated = true;
         }
 
         /// <summary>
-        /// Migrate legacy visual data specifically to the visuals component (called when component is created)
+        /// Initialize visuals component with current data (no reflection needed)
         /// </summary>
-        private void MigrateLegacyDataToVisuals()
+        private void InitializeVisualsComponent()
         {
             if (slotVisuals == null) return;
 
-            // Migrate visual fields to visuals component using reflection
-            var visualsType = typeof(ShelfSlotVisuals);
-            
-            var highlightMaterialField = visualsType.GetField("highlightMaterial", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (highlightMaterialField != null)
-            {
-                highlightMaterialField.SetValue(slotVisuals, highlightMaterial);
-            }
-            
-            var normalMaterialField = visualsType.GetField("normalMaterial", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (normalMaterialField != null)
-            {
-                normalMaterialField.SetValue(slotVisuals, normalMaterial);
-            }
-            
-            var emptySlotColorField = visualsType.GetField("emptySlotColor", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (emptySlotColorField != null)
-            {
-                emptySlotColorField.SetValue(slotVisuals, emptySlotColor);
-            }
-            
-            var highlightColorField = visualsType.GetField("highlightColor", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (highlightColorField != null)
-            {
-                highlightColorField.SetValue(slotVisuals, highlightColor);
-            }
-            
-            var slotIndicatorField = visualsType.GetField("slotIndicator", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (slotIndicatorField != null)
-            {
-                slotIndicatorField.SetValue(slotVisuals, slotIndicator);
-            }
-            
-            var indicatorScaleField = visualsType.GetField("indicatorScale", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (indicatorScaleField != null)
-            {
-                indicatorScaleField.SetValue(slotVisuals, indicatorScale);
-            }
+            // Direct initialization without reflection
+            slotVisuals.InitializeComponent(emptySlotColor, highlightColor, slotIndicator, indicatorScale);
+            Debug.Log($"Initialized visuals component for slot {name}");
         }
 
         #endregion
@@ -457,8 +395,7 @@ namespace TabletopShop
         }
 
         /// <summary>
-        /// Force immediate synchronization between legacy fields and logic component
-        /// This method ensures that if there's any discrepancy, it gets resolved immediately
+        /// Ensure synchronization between legacy fields and components (simplified)
         /// </summary>
         public void ForceSynchronization()
         {
@@ -472,14 +409,29 @@ namespace TabletopShop
             {
                 Debug.LogWarning($"Product synchronization mismatch detected in slot {name}! Legacy has product: {legacyHasProduct}, Logic has product: {logicHasProduct}");
                 
-                // Trust the legacy field as the source of truth and update logic component
-                var logicType = typeof(ShelfSlotLogic);
-                var currentProductField = logicType.GetField("currentProduct", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (currentProductField != null)
+                // Trust the legacy field as the source of truth and update logic component directly
+                if (legacyHasProduct)
                 {
-                    currentProductField.SetValue(slotLogic, currentProduct);
+                    slotLogic.InitializeWithProduct(currentProduct);
                     Debug.Log($"Fixed synchronization: set logic component product to {currentProduct?.ProductData?.ProductName ?? "null"}");
                 }
+                else
+                {
+                    slotLogic.ClearSlot();
+                    Debug.Log($"Fixed synchronization: cleared logic component product");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Control gizmo drawing across all components
+        /// </summary>
+        public void SetGizmoDrawing(bool enabled)
+        {
+            showSlotGizmos = enabled;
+            if (slotLogic != null)
+            {
+                slotLogic.SetGizmoDrawing(enabled);
             }
         }
     }

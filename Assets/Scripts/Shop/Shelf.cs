@@ -25,6 +25,10 @@ namespace TabletopShop
         [SerializeField] private Material shelfMaterial;
         [SerializeField] private Vector3 shelfDimensions = new Vector3(7.5f, 0.2f, 1f);
         
+        [Header("Debug")]
+        [SerializeField] private bool showShelfGizmos = true;
+        [SerializeField] private bool showSlotGizmos = false; // Let slots control their own gizmos
+        
         // Properties
         public int TotalSlots => shelfSlots.Count;
         public int OccupiedSlots => shelfSlots.Count(slot => !slot.IsEmpty);
@@ -519,16 +523,18 @@ namespace TabletopShop
         #region Editor Support
         
         /// <summary>
-        /// Draw gizmos for shelf visualization
+        /// Draw gizmos for shelf visualization (coordinated to avoid conflicts)
         /// </summary>
         private void OnDrawGizmos()
         {
+            if (!showShelfGizmos) return;
+            
             // Draw shelf bounds
             Gizmos.color = Color.cyan;
             Gizmos.DrawWireCube(transform.position, shelfDimensions);
             
-            // Draw slot positions
-            if (shelfSlots != null)
+            // Only draw slot indicators if slots aren't drawing their own gizmos
+            if (!showSlotGizmos && shelfSlots != null)
             {
                 Gizmos.color = Color.green;
                 foreach (var slot in shelfSlots)
@@ -537,6 +543,21 @@ namespace TabletopShop
                     {
                         Gizmos.DrawWireSphere(slot.SlotPosition, 0.2f);
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Configure gizmo drawing for all slots
+        /// </summary>
+        public void SetSlotGizmoDrawing(bool enabled)
+        {
+            showSlotGizmos = enabled;
+            foreach (var slot in shelfSlots)
+            {
+                if (slot != null)
+                {
+                    slot.SetGizmoDrawing(enabled);
                 }
             }
         }

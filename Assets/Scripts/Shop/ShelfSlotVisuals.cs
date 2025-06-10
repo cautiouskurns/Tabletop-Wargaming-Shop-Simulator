@@ -286,5 +286,33 @@ namespace TabletopShop
             }
             UpdateVisualState();
         }
+        
+        /// <summary>
+        /// Initialize component with visual settings (replaces reflection-based migration)
+        /// </summary>
+        /// <param name="emptyColor">Color for empty slot indicator</param>
+        /// <param name="highlightColor">Color for highlighted slot</param>
+        /// <param name="indicatorObj">Slot indicator GameObject</param>
+        /// <param name="scale">Indicator scale</param>
+        public void InitializeComponent(Color emptyColor, Color highlightColor, GameObject indicatorObj = null, Vector3? scale = null)
+        {
+            this.emptySlotColor = emptyColor;
+            this.highlightColor = highlightColor;
+            
+            if (indicatorObj != null)
+            {
+                slotIndicator = indicatorObj;
+            }
+            
+            if (scale.HasValue)
+            {
+                indicatorScale = scale.Value;
+            }
+            
+            // Re-setup with new values
+            SetupSlotIndicator();
+            SetupMaterials();
+            UpdateVisualState();
+        }
     }
 }
