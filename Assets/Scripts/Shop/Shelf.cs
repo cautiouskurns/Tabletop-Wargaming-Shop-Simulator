@@ -317,8 +317,6 @@ namespace TabletopShop
             {
                 if (shelfSlots[i] != null)
                 {
-                    // Force synchronization first to ensure consistency
-                    shelfSlots[i].ForceSynchronization();
                     
                     // Calculate position for this slot
                     float totalWidth = (shelfSlots.Count - 1) * slotSpacing;
@@ -603,35 +601,6 @@ namespace TabletopShop
         {
             return $"Shelf '{name}': {OccupiedSlots}/{TotalSlots} slots occupied. " +
                    $"Allows: {(allowAnyProductType ? "Any Product" : allowedProductType.ToString())}";
-        }
-        
-        /// <summary>
-        /// Debug all slots to identify synchronization issues
-        /// </summary>
-        public void DebugAllSlots()
-        {
-            Debug.Log($"=== DEBUGGING SHELF {name} ===");
-            Debug.Log($"Total Slots: {TotalSlots}");
-            Debug.Log($"Occupied Slots: {OccupiedSlots}");
-            Debug.Log($"Empty Slots: {EmptySlots}");
-            Debug.Log($"Is Empty: {IsEmpty}");
-            Debug.Log($"Is Full: {IsFull}");
-            
-            for (int i = 0; i < shelfSlots.Count; i++)
-            {
-                var slot = shelfSlots[i];
-                if (slot != null)
-                {
-                    // Force synchronization before debugging to fix any issues
-                    slot.ForceSynchronization();
-                    Debug.Log($"Slot {i}: {slot.GetSlotDebugInfo()}");
-                }
-                else
-                {
-                    Debug.LogError($"Slot {i}: NULL SLOT!");
-                }
-            }
-            Debug.Log($"=== END DEBUG SHELF {name} ===");
         }
         
         #endregion

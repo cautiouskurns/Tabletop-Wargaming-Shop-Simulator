@@ -12,14 +12,7 @@ namespace TabletopShop
     /// </summary>
     public class ShelfSlot : MonoBehaviour, IInteractable
     {
-        // Legacy serialized fields for backward compatibility - these will be migrated to components
-        [Header("Slot Configuration")]
-        [SerializeField] private Vector3 slotPosition;
-        [SerializeField] private Product currentProduct;
-        
         [Header("Visual Feedback")]
-        [SerializeField] private Material highlightMaterial;
-        [SerializeField] private Material normalMaterial;
         [SerializeField] private Color emptySlotColor = Color.green;
         [SerializeField] private Color highlightColor = Color.yellow;
         
@@ -30,123 +23,47 @@ namespace TabletopShop
         [Header("Debug")]
         [SerializeField] private bool showSlotGizmos = true;
         
-        // Component references
+        // Component references - composition pattern
         private ShelfSlotLogic slotLogic;
         private ShelfSlotVisuals slotVisuals;
         private ShelfSlotInteraction slotInteraction;
         
-        // Migration flag
-        [HideInInspector]
-        [SerializeField] private bool hasBeenMigrated = false;
+        // Public Properties - delegate to logic component
+        public bool IsEmpty => slotLogic.IsEmpty;
+        public Product CurrentProduct => slotLogic.CurrentProduct;
+        public Vector3 SlotPosition => slotLogic.SlotPosition;
         
-        // Properties - delegate to logic component with null checks
-        public bool IsEmpty => EnsureLogicComponent() ? slotLogic.IsEmpty : currentProduct == null;
-        public Product CurrentProduct => EnsureLogicComponent() ? slotLogic.CurrentProduct : currentProduct;
-        public Vector3 SlotPosition => EnsureLogicComponent() ? slotLogic.SlotPosition : transform.position + slotPosition;
-        
-        // Debug properties to help troubleshoot component synchronization
-        public bool IsLogicComponentInitialized => slotLogic != null;
-        public bool LegacyCurrentProductNull => currentProduct == null;
-        public bool LogicCurrentProductNull => slotLogic?.CurrentProduct == null;
-        
-        // IInteractable Properties - delegate to interaction component with null checks
-        public string InteractionText => EnsureInteractionComponent() ? slotInteraction.InteractionText : "Empty Slot";
-        public bool CanInteract => EnsureInteractionComponent() ? slotInteraction.CanInteract : true;
+        // IInteractable Properties - delegate to interaction component
+        public string InteractionText => slotInteraction.InteractionText;
+        public bool CanInteract => slotInteraction.CanInteract;
         
         #region Unity Lifecycle
-         private void Awake()
-        {
-            // Phase 1: Ensure all components exist (but don't initialize them yet)
-            EnsureComponentsExist();
-        }
-
-        private void Start()
-        {
-            // Phase 2: Initialize components with proper order after all components exist
-            InitializeComponentsInOrder();
-        }
-
-        /// <summary>
-        /// Ensure all required components exist without initializing them
-        /// </summary>
-        private void EnsureComponentsExist()
-        {
-            if (slotLogic == null)
-                slotLogic = GetComponent<ShelfSlotLogic>() ?? gameObject.AddComponent<ShelfSlotLogic>();
-                
-            if (slotVisuals == null)
-                slotVisuals = GetComponent<ShelfSlotVisuals>() ?? gameObject.AddComponent<ShelfSlotVisuals>();
-                
-            if (slotInteraction == null)
-                slotInteraction = GetComponent<ShelfSlotInteraction>() ?? gameObject.AddComponent<ShelfSlotInteraction>();
-        }
-
-        /// <summary>
-        /// Initialize components in the correct order to prevent timing issues
-        /// </summary>
-        private void InitializeComponentsInOrder()
-        {
-            if (hasBeenMigrated) return;
-
-            // 1. Initialize logic first (core state)
-            InitializeLogicComponent();
-            
-            // 2. Then visuals (depends on logic state)
-            InitializeVisualsComponent();
-            
-            // 3. Finally interaction (depends on both logic and visuals)
-            // (ShelfSlotInteraction initializes itself)
-
-            // 4. Configure gizmo drawing (only logic component draws gizmos)
-            if (slotLogic != null)
-            {
-                slotLogic.SetGizmoDrawing(showSlotGizmos);
-            }
-
-            hasBeenMigrated = true;
-            Debug.Log($"Components initialized in order for slot {name}");
-        }
         
+        private void Awake()
+        {
+            // Initialize all required components
+            InitializeComponents();
+        }
+
         #endregion
         
         #region Component Setup
         
         /// <summary>
-        /// Initialize the required components for composition pattern
+        /// Initialize all required components for composition pattern
         /// </summary>
         private void InitializeComponents()
         {
-            // Ensure all components exist first
-            EnsureComponentsExist();
+            // Get or add components
+            slotLogic = GetComponent<ShelfSlotLogic>() ?? gameObject.AddComponent<ShelfSlotLogic>();
+            slotVisuals = GetComponent<ShelfSlotVisuals>() ?? gameObject.AddComponent<ShelfSlotVisuals>();
+            slotInteraction = GetComponent<ShelfSlotInteraction>() ?? gameObject.AddComponent<ShelfSlotInteraction>();
             
-            // Then initialize them in proper order
-            InitializeAllComponents();
-        }
-        
-        /// <summary>
-        /// Initialize all components with current configuration (replaces complex migration)
-        /// </summary>
-        private void InitializeAllComponents()
-        {
-            if (hasBeenMigrated) return;
-
-            // Validate all components exist before initialization
-            if (slotLogic == null || slotVisuals == null || slotInteraction == null)
-            {
-                Debug.LogError($"Cannot initialize components for slot {name} - some components are missing!");
-                return;
-            }
-
-            // Initialize in proper order: Logic -> Visuals -> Interaction
-            InitializeLogicComponent();
-            InitializeVisualsComponent();
-            // ShelfSlotInteraction initializes itself
-
-            // Configure gizmo drawing after all components are initialized
+            // Initialize components with configuration
+            slotVisuals.InitializeComponent(emptySlotColor, highlightColor, slotIndicator, indicatorScale);
             slotLogic.SetGizmoDrawing(showSlotGizmos);
-
-            hasBeenMigrated = true;
-            Debug.Log($"Initialized all components for slot {name}");
+            
+            Debug.Log($"Initialized components for slot {name}");
         }
         
         #endregion
@@ -154,8 +71,7 @@ namespace TabletopShop
         #region Public Initialization
         
         /// <summary>
-        /// Public initialization method for external setup of the ShelfSlot
-        /// Can be called to configure the slot with specific parameters
+        /// Initialize the slot with specific parameters
         /// </summary>
         /// <param name="position">Local position offset for the slot</param>
         /// <param name="emptyColor">Color to display when slot is empty</param>
@@ -163,32 +79,24 @@ namespace TabletopShop
         /// <param name="indicatorScale">Scale of the slot indicator GameObject</param>
         public void Initialize(Vector3? position = null, Color? emptyColor = null, Color? highlightColor = null, Vector3? indicatorScale = null)
         {
-            // Ensure all components are initialized first
-            InitializeComponents();
-            
             // Apply position if provided
-            if (position.HasValue && EnsureLogicComponent())
+            if (position.HasValue)
             {
                 slotLogic.SetSlotPosition(position.Value);
             }
             
-            // Apply visual settings if provided and visuals component is available
-            if (EnsureVisualsComponent())
+            // Apply visual settings if provided
+            if (emptyColor.HasValue || highlightColor.HasValue || indicatorScale.HasValue)
             {
-                // Direct initialization without reflection
-                if (emptyColor.HasValue || highlightColor.HasValue || indicatorScale.HasValue)
-                {
-                    slotVisuals.InitializeComponent(
-                        emptyColor ?? emptySlotColor,
-                        highlightColor ?? this.highlightColor,
-                        slotIndicator,
-                        indicatorScale ?? this.indicatorScale
-                    );
-                }
+                slotVisuals.InitializeComponent(
+                    emptyColor ?? this.emptySlotColor,
+                    highlightColor ?? this.highlightColor,
+                    slotIndicator,
+                    indicatorScale ?? this.indicatorScale
+                );
             }
             
             #if UNITY_EDITOR
-            // Mark the object as dirty for editor serialization
             UnityEditor.EditorUtility.SetDirty(this);
             #endif
         }
@@ -273,148 +181,8 @@ namespace TabletopShop
         
         #endregion
         
-        #region Component Helpers
+        #region Utility Methods
         
-        /// <summary>
-        /// Ensure logic component is initialized and return true if available
-        /// </summary>
-        /// <returns>True if logic component is available</returns>
-        private bool EnsureLogicComponent()
-        {
-            if (slotLogic == null)
-            {
-                slotLogic = GetComponent<ShelfSlotLogic>();
-                if (slotLogic == null)
-                {
-                    slotLogic = gameObject.AddComponent<ShelfSlotLogic>();
-                    // Initialize with current data instead of reflection migration
-                    InitializeLogicComponent();
-                }
-            }
-            return slotLogic != null;
-        }
-        
-        /// <summary>
-        /// Ensure interaction component is initialized and return true if available
-        /// </summary>
-        /// <returns>True if interaction component is available</returns>
-        private bool EnsureInteractionComponent()
-        {
-            if (slotInteraction == null)
-            {
-                slotInteraction = GetComponent<ShelfSlotInteraction>();
-                if (slotInteraction == null)
-                {
-                    slotInteraction = gameObject.AddComponent<ShelfSlotInteraction>();
-                }
-            }
-            return slotInteraction != null;
-        }
-        
-        /// <summary>
-        /// Ensure visuals component is initialized and return true if available
-        /// </summary>
-        /// <returns>True if visuals component is available</returns>
-        private bool EnsureVisualsComponent()
-        {
-            if (slotVisuals == null)
-            {
-                slotVisuals = GetComponent<ShelfSlotVisuals>();
-                if (slotVisuals == null)
-                {
-                    slotVisuals = gameObject.AddComponent<ShelfSlotVisuals>();
-                    // Initialize with current data instead of reflection migration
-                    InitializeVisualsComponent();
-                }
-            }
-            return slotVisuals != null;
-        }
-
-        /// <summary>
-        /// Initialize logic component with current data (no reflection needed)
-        /// </summary>
-        private void InitializeLogicComponent()
-        {
-            if (slotLogic == null)
-            {
-                Debug.LogError($"Cannot initialize logic component for slot {name} - component is null!");
-                return;
-            }
-
-            // Direct initialization without reflection
-            slotLogic.SetSlotPosition(slotPosition);
-            
-            if (currentProduct != null)
-            {
-                slotLogic.InitializeWithProduct(currentProduct);
-                Debug.Log($"Initialized logic component with product {currentProduct.ProductData?.ProductName} for slot {name}");
-            }
-            else
-            {
-                Debug.Log($"Initialized logic component without product for slot {name}");
-            }
-        }
-
-        /// <summary>
-        /// Initialize visuals component with current data (no reflection needed)
-        /// </summary>
-        private void InitializeVisualsComponent()
-        {
-            if (slotVisuals == null)
-            {
-                Debug.LogError($"Cannot initialize visuals component for slot {name} - component is null!");
-                return;
-            }
-
-            // Direct initialization without reflection
-            slotVisuals.InitializeComponent(emptySlotColor, highlightColor, slotIndicator, indicatorScale);
-            Debug.Log($"Initialized visuals component for slot {name}");
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Debug method to check slot state consistency
-        /// </summary>
-        public string GetSlotDebugInfo()
-        {
-            return $"Slot {name}: " +
-                   $"IsEmpty={IsEmpty}, " +
-                   $"HasLogicComp={IsLogicComponentInitialized}, " +
-                   $"LegacyProdNull={LegacyCurrentProductNull}, " +
-                   $"LogicProdNull={LogicCurrentProductNull}, " +
-                   $"HasMigrated={hasBeenMigrated}";
-        }
-
-        /// <summary>
-        /// Ensure synchronization between legacy fields and components (simplified)
-        /// </summary>
-        public void ForceSynchronization()
-        {
-            if (!EnsureLogicComponent()) return;
-
-            // Check if there's a product mismatch and fix it
-            bool legacyHasProduct = currentProduct != null;
-            bool logicHasProduct = slotLogic.CurrentProduct != null;
-
-            if (legacyHasProduct != logicHasProduct)
-            {
-                Debug.LogWarning($"Product synchronization mismatch detected in slot {name}! Legacy has product: {legacyHasProduct}, Logic has product: {logicHasProduct}");
-                
-                // Trust the legacy field as the source of truth and update logic component directly
-                if (legacyHasProduct)
-                {
-                    slotLogic.InitializeWithProduct(currentProduct);
-                    Debug.Log($"Fixed synchronization: set logic component product to {currentProduct?.ProductData?.ProductName ?? "null"}");
-                }
-                else
-                {
-                    slotLogic.ClearSlot();
-                    Debug.Log($"Fixed synchronization: cleared logic component product");
-                }
-            }
-        }
-
         /// <summary>
         /// Control gizmo drawing across all components
         /// </summary>
@@ -426,5 +194,7 @@ namespace TabletopShop
                 slotLogic.SetGizmoDrawing(enabled);
             }
         }
+        
+        #endregion
     }
 }
