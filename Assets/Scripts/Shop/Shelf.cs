@@ -313,6 +313,9 @@ namespace TabletopShop
             {
                 if (shelfSlots[i] != null)
                 {
+                    // Force synchronization first to ensure consistency
+                    shelfSlots[i].ForceSynchronization();
+                    
                     // Calculate position for this slot
                     float totalWidth = (shelfSlots.Count - 1) * slotSpacing;
                     float startX = -totalWidth / 2f;
@@ -321,6 +324,8 @@ namespace TabletopShop
                     // Initialize the slot with its position
                     shelfSlots[i].Initialize(Vector3.zero); // Local offset is zero since position is handled by transform
                     shelfSlots[i].gameObject.name = $"Slot_{i + 1}";
+                    
+                    Debug.Log($"Initialized slot {i} at position {slotPosition}, isEmpty: {shelfSlots[i].IsEmpty}");
                 }
             }
         }
@@ -576,6 +581,35 @@ namespace TabletopShop
         {
             return $"Shelf '{name}': {OccupiedSlots}/{TotalSlots} slots occupied. " +
                    $"Allows: {(allowAnyProductType ? "Any Product" : allowedProductType.ToString())}";
+        }
+        
+        /// <summary>
+        /// Debug all slots to identify synchronization issues
+        /// </summary>
+        public void DebugAllSlots()
+        {
+            Debug.Log($"=== DEBUGGING SHELF {name} ===");
+            Debug.Log($"Total Slots: {TotalSlots}");
+            Debug.Log($"Occupied Slots: {OccupiedSlots}");
+            Debug.Log($"Empty Slots: {EmptySlots}");
+            Debug.Log($"Is Empty: {IsEmpty}");
+            Debug.Log($"Is Full: {IsFull}");
+            
+            for (int i = 0; i < shelfSlots.Count; i++)
+            {
+                var slot = shelfSlots[i];
+                if (slot != null)
+                {
+                    // Force synchronization before debugging to fix any issues
+                    slot.ForceSynchronization();
+                    Debug.Log($"Slot {i}: {slot.GetSlotDebugInfo()}");
+                }
+                else
+                {
+                    Debug.LogError($"Slot {i}: NULL SLOT!");
+                }
+            }
+            Debug.Log($"=== END DEBUG SHELF {name} ===");
         }
         
         #endregion
