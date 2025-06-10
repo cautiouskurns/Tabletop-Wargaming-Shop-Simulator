@@ -104,24 +104,37 @@ namespace TabletopShop
         #region Public Methods
         
         /// <summary>
+        /// Centralized product placement validation
+        /// </summary>
+        /// <param name="product">Product to validate</param>
+        /// <param name="context">Context for error messages</param>
+        /// <returns>True if product can be placed</returns>
+        private bool ValidateProductPlacement(Product product, string context)
+        {
+            if (product == null)
+            {
+                Debug.LogWarning($"Cannot place null product {context}");
+                return false;
+            }
+            
+            if (!IsProductTypeAllowed(product.ProductData?.Type ?? ProductType.MiniatureBox))
+            {
+                Debug.LogWarning($"Product type {product.ProductData?.Type} not allowed {context}");
+                return false;
+            }
+            
+            return true;
+        }
+        
+        /// <summary>
         /// Attempt to place a product on the first available slot
         /// </summary>
         /// <param name="product">The product to place</param>
         /// <returns>True if product was successfully placed</returns>
         public bool TryPlaceProduct(Product product)
         {
-            if (product == null)
-            {
-                Debug.LogWarning($"Cannot place null product on shelf {name}");
+            if (!ValidateProductPlacement(product, $"on shelf {name}"))
                 return false;
-            }
-            
-            // Check if product type is allowed
-            if (!IsProductTypeAllowed(product.ProductData?.Type ?? ProductType.MiniatureBox))
-            {
-                Debug.LogWarning($"Product type {product.ProductData?.Type} not allowed on shelf {name}");
-                return false;
-            }
             
             // Find first empty slot
             ShelfSlot emptySlot = GetFirstEmptySlot();
@@ -149,18 +162,8 @@ namespace TabletopShop
                 return false;
             }
             
-            if (product == null)
-            {
-                Debug.LogWarning($"Cannot place null product in slot {slotIndex} on shelf {name}");
+            if (!ValidateProductPlacement(product, $"in slot {slotIndex} on shelf {name}"))
                 return false;
-            }
-            
-            // Check if product type is allowed
-            if (!IsProductTypeAllowed(product.ProductData?.Type ?? ProductType.MiniatureBox))
-            {
-                Debug.LogWarning($"Product type {product.ProductData?.Type} not allowed on shelf {name}");
-                return false;
-            }
             
             return shelfSlots[slotIndex].PlaceProduct(product);
         }
@@ -238,16 +241,13 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Get a specific slot by index
+        /// Get a specific slot by index with validation
         /// </summary>
         /// <param name="index">The index of the slot</param>
         /// <returns>The ShelfSlot at the specified index, or null if invalid</returns>
         public ShelfSlot GetSlot(int index)
         {
-            if (!IsValidSlotIndex(index))
-                return null;
-            
-            return shelfSlots[index];
+            return IsValidSlotIndex(index) ? shelfSlots[index] : null;
         }
         
         /// <summary>
@@ -355,14 +355,14 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Simple slot validation - remove null references and sync with child components
+        /// Consolidated validation system - handles slot cleanup and index validation
         /// </summary>
         private void ValidateSlots()
         {
-            // Remove null references
+            // Remove null references first
             shelfSlots.RemoveAll(slot => slot == null);
             
-            // If list is empty but we have ShelfSlot children, rebuild the list
+            // Rebuild from children if list is empty but child components exist
             if (shelfSlots.Count == 0)
             {
                 ShelfSlot[] childSlots = GetComponentsInChildren<ShelfSlot>();
@@ -375,13 +375,13 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Check if a slot index is valid
+        /// Unified slot index validation with null safety
         /// </summary>
-        /// <param name="index">The index to check</param>
-        /// <returns>True if the index is valid</returns>
+        /// <param name="index">The index to validate</param>
+        /// <returns>True if index is valid and slot exists</returns>
         private bool IsValidSlotIndex(int index)
         {
-            return index >= 0 && index < shelfSlots.Count;
+            return index >= 0 && index < shelfSlots.Count && shelfSlots[index] != null;
         }
         
         #endregion
@@ -448,24 +448,15 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Validation in editor
+        /// Consolidated editor validation - parameters and visual sync
         /// </summary>
         private void OnValidate()
         {
-            if (maxSlots < 1)
-                maxSlots = 1;
+            // Clamp parameters to valid ranges
+            maxSlots = Mathf.Max(1, maxSlots);
+            slotSpacing = Mathf.Max(0.5f, slotSpacing);
             
-            if (slotSpacing < 0.5f)
-                slotSpacing = 0.5f;
-            
-            // Do NOT create slots during OnValidate to avoid Unity lifecycle errors
-            // Parameter validation only - slots will be created when:
-            // - Game starts (via Awake())  
-            // - Initialize() is called programmatically
-            // - Manual slot creation in inspector
-            
-            // Sync visual settings with ShelfVisuals component if it exists
-            // Only do this during play mode to avoid component creation issues during OnValidate
+            // Sync visual settings only during play mode to avoid component creation issues
             if (shelfVisuals != null && Application.isPlaying)
             {
                 shelfVisuals.InitializeComponent(shelfMaterial, shelfDimensions, showShelfGizmos);
