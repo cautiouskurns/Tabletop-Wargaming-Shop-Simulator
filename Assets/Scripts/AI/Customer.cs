@@ -41,13 +41,18 @@ namespace TabletopShop
         // Legacy component reference (kept for minimal compatibility)
         private NavMeshAgent navMeshAgent;
         
-        // Properties - delegating to components
+        // Component access properties - expose components directly for better flexibility
+        public CustomerMovement Movement => customerMovement;
+        public CustomerBehavior Behavior => customerBehavior;
+        public CustomerVisuals Visuals => customerVisuals;
+        
+        // Legacy properties for backward compatibility (delegate to components or fallback)
         public CustomerState CurrentState => currentState;
-        public float ShoppingTime => customerBehavior != null ? customerBehavior.ShoppingTime : shoppingTime;
-        public ShelfSlot TargetShelf => customerBehavior != null ? customerBehavior.TargetShelf : targetShelf;
-        public bool IsMoving => customerMovement != null ? customerMovement.IsMoving : false;
-        public Vector3 CurrentDestination => customerMovement != null ? customerMovement.CurrentDestination : Vector3.zero;
-        public bool HasDestination => customerMovement != null ? customerMovement.HasDestination : false;
+        public float ShoppingTime => customerBehavior?.ShoppingTime ?? shoppingTime;
+        public ShelfSlot TargetShelf => customerBehavior?.TargetShelf ?? targetShelf;
+        public bool IsMoving => customerMovement?.IsMoving ?? false;
+        public Vector3 CurrentDestination => customerMovement?.CurrentDestination ?? Vector3.zero;
+        public bool HasDestination => customerMovement?.HasDestination ?? false;
         
         #region Unity Lifecycle
         
@@ -266,119 +271,57 @@ namespace TabletopShop
         
         #endregion
         
-        #region Movement and Pathfinding - Delegated to CustomerMovement Component
+        #region High-Level Customer Actions
         
         /// <summary>
-        /// Set movement destination using NavMeshAgent with pathfinding validation
+        /// Start shopping behavior - high-level action that coordinates components
         /// </summary>
-        /// <param name="destination">Target position to move to</param>
-        /// <returns>True if destination was set successfully</returns>
-        public bool SetDestination(Vector3 destination)
+        public void StartShopping()
         {
-            // Delegate to movement component
-            if (customerMovement != null)
-            {
-                return customerMovement.SetDestination(destination);
-            }
+            ChangeState(CustomerState.Shopping);
             
-            Debug.LogError($"Customer {name} cannot move - CustomerMovement component not found!");
-            return false;
+            if (Movement != null)
+            {
+                Movement.SetRandomShelfDestination();
+            }
+            else
+            {
+                Debug.LogError($"Customer {name} cannot start shopping - Movement component not available!");
+            }
         }
         
         /// <summary>
-        /// Set destination to a random shelf in the scene
+        /// Start purchasing behavior - high-level action for checkout
         /// </summary>
-        /// <returns>True if a random shelf destination was set successfully</returns>
-        public bool SetRandomShelfDestination()
+        public void StartPurchasing()
         {
-            // Delegate to movement component
-            if (customerMovement != null)
-            {
-                return customerMovement.SetRandomShelfDestination();
-            }
+            ChangeState(CustomerState.Purchasing);
             
-            Debug.LogError($"Customer {name} cannot move - CustomerMovement component not found!");
-            return false;
+            if (Movement != null)
+            {
+                Movement.MoveToCheckoutPoint();
+            }
+            else
+            {
+                Debug.LogError($"Customer {name} cannot start purchasing - Movement component not available!");
+            }
         }
         
         /// <summary>
-        /// Move to a specific shelf position
+        /// Start leaving behavior - high-level action for exiting
         /// </summary>
-        /// <param name="shelf">Target shelf to move to</param>
-        /// <returns>True if movement was initiated successfully</returns>
-        public bool MoveToShelfPosition(ShelfSlot shelf)
+        public void StartLeaving()
         {
-            // Delegate to movement component
-            if (customerMovement != null)
-            {
-                return customerMovement.MoveToShelfPosition(shelf);
-            }
+            ChangeState(CustomerState.Leaving);
             
-            Debug.LogError($"Customer {name} cannot move - CustomerMovement component not found!");
-            return false;
-        }
-        
-        /// <summary>
-        /// Move to an exit point (for leaving the shop)
-        /// </summary>
-        /// <returns>True if exit destination was set successfully</returns>
-        public bool MoveToExitPoint()
-        {
-            // Delegate to movement component
-            if (customerMovement != null)
+            if (Movement != null)
             {
-                return customerMovement.MoveToExitPoint();
+                Movement.MoveToExitPoint();
             }
-            
-            Debug.LogError($"Customer {name} cannot move - CustomerMovement component not found!");
-            return false;
-        }
-        
-        /// <summary>
-        /// Stop current movement and clear destination
-        /// </summary>
-        public void StopMovement()
-        {
-            // Delegate to movement component
-            if (customerMovement != null)
+            else
             {
-                customerMovement.StopMovement();
-                return;
+                Debug.LogError($"Customer {name} cannot start leaving - Movement component not available!");
             }
-            
-            Debug.LogError($"Customer {name} cannot stop movement - CustomerMovement component not found!");
-        }
-        
-        /// <summary>
-        /// Move to checkout point for purchasing
-        /// </summary>
-        /// <returns>True if checkout destination was set successfully</returns>
-        public bool MoveToCheckoutPoint()
-        {
-            // Delegate to movement component
-            if (customerMovement != null)
-            {
-                return customerMovement.MoveToCheckoutPoint();
-            }
-            
-            Debug.LogError($"Customer {name} cannot move - CustomerMovement component not found!");
-            return false;
-        }
-        
-        /// <summary>
-        /// Check if customer has reached destination
-        /// </summary>
-        /// <returns>True if customer has reached their destination</returns>
-        public bool HasReachedDestination()
-        {
-            // Delegate to movement component
-            if (customerMovement != null)
-            {
-                return customerMovement.HasReachedDestination();
-            }
-            
-            Debug.LogError($"Customer {name} cannot check destination - CustomerMovement component not found!");
-            return true; // Return true to avoid infinite loops
         }
         
         #endregion
@@ -436,31 +379,16 @@ namespace TabletopShop
         
         #endregion
         
-        #region Debug and Visualization - Delegated to CustomerVisuals Component
+        #region Debug and Visualization
         
         /// <summary>
         /// Get debug information about customer state
+        /// Access customerVisuals.GetDebugInfo() directly for full debug functionality
         /// </summary>
         /// <returns>Debug string with customer information</returns>
         public string GetDebugInfo()
         {
-            // Delegate to visuals component
-            if (customerVisuals != null)
-            {
-                return customerVisuals.GetDebugInfo();
-            }
-            
-            return $"Customer {name}: Debug info unavailable - CustomerVisuals component not found!";
-        }
-        
-        /// <summary>
-        /// Draw debug gizmos for destination and pathfinding
-        /// </summary>
-        private void OnDrawGizmosSelected()
-        {
-            // Delegate to visuals component
-            // The CustomerVisuals component handles its own OnDrawGizmosSelected
-            // No fallback needed here as gizmos are optional
+            return Visuals?.GetDebugInfo() ?? $"Customer {name}: Debug info unavailable - CustomerVisuals component not found!";
         }
         
         #endregion
