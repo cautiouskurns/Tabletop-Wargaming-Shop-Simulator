@@ -29,6 +29,9 @@ namespace TabletopShop
         [SerializeField] private bool showShelfGizmos = true;
         [SerializeField] private bool showSlotGizmos = false; // Let slots control their own gizmos
         
+        // Component references
+        private ShelfVisuals shelfVisuals;
+        
         // Properties
         public int TotalSlots => shelfSlots.Count;
         public int OccupiedSlots => shelfSlots.Count(slot => !slot.IsEmpty);
@@ -38,16 +41,33 @@ namespace TabletopShop
         public ProductType AllowedProductType => allowedProductType;
         public bool AllowsAnyProductType => allowAnyProductType;
         
+        // Visual properties (delegated to ShelfVisuals component)
+        public Material ShelfMaterial => shelfVisuals?.ShelfMaterial ?? shelfMaterial;
+        public Vector3 ShelfDimensions => shelfVisuals?.ShelfDimensions ?? shelfDimensions;
+        public bool ShowShelfGizmos => shelfVisuals?.ShowShelfGizmos ?? showShelfGizmos;
+        
         #region Unity Lifecycle
         
         private void Awake()
         {
+            // Initialize component references
+            shelfVisuals = GetComponent<ShelfVisuals>();
+            if (shelfVisuals == null)
+            {
+                shelfVisuals = gameObject.AddComponent<ShelfVisuals>();
+                
+                // Transfer visual settings to the new component
+                if (shelfMaterial != null || shelfDimensions != Vector3.zero)
+                {
+                    shelfVisuals.InitializeComponent(shelfMaterial, shelfDimensions, showShelfGizmos);
+                }
+            }
+            
             if (autoCreateSlots && shelfSlots.Count == 0)
             {
                 CreateShelfSlots();
             }
             
-            SetupShelfVisual();
             ValidateSlots();
         }
         
@@ -287,7 +307,10 @@ namespace TabletopShop
             }
             
             // Setup visual representation
-            SetupShelfVisual();
+            if (shelfVisuals != null)
+            {
+                shelfVisuals.InitializeComponent(shelfMaterial, shelfDimensions, showShelfGizmos);
+            }
             
             // Validate configuration
             ValidateSlots();
@@ -408,84 +431,6 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Setup the visual representation of the shelf
-        /// </summary>
-        private void SetupShelfVisual()
-        {
-            // Check if shelf already has a visual representation
-            MeshRenderer existingRenderer = GetComponent<MeshRenderer>();
-            if (existingRenderer != null)
-                return;
-            
-            // Check for and clean up any duplicate ShelfVisual children
-            var existingVisuals = new List<Transform>();
-            for (int i = 0; i < transform.childCount; i++)
-            {
-                Transform child = transform.GetChild(i);
-                if (child.name == "ShelfVisual")
-                {
-                    existingVisuals.Add(child);
-                }
-            }
-            
-            // If we have duplicates, remove all but the first one
-            if (existingVisuals.Count > 1)
-            {
-                Debug.LogWarning($"Found {existingVisuals.Count} duplicate ShelfVisual objects on shelf {name}, cleaning up...");
-                for (int i = 1; i < existingVisuals.Count; i++)
-                {
-                    if (Application.isPlaying)
-                    {
-                        Destroy(existingVisuals[i].gameObject);
-                    }
-                    else
-                    {
-                        DestroyImmediate(existingVisuals[i].gameObject);
-                    }
-                }
-                Debug.Log($"Cleaned up {existingVisuals.Count - 1} duplicate ShelfVisual objects");
-            }
-            
-            // If we already have one ShelfVisual, we're good
-            if (existingVisuals.Count > 0)
-            {
-                Debug.Log($"ShelfVisual already exists for shelf {name}, skipping creation");
-                return;
-            }
-            
-            // Create shelf visual
-            GameObject shelfVisual = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            shelfVisual.name = "ShelfVisual";
-            shelfVisual.transform.SetParent(transform, false);
-            shelfVisual.transform.localPosition = Vector3.zero;
-            shelfVisual.transform.localScale = shelfDimensions;
-            
-            // Apply material if available
-            MeshRenderer renderer = shelfVisual.GetComponent<MeshRenderer>();
-            if (shelfMaterial != null && renderer != null)
-            {
-                renderer.material = shelfMaterial;
-            }
-            else if (renderer != null)
-            {
-                // Create default shelf material using MaterialUtility
-                Material defaultMaterial = MaterialUtility.CreateStandardMaterial(
-                    new Color(0.6f, 0.4f, 0.2f, 1f), // Brown wood color
-                    0f, // metallic
-                    0.3f // smoothness
-                );
-                renderer.material = defaultMaterial;
-            }
-            
-            // Remove collider from visual (slots handle interactions)
-            Collider visualCollider = shelfVisual.GetComponent<Collider>();
-            if (visualCollider != null)
-            {
-                DestroyImmediate(visualCollider);
-            }
-        }
-        
-        /// <summary>
         /// Validate that all slots are properly configured
         /// </summary>
         private void ValidateSlots()
@@ -526,11 +471,8 @@ namespace TabletopShop
         /// </summary>
         private void OnDrawGizmos()
         {
-            if (!showShelfGizmos) return;
-            
-            // Draw shelf bounds
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawWireCube(transform.position, shelfDimensions);
+            // Let ShelfVisuals handle the shelf-specific gizmo drawing
+            // We only handle slot coordination here
             
             // Only draw slot indicators if slots aren't drawing their own gizmos
             if (!showSlotGizmos && shelfSlots != null)
@@ -540,7 +482,17 @@ namespace TabletopShop
                 {
                     if (slot != null)
                     {
-                        Gizmos.DrawWireSphere(slot.SlotPosition, 0.2f);
+                        // Use transform position as fallback if SlotPosition fails
+                        Vector3 position;
+                        try
+                        {
+                            position = slot.SlotPosition;
+                        }
+                        catch
+                        {
+                            position = slot.transform.position;
+                        }
+                        Gizmos.DrawWireSphere(position, 0.2f);
                     }
                 }
             }
@@ -558,6 +510,18 @@ namespace TabletopShop
                 {
                     slot.SetGizmoDrawing(enabled);
                 }
+            }
+        }
+        
+        /// <summary>
+        /// Configure gizmo drawing for the shelf visual
+        /// </summary>
+        public void SetShelfGizmoDrawing(bool enabled)
+        {
+            showShelfGizmos = enabled;
+            if (shelfVisuals != null)
+            {
+                shelfVisuals.SetGizmoDrawing(enabled);
             }
         }
         
@@ -586,6 +550,12 @@ namespace TabletopShop
                         shelfSlots[i].transform.localPosition = slotPosition;
                     }
                 }
+            }
+            
+            // Sync visual settings with ShelfVisuals component if it exists
+            if (shelfVisuals != null)
+            {
+                shelfVisuals.InitializeComponent(shelfMaterial, shelfDimensions, showShelfGizmos);
             }
         }
         

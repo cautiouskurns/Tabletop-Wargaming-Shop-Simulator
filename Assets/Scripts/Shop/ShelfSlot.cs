@@ -28,14 +28,14 @@ namespace TabletopShop
         private ShelfSlotVisuals slotVisuals;
         private ShelfSlotInteraction slotInteraction;
         
-        // Public Properties - delegate to logic component
-        public bool IsEmpty => slotLogic.IsEmpty;
-        public Product CurrentProduct => slotLogic.CurrentProduct;
-        public Vector3 SlotPosition => slotLogic.SlotPosition;
+        // Public Properties - delegate to logic component with null checks
+        public bool IsEmpty => slotLogic?.IsEmpty ?? true;
+        public Product CurrentProduct => slotLogic?.CurrentProduct;
+        public Vector3 SlotPosition => slotLogic?.SlotPosition ?? transform.position;
         
-        // IInteractable Properties - delegate to interaction component
-        public string InteractionText => slotInteraction.InteractionText;
-        public bool CanInteract => slotInteraction.CanInteract;
+        // IInteractable Properties - delegate to interaction component with null checks
+        public string InteractionText => slotInteraction?.InteractionText ?? "Slot";
+        public bool CanInteract => slotInteraction?.CanInteract ?? false;
         
         #region Unity Lifecycle
         
@@ -80,13 +80,13 @@ namespace TabletopShop
         public void Initialize(Vector3? position = null, Color? emptyColor = null, Color? highlightColor = null, Vector3? indicatorScale = null)
         {
             // Apply position if provided
-            if (position.HasValue)
+            if (position.HasValue && slotLogic != null)
             {
                 slotLogic.SetSlotPosition(position.Value);
             }
             
             // Apply visual settings if provided
-            if (emptyColor.HasValue || highlightColor.HasValue || indicatorScale.HasValue)
+            if ((emptyColor.HasValue || highlightColor.HasValue || indicatorScale.HasValue) && slotVisuals != null)
             {
                 slotVisuals.InitializeComponent(
                     emptyColor ?? this.emptySlotColor,
@@ -121,6 +121,11 @@ namespace TabletopShop
         /// <returns>True if product was successfully placed</returns>
         public bool PlaceProduct(Product product)
         {
+            if (slotLogic == null)
+            {
+                Debug.LogError($"SlotLogic component not initialized on {name}");
+                return false;
+            }
             return slotLogic.PlaceProduct(product);
         }
         
@@ -130,6 +135,11 @@ namespace TabletopShop
         /// <returns>The removed product, or null if slot was empty</returns>
         public Product RemoveProduct()
         {
+            if (slotLogic == null)
+            {
+                Debug.LogError($"SlotLogic component not initialized on {name}");
+                return null;
+            }
             return slotLogic.RemoveProduct();
         }
         
@@ -138,6 +148,11 @@ namespace TabletopShop
         /// </summary>
         public void ClearSlot()
         {
+            if (slotLogic == null)
+            {
+                Debug.LogError($"SlotLogic component not initialized on {name}");
+                return;
+            }
             slotLogic.ClearSlot();
         }
         
@@ -147,6 +162,11 @@ namespace TabletopShop
         /// <param name="position">Local position offset from slot transform</param>
         public void SetSlotPosition(Vector3 position)
         {
+            if (slotLogic == null)
+            {
+                Debug.LogError($"SlotLogic component not initialized on {name}");
+                return;
+            }
             slotLogic.SetSlotPosition(position);
         }
         
@@ -160,6 +180,11 @@ namespace TabletopShop
         /// <param name="player">The player GameObject</param>
         public void Interact(GameObject player)
         {
+            if (slotInteraction == null)
+            {
+                Debug.LogError($"SlotInteraction component not initialized on {name}");
+                return;
+            }
             slotInteraction.Interact(player);
         }
         
@@ -168,6 +193,11 @@ namespace TabletopShop
         /// </summary>
         public void OnInteractionEnter()
         {
+            if (slotInteraction == null)
+            {
+                Debug.LogError($"SlotInteraction component not initialized on {name}");
+                return;
+            }
             slotInteraction.OnInteractionEnter();
         }
         
@@ -176,6 +206,11 @@ namespace TabletopShop
         /// </summary>
         public void OnInteractionExit()
         {
+            if (slotInteraction == null)
+            {
+                Debug.LogError($"SlotInteraction component not initialized on {name}");
+                return;
+            }
             slotInteraction.OnInteractionExit();
         }
         
