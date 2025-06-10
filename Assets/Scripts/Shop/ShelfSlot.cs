@@ -116,28 +116,10 @@ namespace TabletopShop
         /// </summary>
         private void InitializeComponents()
         {
-            // Get or add logic component
-            slotLogic = GetComponent<ShelfSlotLogic>();
-            if (slotLogic == null)
-            {
-                slotLogic = gameObject.AddComponent<ShelfSlotLogic>();
-            }
+            // Ensure all components exist first
+            EnsureComponentsExist();
             
-            // Get or add visuals component
-            slotVisuals = GetComponent<ShelfSlotVisuals>();
-            if (slotVisuals == null)
-            {
-                slotVisuals = gameObject.AddComponent<ShelfSlotVisuals>();
-            }
-            
-            // Get or add interaction component
-            slotInteraction = GetComponent<ShelfSlotInteraction>();
-            if (slotInteraction == null)
-            {
-                slotInteraction = gameObject.AddComponent<ShelfSlotInteraction>();
-            }
-            
-            // Initialize all components with current data
+            // Then initialize them in proper order
             InitializeAllComponents();
         }
         
@@ -148,10 +130,20 @@ namespace TabletopShop
         {
             if (hasBeenMigrated) return;
 
-            // Ensure all components exist
-            EnsureLogicComponent();
-            EnsureVisualsComponent();
-            EnsureInteractionComponent();
+            // Validate all components exist before initialization
+            if (slotLogic == null || slotVisuals == null || slotInteraction == null)
+            {
+                Debug.LogError($"Cannot initialize components for slot {name} - some components are missing!");
+                return;
+            }
+
+            // Initialize in proper order: Logic -> Visuals -> Interaction
+            InitializeLogicComponent();
+            InitializeVisualsComponent();
+            // ShelfSlotInteraction initializes itself
+
+            // Configure gizmo drawing after all components are initialized
+            slotLogic.SetGizmoDrawing(showSlotGizmos);
 
             hasBeenMigrated = true;
             Debug.Log($"Initialized all components for slot {name}");
@@ -343,7 +335,11 @@ namespace TabletopShop
         /// </summary>
         private void InitializeLogicComponent()
         {
-            if (slotLogic == null) return;
+            if (slotLogic == null)
+            {
+                Debug.LogError($"Cannot initialize logic component for slot {name} - component is null!");
+                return;
+            }
 
             // Direct initialization without reflection
             slotLogic.SetSlotPosition(slotPosition);
@@ -353,8 +349,10 @@ namespace TabletopShop
                 slotLogic.InitializeWithProduct(currentProduct);
                 Debug.Log($"Initialized logic component with product {currentProduct.ProductData?.ProductName} for slot {name}");
             }
-            
-            hasBeenMigrated = true;
+            else
+            {
+                Debug.Log($"Initialized logic component without product for slot {name}");
+            }
         }
 
         /// <summary>
@@ -362,7 +360,11 @@ namespace TabletopShop
         /// </summary>
         private void InitializeVisualsComponent()
         {
-            if (slotVisuals == null) return;
+            if (slotVisuals == null)
+            {
+                Debug.LogError($"Cannot initialize visuals component for slot {name} - component is null!");
+                return;
+            }
 
             // Direct initialization without reflection
             slotVisuals.InitializeComponent(emptySlotColor, highlightColor, slotIndicator, indicatorScale);
