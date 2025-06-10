@@ -470,11 +470,12 @@ namespace TabletopShop
             }
             else if (renderer != null)
             {
-                // Create default shelf material
-                Material defaultMaterial = new Material(Shader.Find("Standard"));
-                defaultMaterial.color = new Color(0.6f, 0.4f, 0.2f, 1f); // Brown wood color
-                defaultMaterial.SetFloat("_Metallic", 0f);
-                defaultMaterial.SetFloat("_Glossiness", 0.3f);
+                // Create default shelf material using MaterialUtility
+                Material defaultMaterial = MaterialUtility.CreateStandardMaterial(
+                    new Color(0.6f, 0.4f, 0.2f, 1f), // Brown wood color
+                    0f, // metallic
+                    0.3f // smoothness
+                );
                 renderer.material = defaultMaterial;
             }
             

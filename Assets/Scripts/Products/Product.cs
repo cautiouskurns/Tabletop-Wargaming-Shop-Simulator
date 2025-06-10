@@ -323,16 +323,8 @@ namespace TabletopShop
             // Store reference to original material
             originalMaterial = meshRenderer.material;
             
-            // Create highlight material
-            highlightMaterial = new Material(originalMaterial);
-            highlightMaterial.color = hoverColor;
-            
-            // Make highlight material emissive for better visibility
-            if (highlightMaterial.HasProperty("_EmissionColor"))
-            {
-                highlightMaterial.EnableKeyword("_EMISSION");
-                highlightMaterial.SetColor("_EmissionColor", hoverColor * hoverIntensity);
-            }
+            // Create highlight material using MaterialUtility
+            highlightMaterial = MaterialUtility.CreateEmissiveMaterial(originalMaterial, hoverColor, hoverIntensity);
         }
         
         /// <summary>
@@ -564,14 +556,8 @@ namespace TabletopShop
         
         private void OnDestroy()
         {
-            // Clean up created materials to prevent memory leaks
-            if (highlightMaterial != null)
-            {
-                if (Application.isPlaying)
-                    Destroy(highlightMaterial);
-                else
-                    DestroyImmediate(highlightMaterial);
-            }
+            // Clean up created materials to prevent memory leaks using MaterialUtility
+            MaterialUtility.SafeDestroyMaterial(highlightMaterial, !Application.isPlaying);
         }
         
         #endregion

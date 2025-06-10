@@ -61,17 +61,9 @@ namespace TabletopShop
                 slotLogic.OnVisualStateChanged -= UpdateVisualState;
             }
             
-            // Clean up created materials
-            if (Application.isPlaying)
-            {
-                if (normalMaterial != null) Destroy(normalMaterial);
-                if (highlightMaterial != null) Destroy(highlightMaterial);
-            }
-            else
-            {
-                if (normalMaterial != null) DestroyImmediate(normalMaterial);
-                if (highlightMaterial != null) DestroyImmediate(highlightMaterial);
-            }
+            // Clean up created materials using MaterialUtility
+            MaterialUtility.SafeDestroyMaterial(normalMaterial, !Application.isPlaying);
+            MaterialUtility.SafeDestroyMaterial(highlightMaterial, !Application.isPlaying);
         }
         
         /// <summary>
@@ -204,11 +196,8 @@ namespace TabletopShop
                 }
                 else
                 {
-                    // Create default material for generated cube indicators
-                    normalMaterial = new Material(Shader.Find("Standard"));
-                    normalMaterial.color = emptySlotColor;
-                    normalMaterial.SetFloat("_Metallic", 0f);
-                    normalMaterial.SetFloat("_Glossiness", 0.3f);
+                    // Create default material for generated cube indicators using MaterialUtility
+                    normalMaterial = MaterialUtility.CreateStandardMaterial(emptySlotColor, 0f, 0.3f);
                     Debug.Log($"Created default normal material for slot {name}");
                 }
             }
@@ -216,15 +205,8 @@ namespace TabletopShop
             // Create highlight material if not assigned
             if (highlightMaterial == null)
             {
-                // Create a highlight version based on the normal material
-                highlightMaterial = new Material(normalMaterial);
-                highlightMaterial.color = highlightColor;
-                highlightMaterial.SetFloat("_Metallic", 0f);
-                highlightMaterial.SetFloat("_Glossiness", 0.5f);
-                
-                // Add emission for better visibility
-                highlightMaterial.EnableKeyword("_EMISSION");
-                highlightMaterial.SetColor("_EmissionColor", highlightColor * 0.3f);
+                // Create a highlight version with emission using MaterialUtility
+                highlightMaterial = MaterialUtility.CreateEmissiveMaterial(normalMaterial, highlightColor, 0.3f);
                 Debug.Log($"Created highlight material for slot {name}");
             }
         }

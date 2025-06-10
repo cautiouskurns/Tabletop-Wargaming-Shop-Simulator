@@ -51,26 +51,17 @@ namespace TabletopShop.Editor
             // Get URP shader (fallback to Standard if URP not available)
             Shader urpShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             
-            // Create shelf material
-            Material shelfMaterial = new Material(urpShader);
-            shelfMaterial.color = new Color(0.6f, 0.4f, 0.2f, 1f); // Brown wood color
+            // Create shelf material using MaterialUtility
+            Material shelfMaterial = MaterialUtility.CreateStandardMaterial(
+                new Color(0.6f, 0.4f, 0.2f, 1f), // Brown wood color
+                0f, // metallic
+                0.4f // smoothness
+            );
             
-            // Set material properties based on shader type
+            // Override shader if URP is available
             if (urpShader.name.Contains("Universal"))
             {
-                // URP properties
-                if (shelfMaterial.HasProperty("_Metallic"))
-                    shelfMaterial.SetFloat("_Metallic", 0f);
-                if (shelfMaterial.HasProperty("_Smoothness"))
-                    shelfMaterial.SetFloat("_Smoothness", 0.4f);
-            }
-            else
-            {
-                // Built-in render pipeline properties
-                if (shelfMaterial.HasProperty("_Metallic"))
-                    shelfMaterial.SetFloat("_Metallic", 0f);
-                if (shelfMaterial.HasProperty("_Glossiness"))
-                    shelfMaterial.SetFloat("_Glossiness", 0.4f);
+                shelfMaterial.shader = urpShader;
             }
             
             AssetDatabase.CreateAsset(shelfMaterial, materialPath);
