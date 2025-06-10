@@ -6361,6 +6361,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1533560455529903695, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1174955285}
+    - targetCorrespondingSourceObject: {fileID: 1533560455529903695, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1174955286}
   m_SourcePrefab: {fileID: 100100000, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
 --- !u!1 &1174955268 stripped
 GameObject:
@@ -6429,15 +6432,7 @@ MonoBehaviour:
   moneyDisplay: {fileID: 2085796238}
   salesDisplay: {fileID: 1449353885}
   timeDisplay: {fileID: 613042713}
-  dailySummaryPanel: {fileID: 1569155969}
-  priceSettingPanel: {fileID: 1518744964}
-  dailySummaryRevenueText: {fileID: 621557275}
-  dailySummaryExpensesText: {fileID: 139102893}
-  dailySummaryProfitText: {fileID: 1413375256}
-  dailySummaryCustomersText: {fileID: 1268882683}
-  dailySummaryDayText: {fileID: 1593396316}
-  currentPriceText: {fileID: 539290087}
-  suggestedPriceText: {fileID: 561527669}
+  panelManagementNote: Panel references moved to ShopUIPanels component
   shopUIDisplay:
     moneyDisplay: {fileID: 0}
     salesDisplay: {fileID: 0}
@@ -6467,10 +6462,31 @@ MonoBehaviour:
   pauseButton: {fileID: 1627449170}
   inventoryToggleButton: {fileID: 269696792}
   settingsButton: {fileID: 0}
-  dailySummaryContinueButton: {fileID: 0}
+  dailySummaryContinueButton: {fileID: 1754840688}
   confirmPriceButton: {fileID: 2105342124}
   cancelPriceButton: {fileID: 1482723030}
   priceInputField: {fileID: 1080549692}
+--- !u!114 &1174955286
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1174955268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e8b37a02a7ef467f9668feffc3a8781, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShopUIPanels
+  dailySummaryPanel: {fileID: 1569155969}
+  priceSettingPanel: {fileID: 1518744964}
+  dailySummaryRevenueText: {fileID: 621557275}
+  dailySummaryExpensesText: {fileID: 139102893}
+  dailySummaryProfitText: {fileID: 1413375256}
+  dailySummaryCustomersText: {fileID: 1268882683}
+  dailySummaryDayText: {fileID: 0}
+  currentPriceText: {fileID: 539290087}
+  suggestedPriceText: {fileID: 561527669}
 --- !u!1 &1199793511
 GameObject:
   m_ObjectHideFlags: 0

@@ -31,35 +31,9 @@ namespace TabletopShop
         [Tooltip("UI text component for displaying current game time")]
         [SerializeField] private TextMeshProUGUI timeDisplay;
         
-        [Header("Panel References")]
-        [Tooltip("Panel containing daily summary information and statistics")]
-        [SerializeField] private GameObject dailySummaryPanel;
-        
-        [Tooltip("Panel for setting product prices and price adjustments")]
-        [SerializeField] private GameObject priceSettingPanel;
-        
-        [Header("Daily Summary UI Elements")]
-        [Tooltip("Text component displaying daily revenue in summary")]
-        [SerializeField] private TextMeshProUGUI dailySummaryRevenueText;
-        
-        [Tooltip("Text component displaying daily expenses in summary")]
-        [SerializeField] private TextMeshProUGUI dailySummaryExpensesText;
-        
-        [Tooltip("Text component displaying daily profit in summary")]
-        [SerializeField] private TextMeshProUGUI dailySummaryProfitText;
-        
-        [Tooltip("Text component displaying customers served in summary")]
-        [SerializeField] private TextMeshProUGUI dailySummaryCustomersText;
-        
-        [Tooltip("Text component displaying the current day number in summary")]
-        [SerializeField] private TextMeshProUGUI dailySummaryDayText;
-        
-        [Header("Price Setting UI Elements")]
-        [Tooltip("Text component displaying current price in price setting panel")]
-        [SerializeField] private TextMeshProUGUI currentPriceText;
-        
-        [Tooltip("Text component displaying suggested price range")]
-        [SerializeField] private TextMeshProUGUI suggestedPriceText;
+        [Header("Note")]
+        [Tooltip("Panel management has been moved to ShopUIPanels component")]
+        [SerializeField] private string panelManagementNote = "Panel references moved to ShopUIPanels component";
         
         #endregion
         
@@ -70,6 +44,12 @@ namespace TabletopShop
         /// Uses composition pattern for separation of concerns.
         /// </summary>
         private ShopUIControls shopUIControls;
+        
+        /// <summary>
+        /// Panels component handling all panel management and visibility.
+        /// Uses composition pattern following existing UI patterns.
+        /// </summary>
+        private ShopUIPanels shopUIPanels;
         
         #endregion
         
@@ -93,17 +73,7 @@ namespace TabletopShop
         /// </summary>
         private Canvas canvasComponent;
         
-        /// <summary>
-        /// Current state of the daily summary panel visibility.
-        /// Used to track whether the daily summary is currently displayed.
-        /// </summary>
-        private bool isDailySummaryVisible = false;
-        
-        /// <summary>
-        /// Track whether the price setting panel is currently visible.
-        /// Used to prevent multiple simultaneous price setting displays.
-        /// </summary>
-        private bool isPriceSettingVisible = false;
+        // Note: Panel visibility state tracking has been moved to ShopUIPanels component
         
         #endregion
         
@@ -129,6 +99,14 @@ namespace TabletopShop
             {
                 Debug.LogError("[ShopUI] ShopUIControls component not found! Adding component automatically.");
                 shopUIControls = gameObject.AddComponent<ShopUIControls>();
+            }
+            
+            // Get the ShopUIPanels component
+            shopUIPanels = GetComponent<ShopUIPanels>();
+            if (shopUIPanels == null)
+            {
+                Debug.LogError("[ShopUI] ShopUIPanels component not found! Adding component automatically.");
+                shopUIPanels = gameObject.AddComponent<ShopUIPanels>();
             }
             
             // Validate UI element references with detailed error logging
@@ -180,7 +158,7 @@ namespace TabletopShop
         private void Update()
         {
             // Handle keyboard input for price setting panel
-            if (isPriceSettingVisible)
+            if (shopUIPanels != null && shopUIPanels.IsPriceSettingVisible)
             {
                 // Escape key to cancel price setting
                 if (Input.GetKeyDown(KeyCode.Escape))
@@ -243,61 +221,10 @@ namespace TabletopShop
                 allReferencesValid = false;
             }
             
-            // Validate panel references
-            if (dailySummaryPanel == null)
+            // Panel validation is now handled by ShopUIPanels component
+            if (shopUIPanels != null)
             {
-                Debug.LogError("[ShopUI] Daily summary panel GameObject reference is missing! Please assign in Inspector.");
-                allReferencesValid = false;
-            }
-            
-            if (priceSettingPanel == null)
-            {
-                Debug.LogError("[ShopUI] Price setting panel GameObject reference is missing! Please assign in Inspector.");
-                allReferencesValid = false;
-            }
-            
-            // Validate daily summary UI elements
-            if (dailySummaryRevenueText == null)
-            {
-                Debug.LogError("[ShopUI] Daily summary revenue TextMeshProUGUI reference is missing! Please assign in Inspector.");
-                allReferencesValid = false;
-            }
-            
-            if (dailySummaryExpensesText == null)
-            {
-                Debug.LogError("[ShopUI] Daily summary expenses TextMeshProUGUI reference is missing! Please assign in Inspector.");
-                allReferencesValid = false;
-            }
-            
-            if (dailySummaryProfitText == null)
-            {
-                Debug.LogError("[ShopUI] Daily summary profit TextMeshProUGUI reference is missing! Please assign in Inspector.");
-                allReferencesValid = false;
-            }
-            
-            if (dailySummaryCustomersText == null)
-            {
-                Debug.LogError("[ShopUI] Daily summary customers TextMeshProUGUI reference is missing! Please assign in Inspector.");
-                allReferencesValid = false;
-            }
-            
-            if (dailySummaryDayText == null)
-            {
-                Debug.LogError("[ShopUI] Daily summary day TextMeshProUGUI reference is missing! Please assign in Inspector.");
-                allReferencesValid = false;
-            }
-            
-            // Validate price setting UI elements
-            if (currentPriceText == null)
-            {
-                Debug.LogError("[ShopUI] Current price TextMeshProUGUI reference is missing! Please assign in Inspector.");
-                allReferencesValid = false;
-            }
-            
-            if (suggestedPriceText == null)
-            {
-                Debug.LogError("[ShopUI] Suggested price TextMeshProUGUI reference is missing! Please assign in Inspector.");
-                allReferencesValid = false;
+                shopUIPanels.ValidatePanelReferences();
             }
             
             if (allReferencesValid)
@@ -361,15 +288,10 @@ namespace TabletopShop
         /// </summary>
         private void InitializeUIState()
         {
-            // Initialize panels to hidden state
-            if (dailySummaryPanel != null)
+            // Initialize panels to hidden state via ShopUIPanels component
+            if (shopUIPanels != null)
             {
-                dailySummaryPanel.SetActive(false);
-            }
-            
-            if (priceSettingPanel != null)
-            {
-                priceSettingPanel.SetActive(false);
+                shopUIPanels.InitializePanelStates();
             }
             
             // Initialize display texts to default values (will be updated from GameManager)
@@ -427,6 +349,20 @@ namespace TabletopShop
             {
                 Debug.LogWarning("[ShopUI] GameManager.Instance is null during event subscription. Will retry on next refresh.");
             }
+            
+            // Subscribe to ShopUIControls panel events
+            if (shopUIControls != null)
+            {
+                shopUIControls.OnShowDailySummary.AddListener(ShowDailySummary);
+                shopUIControls.OnHideDailySummary.AddListener(HideDailySummary);
+                shopUIControls.OnHidePriceSetting.AddListener(HidePriceSetting);
+                
+                Debug.Log("[ShopUI] Successfully subscribed to ShopUIControls panel events");
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] ShopUIControls component is null during event subscription.");
+            }
         }
         
         /// <summary>
@@ -448,6 +384,16 @@ namespace TabletopShop
                 GameManager.Instance.OnReputationChanged.RemoveListener(OnReputationChanged);
                 
                 Debug.Log("[ShopUI] Unsubscribed from GameManager events");
+            }
+            
+            // Unsubscribe from ShopUIControls panel events
+            if (shopUIControls != null)
+            {
+                shopUIControls.OnShowDailySummary.RemoveListener(ShowDailySummary);
+                shopUIControls.OnHideDailySummary.RemoveListener(HideDailySummary);
+                shopUIControls.OnHidePriceSetting.RemoveListener(HidePriceSetting);
+                
+                Debug.Log("[ShopUI] Unsubscribed from ShopUIControls panel events");
             }
         }
         
@@ -633,218 +579,70 @@ namespace TabletopShop
         
         #endregion
         
-        #region Price Setting System
+        #region Panel Management (Delegated to ShopUIPanels)
         
         /// <summary>
         /// Show the price setting popup for a specific product.
-        /// 
-        /// Price Setting Display:
-        /// - Shows current price of the product
-        /// - Provides input field for new price entry
-        /// - Displays suggested price range based on base price
-        /// - Offers confirm/cancel options for price changes
-        /// 
-        /// UI Flow:
-        /// 1. Store reference to product being priced in controls component
-        /// 2. Populate current price and suggested range
-        /// 3. Show the price setting panel
-        /// 4. Set visibility state flag
-        /// 5. Player can enter new price and confirm/cancel
+        /// Delegates to ShopUIPanels component for unified panel management.
         /// </summary>
         /// <param name="product">The product to set price for</param>
         public void ShowPriceSetting(Product product)
         {
-            if (product == null)
+            if (shopUIPanels != null)
             {
-                Debug.LogError("[ShopUI] Cannot show price setting - product is null!");
-                return;
+                shopUIPanels.ShowPriceSetting(product, shopUIControls);
             }
-            
-            if (priceSettingPanel == null)
+            else
             {
-                Debug.LogError("[ShopUI] Cannot show price setting - priceSettingPanel is not assigned!");
-                return;
+                Debug.LogError("[ShopUI] Cannot show price setting - ShopUIPanels component not available!");
             }
-            
-            if (isPriceSettingVisible)
-            {
-                Debug.LogWarning("[ShopUI] Price setting panel is already visible. Closing current panel first.");
-                HidePriceSetting();
-            }
-            
-            // Set product reference in controls component
-            if (shopUIControls != null)
-            {
-                shopUIControls.SetCurrentPricingProduct(product);
-            }
-            
-            // Populate current price display
-            if (currentPriceText != null)
-            {
-                currentPriceText.text = $"Current Price: {UIFormatting.FormatCurrency(product.CurrentPrice)}";
-            }
-            
-            // Calculate and display suggested price range (±20% of base price)
-            if (suggestedPriceText != null)
-            {
-                float basePrice = product.ProductData.BasePrice;
-                float minSuggested = basePrice * 0.8f;
-                float maxSuggested = basePrice * 1.2f;
-                suggestedPriceText.text = $"Suggested: {UIFormatting.FormatCurrency(minSuggested)} - {UIFormatting.FormatCurrency(maxSuggested)}";
-            }
-            
-            // Show the price setting panel
-            priceSettingPanel.SetActive(true);
-            isPriceSettingVisible = true;
-            
-            Debug.Log($"[ShopUI] Price setting displayed for product: {product.ProductData.ProductName}, " +
-                     $"Current price: {UIFormatting.FormatCurrency(product.CurrentPrice)}");
         }
         
         /// <summary>
         /// Hide the price setting popup and clear the current product reference.
-        /// 
-        /// Cancel Flow:
-        /// 1. Hide the price setting panel
-        /// 2. Reset visibility state flag
-        /// 3. Clear product reference in controls component
-        /// 4. Provide debug feedback
+        /// Delegates to ShopUIPanels component for unified panel management.
         /// </summary>
         public void HidePriceSetting()
         {
-            if (priceSettingPanel != null)
+            if (shopUIPanels != null)
             {
-                priceSettingPanel.SetActive(false);
+                shopUIPanels.HidePriceSetting(shopUIControls);
             }
-            
-            isPriceSettingVisible = false;
-            
-            // Clear product reference in controls component
-            if (shopUIControls != null)
+            else
             {
-                shopUIControls.ClearCurrentPricingProduct();
+                Debug.LogError("[ShopUI] Cannot hide price setting - ShopUIPanels component not available!");
             }
-            
-            Debug.Log("[ShopUI] Price setting panel hidden");
         }
-        
-        #endregion
-        
-        #region Daily Summary System
         
         /// <summary>
         /// Display the daily summary popup with key statistics from the current day.
-        /// 
-        /// Daily Summary Display:
-        /// - Shows current day's revenue, expenses, profit, and customers served
-        /// - Uses existing GameManager economic data
-        /// - Formats currency values using the established FormatCurrency utility
-        /// - Activates the daily summary panel and populates all text fields
-        /// 
-        /// UI Flow:
-        /// 1. Populate all summary text elements with current day data
-        /// 2. Show the daily summary panel
-        /// 3. Set visibility state flag
-        /// 4. Player can review performance before continuing
+        /// Delegates to ShopUIPanels component for unified panel management.
         /// </summary>
         public void ShowDailySummary()
         {
-            if (gameManager == null)
+            if (shopUIPanels != null)
             {
-                Debug.LogError("[ShopUI] Cannot show daily summary - GameManager is not available!");
-                return;
+                shopUIPanels.ShowDailySummary();
             }
-            
-            if (dailySummaryPanel == null)
+            else
             {
-                Debug.LogError("[ShopUI] Cannot show daily summary - dailySummaryPanel is not assigned!");
-                return;
+                Debug.LogError("[ShopUI] Cannot show daily summary - ShopUIPanels component not available!");
             }
-            
-            // Get current day's economic data from GameManager
-            float dailyRevenue = gameManager.DailyRevenue;
-            float dailyExpenses = gameManager.DailyExpenses;
-            float dailyProfit = gameManager.DailyProfit;
-            int customersServed = gameManager.CustomersServedToday;
-            int currentDay = gameManager.CurrentDay;
-            
-            // Populate summary text elements using existing formatting utilities
-            if (dailySummaryRevenueText != null)
-            {
-                dailySummaryRevenueText.text = UIFormatting.FormatCurrency(dailyRevenue);
-            }
-            
-            if (dailySummaryExpensesText != null)
-            {
-                dailySummaryExpensesText.text = UIFormatting.FormatCurrency(dailyExpenses);
-            }
-            
-            if (dailySummaryProfitText != null)
-            {
-                // Use color coding for profit/loss indication
-                string profitText = UIFormatting.FormatCurrency(dailyProfit);
-                dailySummaryProfitText.text = profitText;
-                
-                // Optional: Add color coding for profit (green) vs loss (red)
-                if (dailyProfit >= 0)
-                {
-                    dailySummaryProfitText.color = Color.green;
-                }
-                else
-                {
-                    dailySummaryProfitText.color = Color.red;
-                }
-            }
-            
-            if (dailySummaryCustomersText != null)
-            {
-                dailySummaryCustomersText.text = UIFormatting.FormatSalesCount(customersServed);
-            }
-            
-            if (dailySummaryDayText != null)
-            {
-                dailySummaryDayText.text = $"Day {currentDay} Summary";
-            }
-            
-            // Show the daily summary panel
-            dailySummaryPanel.SetActive(true);
-            isDailySummaryVisible = true;
-            
-            Debug.Log($"[ShopUI] Daily summary displayed - Revenue: {UIFormatting.FormatCurrency(dailyRevenue)}, " +
-                     $"Expenses: {UIFormatting.FormatCurrency(dailyExpenses)}, Profit: {UIFormatting.FormatCurrency(dailyProfit)}, " +
-                     $"Customers: {customersServed}");
         }
         
         /// <summary>
         /// Hide the daily summary popup and proceed to the next day.
-        /// 
-        /// Continue Flow:
-        /// 1. Hide the daily summary panel
-        /// 2. Reset visibility state flag
-        /// 3. Call GameManager.ForceNextDay() to advance the game
-        /// 4. Provide debug feedback for the transition
-        /// 
-        /// This method completes the daily transition cycle that was initiated
-        /// by the End Day button click.
+        /// Delegates to ShopUIPanels component for unified panel management.
         /// </summary>
         public void HideDailySummary()
         {
-            if (dailySummaryPanel != null)
+            if (shopUIPanels != null)
             {
-                dailySummaryPanel.SetActive(false);
-            }
-            
-            isDailySummaryVisible = false;
-            
-            // Now advance to the next day
-            if (gameManager != null)
-            {
-                gameManager.ForceNextDay();
-                Debug.Log("[ShopUI] Daily summary hidden - advanced to next day");
+                shopUIPanels.HideDailySummary();
             }
             else
             {
-                Debug.LogError("[ShopUI] Cannot advance to next day - GameManager is not available!");
+                Debug.LogError("[ShopUI] Cannot hide daily summary - ShopUIPanels component not available!");
             }
         }
         
