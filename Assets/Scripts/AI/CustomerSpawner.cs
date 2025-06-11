@@ -586,7 +586,7 @@ namespace TabletopShop
                 {
                     if (activeCustomers[i] != null)
                     {
-                        customerList += $"\n  {i + 1}. {activeCustomers[i].name} - State: {activeCustomers[i].CurrentState}";
+                        customerList += $"\n  {i + 1}. {activeCustomers[i].name}";
                     }
                 }
             }

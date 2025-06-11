@@ -64,7 +64,7 @@ namespace TabletopShop
             if (mainCustomer != null)
             {
                 // Update initial color based on current state
-                UpdateColorForState(mainCustomer.CurrentState);
+                UpdateColorForState(mainCustomer.Behavior.CurrentState);
             }
         }
         
@@ -262,13 +262,13 @@ namespace TabletopShop
                 return $"Customer {name}: Components not initialized";
             }
             
-            return $"Customer {name}: State={mainCustomer.CurrentState}, " +
-                   $"ShoppingTime={mainCustomer.ShoppingTime:F1}s, " +
+            return $"Customer {name}: State={mainCustomer.Behavior.CurrentState}, " +
+                   $"ShoppingTime={mainCustomer.Behavior.ShoppingTime:F1}s, " +
                    $"IsMoving={customerMovement.IsMoving}, " +
                    $"HasDestination={customerMovement.HasDestination}, " +
                    $"Destination={customerMovement.CurrentDestination}, " +
                    $"Distance={Vector3.Distance(transform.position, customerMovement.CurrentDestination):F2}, " +
-                   $"TargetShelf={mainCustomer.TargetShelf?.name ?? "None"}";
+                   $"TargetShelf={mainCustomer.Behavior.TargetShelf?.name ?? "None"}";
         }
         
         /// <summary>
@@ -290,7 +290,7 @@ namespace TabletopShop
                 return "Not Initialized";
             }
             
-            string status = mainCustomer.CurrentState.ToString();
+            string status = mainCustomer.Behavior.CurrentState.ToString();
             
             if (customerMovement != null && customerMovement.IsMoving)
             {
@@ -348,7 +348,7 @@ namespace TabletopShop
             
             Vector3 indicatorPosition = transform.position + Vector3.up * 2f;
             
-            switch (mainCustomer.CurrentState)
+            switch (mainCustomer.Behavior.CurrentState)
             {
                 case CustomerState.Entering:
                     Gizmos.color = Color.cyan;
@@ -419,7 +419,7 @@ namespace TabletopShop
         {
             if (mainCustomer != null)
             {
-                gameObject.name = $"Customer_{mainCustomer.CurrentState}";
+                gameObject.name = $"Customer_{mainCustomer.Behavior.CurrentState}";
             }
         }
         

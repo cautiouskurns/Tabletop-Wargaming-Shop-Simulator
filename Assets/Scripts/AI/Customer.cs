@@ -16,9 +16,14 @@ namespace TabletopShop
     }
 
     /// <summary>
-    /// Customer AI controller using composition pattern with components for movement, behavior, and visuals.
-    /// Maintains the same public API for backward compatibility while delegating responsibilities to specialized components.
-    /// </summary>
+    /// Customer AI coordinator using pure composition pattern.
+    /// 
+    /// DESIGN PATTERN: Pure Coordinator
+    /// - Provides direct access to specialized components
+    /// - Coordinates high-level actions that involve multiple components
+    /// - NO delegation methods - use direct component access instead
+    /// 
+
     [RequireComponent(typeof(NavMeshAgent))]
     public class Customer : MonoBehaviour
     {
@@ -32,36 +37,10 @@ namespace TabletopShop
         public CustomerBehavior Behavior => customerBehavior;
         public CustomerVisuals Visuals => customerVisuals;
         
-        // Legacy properties for backward compatibility (delegate to components)
-        public CustomerState CurrentState => customerBehavior?.CurrentState ?? CustomerState.Entering;
-        public float ShoppingTime => customerBehavior?.ShoppingTime ?? 15f; // Default fallback
-        public ShelfSlot TargetShelf => customerBehavior?.TargetShelf;
-        public bool IsMoving => customerMovement?.IsMoving ?? false;
-        public Vector3 CurrentDestination => customerMovement?.CurrentDestination ?? Vector3.zero;
-        public bool HasDestination => customerMovement?.HasDestination ?? false;
+        // Note: Legacy properties removed - use direct component access instead:
+        // customer.Behavior.CurrentState, customer.Movement.IsMoving, etc.
 
         #region Unity Lifecycle
-
-        // private void Awake()
-        // {
-        //     InitializeComponents();
-        //     InitializeLegacyFallbacks();
-        // }
-
-        // private void Start()
-        // {
-        //     Debug.Log($"Customer {name} initialized with state: {CurrentState}, shopping time: {ShoppingTime:F1}s");
-
-        //     // Start the customer lifecycle state machine (delegate to behavior component)
-        //     if (customerBehavior != null)
-        //     {
-        //         customerBehavior.StartCustomerLifecycle(CurrentState);
-        //     }
-        //     else
-        //     {
-        //         Debug.LogError($"Customer {name} cannot start lifecycle - CustomerBehavior component not found!");
-        //     }
-        // }
         
         private void Awake()
         {
@@ -87,13 +66,14 @@ namespace TabletopShop
             {
                 Debug.Log($"Customer {name}: Start() BEGIN");
                 
-                // Comment out everything temporarily
+                var currentState = customerBehavior?.CurrentState ?? CustomerState.Entering;
+                var shoppingTime = customerBehavior?.ShoppingTime ?? 15f;
                 
-                Debug.Log($"Customer {name} initialized with state: {CurrentState}, shopping time: {ShoppingTime:F1}s");
+                Debug.Log($"Customer {name} initialized with state: {currentState}, shopping time: {shoppingTime:F1}s");
                 
                 if (customerBehavior != null)
                 {
-                    customerBehavior.StartCustomerLifecycle(CurrentState);
+                    customerBehavior.StartCustomerLifecycle(currentState);
                 }
                 else
                 {
@@ -157,17 +137,17 @@ namespace TabletopShop
         
         /// <summary>
         /// Handle state change requests from behavior component
-        /// ✅ FIXED: No longer calls ChangeState() to prevent infinite recursion
+        /// Simplified to just update visuals - no circular calls
         /// </summary>
         private void HandleStateChangeRequest(CustomerState fromState, CustomerState toState)
         {
-            // ✅ DON'T call ChangeState() - just update visuals directly to prevent circular events
+            // Just update visuals directly - no delegation or circular events
             if (customerVisuals != null)
             {
                 customerVisuals.UpdateColorForState(toState);
             }
             
-            // Optional: Log the change without calling ChangeState()
+            // Log the change for debugging
             Debug.Log($"Customer {name} state change notification: {fromState} -> {toState}");
         }
         
@@ -200,76 +180,8 @@ namespace TabletopShop
         
         #endregion
         
-        #region State Management
-        
-        /// <summary>
-        /// Change customer state and log the transition
-        /// </summary>
-        /// <param name="newState">The new state to transition to</param>
-        public void ChangeState(CustomerState newState)
-        {
-            CustomerState previousState = CurrentState;
-            
-            // Delegate state change to behavior component
-            if (customerBehavior != null)
-            {
-                customerBehavior.ChangeState(newState);
-            }
-            else
-            {
-                Debug.LogWarning($"Customer {name} cannot change state - CustomerBehavior component not found!");
-                return;
-            }
-            
-            Debug.Log($"Customer {name} state changed: {previousState} -> {CurrentState}");
-            
-            // Handle state-specific initialization
-            OnStateChanged(previousState, CurrentState);
-        }
-        
-        /// <summary>
-        /// Get the current customer state
-        /// </summary>
-        /// <returns>Current CustomerState</returns>
-        public CustomerState GetCurrentState()
-        {
-            return CurrentState;
-        }
-        
-        /// <summary>
-        /// Called when state changes to handle state-specific setup
-        /// </summary>
-        /// <param name="previousState">The previous state</param>
-        /// <param name="newState">The new state</param>
-        private void OnStateChanged(CustomerState previousState, CustomerState newState)
-        {
-            // Update visual color system based on new state
-            if (customerVisuals != null)
-            {
-                customerVisuals.UpdateColorForState(newState);
-            }
-            
-            switch (newState)
-            {
-                case CustomerState.Entering:
-                    Debug.Log($"Customer {name} is entering the shop");
-                    break;
-                    
-                case CustomerState.Shopping:
-                    Debug.Log($"Customer {name} started shopping (duration: {ShoppingTime:F1}s)");
-                    break;
-                    
-                case CustomerState.Purchasing:
-                    Debug.Log($"Customer {name} is making a purchase");
-                    break;
-                    
-                case CustomerState.Leaving:
-                    Debug.Log($"Customer {name} is leaving the shop");
-                    break;
-            }
-        }
-        
-        #endregion
+        // Note: State management methods removed - use direct component access:
+        // customer.Behavior.ChangeState(state), customer.Behavior.CurrentState, etc.
         
         #region High-Level Customer Actions
         
@@ -278,15 +190,15 @@ namespace TabletopShop
         /// </summary>
         public void StartShopping()
         {
-            // ✅ Call CustomerBehavior directly to avoid circular events
+            // Direct component coordination - no delegation
             if (customerBehavior != null)
             {
                 customerBehavior.ChangeState(CustomerState.Shopping);
             }
             
-            if (Movement != null)
+            if (customerMovement != null)
             {
-                Movement.SetRandomShelfDestination();
+                customerMovement.SetRandomShelfDestination();
             }
             else
             {
@@ -299,15 +211,15 @@ namespace TabletopShop
         /// </summary>
         public void StartPurchasing()
         {
-            // ✅ Call CustomerBehavior directly to avoid circular events
+            // Direct component coordination - no delegation
             if (customerBehavior != null)
             {
                 customerBehavior.ChangeState(CustomerState.Purchasing);
             }
             
-            if (Movement != null)
+            if (customerMovement != null)
             {
-                Movement.MoveToCheckoutPoint();
+                customerMovement.MoveToCheckoutPoint();
             }
             else
             {
@@ -320,91 +232,20 @@ namespace TabletopShop
         /// </summary>
         public void StartLeaving()
         {
-            // ✅ Call CustomerBehavior directly to avoid circular events
+            // Direct component coordination - no delegation
             if (customerBehavior != null)
             {
                 customerBehavior.ChangeState(CustomerState.Leaving);
             }
             
-            if (Movement != null)
+            if (customerMovement != null)
             {
-                Movement.MoveToExitPoint();
+                customerMovement.MoveToExitPoint();
             }
             else
             {
                 Debug.LogError($"Customer {name} cannot start leaving - Movement component not available!");
             }
-        }
-        
-        #endregion
-        
-        #region Target Management
-        
-        /// <summary>
-        /// Set target shelf for shopping
-        /// </summary>
-        /// <param name="shelf">Target shelf slot</param>
-        public void SetTargetShelf(ShelfSlot shelf)
-        {
-            // Delegate to behavior component for target shelf management
-            if (customerBehavior != null)
-            {
-                customerBehavior.SetTargetShelf(shelf);
-            }
-            
-            if (shelf != null)
-            {
-                Debug.Log($"Customer {name} targeting shelf: {shelf.name}");
-            }
-            else
-            {
-                Debug.Log($"Customer {name} cleared target shelf");
-            }
-        }
-        
-        /// <summary>
-        /// Clear current target shelf
-        /// </summary>
-        public void ClearTargetShelf()
-        {
-            SetTargetShelf(null);
-        }
-        
-        #endregion
-        
-        #region Public Getters
-        
-        /// <summary>
-        /// Get NavMeshAgent component reference
-        /// </summary>
-        /// <returns>NavMeshAgent component</returns>
-        public NavMeshAgent GetNavMeshAgent()
-        {
-            return customerMovement?.NavMeshAgent ?? GetComponent<NavMeshAgent>();
-        }
-        
-        /// <summary>
-        /// Check if customer is currently in a specific state
-        /// </summary>
-        /// <param name="state">State to check</param>
-        /// <returns>True if customer is in the specified state</returns>
-        public bool IsInState(CustomerState state)
-        {
-            return CurrentState == state;
-        }
-        
-        #endregion
-        
-        #region Debug and Visualization
-        
-        /// <summary>
-        /// Get debug information about customer state
-        /// Access customerVisuals.GetDebugInfo() directly for full debug functionality
-        /// </summary>
-        /// <returns>Debug string with customer information</returns>
-        public string GetDebugInfo()
-        {
-            return Visuals?.GetDebugInfo() ?? $"Customer {name}: Debug info unavailable - CustomerVisuals component not found!";
         }
         
         #endregion

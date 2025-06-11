@@ -129,7 +129,7 @@ namespace TabletopShop
             var customer = GetComponent<Customer>();
             if (customer == null) return;
             
-            var currentState = customer.CurrentState;
+            var currentState = customer.Behavior.CurrentState;
             
             // Set different animation parameters based on customer state
             switch (currentState)
@@ -141,7 +141,7 @@ namespace TabletopShop
                 case CustomerState.Shopping:
                     // Could set a "browsing" animation parameter
                     if (HasParameter("IsBrowsing"))
-                        animator.SetBool("IsBrowsing", !customer.IsMoving);
+                        animator.SetBool("IsBrowsing", navMeshAgent.velocity.magnitude <= walkThreshold);
                     break;
                     
                 case CustomerState.Purchasing:
