@@ -48,9 +48,7 @@ namespace TabletopShop
             {
                 Debug.Log($"Customer {name}: Awake() START");
                 
-                // Comment out the initialization temporarily
                 InitializeComponents();
-                InitializeLegacyFallbacks();
                 
                 Debug.Log($"Customer {name}: Awake() SUCCESS");
             }
@@ -88,12 +86,6 @@ namespace TabletopShop
             }
         }
         
-        private void Update()
-        {
-            // All update logic is now handled by components
-            // No legacy fallback needed
-        }
-        
         #endregion
         
         #region Component Initialization
@@ -115,40 +107,10 @@ namespace TabletopShop
             customerBehavior.Initialize(customerMovement, this);
             customerVisuals.Initialize(customerMovement, this);
             
-            // Subscribe to component events
-            // ✅ COMMENTING OUT CIRCULAR EVENT - this was causing infinite recursion
-            // customerBehavior.OnStateChangeRequested += HandleStateChangeRequest;
+            // Subscribe to component events for coordination
             customerBehavior.OnTargetShelfChanged += HandleTargetShelfChanged;
             
-            // Migrate legacy field values
-            MigrateLegacyFields();
-            
             Debug.Log($"Customer {name} components initialized successfully");
-        }
-        
-        /// <summary>
-        /// Initialize minimal legacy compatibility
-        /// </summary>
-        private void InitializeLegacyFallbacks()
-        {
-            // Ensure components are properly initialized
-            // Legacy fallbacks are now handled through component delegation
-        }
-        
-        /// <summary>
-        /// Handle state change requests from behavior component
-        /// Simplified to just update visuals - no circular calls
-        /// </summary>
-        private void HandleStateChangeRequest(CustomerState fromState, CustomerState toState)
-        {
-            // Just update visuals directly - no delegation or circular events
-            if (customerVisuals != null)
-            {
-                customerVisuals.UpdateColorForState(toState);
-            }
-            
-            // Log the change for debugging
-            Debug.Log($"Customer {name} state change notification: {fromState} -> {toState}");
         }
         
         /// <summary>
@@ -158,24 +120,6 @@ namespace TabletopShop
         {
             // Target shelf is now managed by the behavior component
             // This event handler can be used for additional coordination if needed
-        }
-        
-        /// <summary>
-        /// Migrate legacy field values to components
-        /// </summary>
-        private void MigrateLegacyFields()
-        {
-            if (customerBehavior != null)
-            {
-                // Migration now handled by component initialization
-                // Components initialize with their own default values
-                customerBehavior.MigrateLegacyFields(UnityEngine.Random.Range(10f, 30f), null);
-            }
-            
-            if (customerVisuals != null)
-            {
-                customerVisuals.MigrateLegacyFields(true); // showDebugGizmos default true
-            }
         }
         
         #endregion
