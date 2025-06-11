@@ -39,27 +39,72 @@ namespace TabletopShop
         public bool IsMoving => customerMovement?.IsMoving ?? false;
         public Vector3 CurrentDestination => customerMovement?.CurrentDestination ?? Vector3.zero;
         public bool HasDestination => customerMovement?.HasDestination ?? false;
-        
+
         #region Unity Lifecycle
+
+        // private void Awake()
+        // {
+        //     InitializeComponents();
+        //     InitializeLegacyFallbacks();
+        // }
+
+        // private void Start()
+        // {
+        //     Debug.Log($"Customer {name} initialized with state: {CurrentState}, shopping time: {ShoppingTime:F1}s");
+
+        //     // Start the customer lifecycle state machine (delegate to behavior component)
+        //     if (customerBehavior != null)
+        //     {
+        //         customerBehavior.StartCustomerLifecycle(CurrentState);
+        //     }
+        //     else
+        //     {
+        //         Debug.LogError($"Customer {name} cannot start lifecycle - CustomerBehavior component not found!");
+        //     }
+        // }
         
         private void Awake()
         {
-            InitializeComponents();
-            InitializeLegacyFallbacks();
+            try
+            {
+                Debug.Log($"Customer {name}: Awake() START");
+                
+                // Comment out the initialization temporarily
+                InitializeComponents();
+                InitializeLegacyFallbacks();
+                
+                Debug.Log($"Customer {name}: Awake() SUCCESS");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"Customer {name}: CRASH in Awake(): {ex.Message}\nStack: {ex.StackTrace}");
+            }
         }
-        
+
         private void Start()
         {
-            Debug.Log($"Customer {name} initialized with state: {CurrentState}, shopping time: {ShoppingTime:F1}s");
-            
-            // Start the customer lifecycle state machine (delegate to behavior component)
-            if (customerBehavior != null)
+            try
             {
-                customerBehavior.StartCustomerLifecycle(CurrentState);
+                Debug.Log($"Customer {name}: Start() BEGIN");
+                
+                // Comment out everything temporarily
+                
+                Debug.Log($"Customer {name} initialized with state: {CurrentState}, shopping time: {ShoppingTime:F1}s");
+                
+                if (customerBehavior != null)
+                {
+                    customerBehavior.StartCustomerLifecycle(CurrentState);
+                }
+                else
+                {
+                    Debug.LogError($"Customer {name} cannot start lifecycle - CustomerBehavior component not found!");
+                }
+                
+                Debug.Log($"Customer {name}: Start() SUCCESS");
             }
-            else
+            catch (System.Exception ex)
             {
-                Debug.LogError($"Customer {name} cannot start lifecycle - CustomerBehavior component not found!");
+                Debug.LogError($"Customer {name}: CRASH in Start(): {ex.Message}\nStack: {ex.StackTrace}");
             }
         }
         
@@ -91,7 +136,8 @@ namespace TabletopShop
             customerVisuals.Initialize(customerMovement, this);
             
             // Subscribe to component events
-            customerBehavior.OnStateChangeRequested += HandleStateChangeRequest;
+            // ✅ COMMENTING OUT CIRCULAR EVENT - this was causing infinite recursion
+            // customerBehavior.OnStateChangeRequested += HandleStateChangeRequest;
             customerBehavior.OnTargetShelfChanged += HandleTargetShelfChanged;
             
             // Migrate legacy field values
@@ -111,10 +157,18 @@ namespace TabletopShop
         
         /// <summary>
         /// Handle state change requests from behavior component
+        /// ✅ FIXED: No longer calls ChangeState() to prevent infinite recursion
         /// </summary>
         private void HandleStateChangeRequest(CustomerState fromState, CustomerState toState)
         {
-            ChangeState(toState);
+            // ✅ DON'T call ChangeState() - just update visuals directly to prevent circular events
+            if (customerVisuals != null)
+            {
+                customerVisuals.UpdateColorForState(toState);
+            }
+            
+            // Optional: Log the change without calling ChangeState()
+            Debug.Log($"Customer {name} state change notification: {fromState} -> {toState}");
         }
         
         /// <summary>
@@ -224,7 +278,11 @@ namespace TabletopShop
         /// </summary>
         public void StartShopping()
         {
-            ChangeState(CustomerState.Shopping);
+            // ✅ Call CustomerBehavior directly to avoid circular events
+            if (customerBehavior != null)
+            {
+                customerBehavior.ChangeState(CustomerState.Shopping);
+            }
             
             if (Movement != null)
             {
@@ -241,7 +299,11 @@ namespace TabletopShop
         /// </summary>
         public void StartPurchasing()
         {
-            ChangeState(CustomerState.Purchasing);
+            // ✅ Call CustomerBehavior directly to avoid circular events
+            if (customerBehavior != null)
+            {
+                customerBehavior.ChangeState(CustomerState.Purchasing);
+            }
             
             if (Movement != null)
             {
@@ -258,7 +320,11 @@ namespace TabletopShop
         /// </summary>
         public void StartLeaving()
         {
-            ChangeState(CustomerState.Leaving);
+            // ✅ Call CustomerBehavior directly to avoid circular events
+            if (customerBehavior != null)
+            {
+                customerBehavior.ChangeState(CustomerState.Leaving);
+            }
             
             if (Movement != null)
             {

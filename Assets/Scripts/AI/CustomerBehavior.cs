@@ -127,15 +127,34 @@ namespace TabletopShop
         /// <summary>
         /// Start the complete customer lifecycle automatically
         /// Progresses through: Entering → Shopping → Purchasing → Leaving
+        /// ✅ MINIMAL VERSION TO TEST CRASH FIX
         /// </summary>
         public void StartCustomerLifecycle(CustomerState startingState)
         {
+            Debug.Log($"CustomerBehavior {name}: Starting lifecycle in state {startingState}");
+            
+            // ✅ VALIDATE DEPENDENCIES FIRST
+            if (customerMovement == null)
+            {
+                Debug.LogError($"CustomerBehavior {name}: Cannot start lifecycle - CustomerMovement not initialized!");
+                return;
+            }
+            
+            // ✅ JUST SET STATE - DON'T START COROUTINES YET TO TEST CRASH FIX
+            ChangeState(startingState);
+            
+            Debug.Log($"CustomerBehavior {name}: State set successfully to {currentState}");
+            
+            // ✅ TEMPORARY: Start with minimal lifecycle to test crash fix
             if (lifecycleCoroutine != null)
             {
                 StopCoroutine(lifecycleCoroutine);
             }
             
+            // Start the lifecycle coroutine
             lifecycleCoroutine = StartCoroutine(CustomerLifecycleCoroutine(startingState));
+            
+            Debug.Log($"CustomerBehavior {name}: Lifecycle coroutine started successfully");
         }
         
         /// <summary>
@@ -202,8 +221,8 @@ namespace TabletopShop
             bool foundShelf = SetRandomShelfDestination();
             if (foundShelf)
             {
-                // Wait for customer to reach shelf
-                while (!customerMovement.HasReachedDestination())
+                // ✅ ADD NULL CHECK HERE
+                while (customerMovement != null && !customerMovement.HasReachedDestination())
                 {
                     yield return new WaitForSeconds(0.5f);
                 }
@@ -237,8 +256,8 @@ namespace TabletopShop
                     // Wait a bit for movement
                     yield return new WaitForSeconds(2f);
                     
-                    // Wait to reach new shelf
-                    while (!customerMovement.HasReachedDestination())
+                    // ✅ ADD NULL CHECK HERE
+                    while (customerMovement != null && !customerMovement.HasReachedDestination())
                     {
                         yield return new WaitForSeconds(0.5f);
                     }
@@ -265,12 +284,22 @@ namespace TabletopShop
         {
             Debug.Log($"CustomerBehavior {name} proceeding to checkout");
             
-            bool reachedCheckout = customerMovement.MoveToCheckoutPoint();
+            // ✅ ADD NULL CHECK HERE
+            bool reachedCheckout = false;
+            if (customerMovement != null)
+            {
+                reachedCheckout = customerMovement.MoveToCheckoutPoint();
+            }
+            else
+            {
+                Debug.LogError($"CustomerBehavior {name} cannot move to checkout - CustomerMovement component not found!");
+                yield break;
+            }
             
             if (reachedCheckout)
             {
-                // Wait to reach checkout
-                while (!customerMovement.HasReachedDestination())
+                // ✅ ADD NULL CHECK HERE
+                while (customerMovement != null && !customerMovement.HasReachedDestination())
                 {
                     yield return new WaitForSeconds(0.5f);
                 }
@@ -313,11 +342,22 @@ namespace TabletopShop
         {
             Debug.Log($"CustomerBehavior {name} leaving the shop");
             
-            bool foundExit = customerMovement.MoveToExitPoint();
+            // ✅ ADD NULL CHECK HERE
+            bool foundExit = false;
+            if (customerMovement != null)
+            {
+                foundExit = customerMovement.MoveToExitPoint();
+            }
+            else
+            {
+                Debug.LogError($"CustomerBehavior {name} cannot leave - CustomerMovement component not found!");
+                yield break;
+            }
+            
             if (foundExit)
             {
-                // Wait to reach exit
-                while (!customerMovement.HasReachedDestination())
+                // ✅ ADD NULL CHECK HERE
+                while (customerMovement != null && !customerMovement.HasReachedDestination())
                 {
                     yield return new WaitForSeconds(0.5f);
                 }
@@ -384,8 +424,16 @@ namespace TabletopShop
             ShelfSlot randomShelf = availableShelves[UnityEngine.Random.Range(0, availableShelves.Length)];
             SetTargetShelf(randomShelf);
             
-            // Move to shelf position using movement component
-            return customerMovement.MoveToShelfPosition(randomShelf);
+            // ✅ ADD NULL CHECK HERE
+            if (customerMovement != null)
+            {
+                return customerMovement.MoveToShelfPosition(randomShelf);
+            }
+            else
+            {
+                Debug.LogError($"CustomerBehavior {name} cannot move to shelf - CustomerMovement component not found!");
+                return false;
+            }
         }
         
         #endregion
