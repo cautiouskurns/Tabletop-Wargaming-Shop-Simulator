@@ -54,14 +54,12 @@ namespace TabletopShop
         [Header("Current Selection")]
         [SerializeField] private ProductData selectedProduct;
         
-        [Header("Events")]
-        [SerializeField] private UnityEvent onInventoryChanged;
-        [SerializeField] private UnityEvent<ProductData> onProductSelected;
-        [SerializeField] private UnityEvent<ProductData, int> onProductCountChanged;
-        
         // Internal inventory tracking
         private Dictionary<ProductData, int> productCounts = new Dictionary<ProductData, int>();
         private bool isInitialized = false;
+        
+        // Event publishing abstraction
+        private IInventoryEventPublisher eventPublisher;
         
         // Economic validation abstraction
         private IEconomicValidator economicValidator;
@@ -80,7 +78,7 @@ namespace TabletopShop
                 if (selectedProduct != value)
                 {
                     selectedProduct = value;
-                    onProductSelected?.Invoke(selectedProduct);
+                    eventPublisher?.PublishProductSelected(selectedProduct);
                     Debug.Log($"Selected product: {selectedProduct?.ProductName ?? "None"}");
                 }
             }
@@ -104,17 +102,20 @@ namespace TabletopShop
         /// <summary>
         /// Event fired when inventory changes
         /// </summary>
-        public UnityEvent OnInventoryChanged => onInventoryChanged;
+        public UnityEvent OnInventoryChanged => 
+            eventPublisher is UnityInventoryEventPublisher unityPublisher ? unityPublisher.OnInventoryChanged : null;
         
         /// <summary>
         /// Event fired when a product is selected
         /// </summary>
-        public UnityEvent<ProductData> OnProductSelected => onProductSelected;
+        public UnityEvent<ProductData> OnProductSelected => 
+            eventPublisher is UnityInventoryEventPublisher unityPublisher ? unityPublisher.OnProductSelected : null;
         
         /// <summary>
         /// Event fired when a specific product count changes
         /// </summary>
-        public UnityEvent<ProductData, int> OnProductCountChanged => onProductCountChanged;
+        public UnityEvent<ProductData, int> OnProductCountChanged => 
+            eventPublisher is UnityInventoryEventPublisher unityPublisher ? unityPublisher.OnProductCountChanged : null;
         
         #endregion
         
@@ -165,13 +166,13 @@ namespace TabletopShop
             
             productCounts = new Dictionary<ProductData, int>();
             
-            // Initialize events if they're null
-            if (onInventoryChanged == null)
-                onInventoryChanged = new UnityEvent();
-            if (onProductSelected == null)
-                onProductSelected = new UnityEvent<ProductData>();
-            if (onProductCountChanged == null)
-                onProductCountChanged = new UnityEvent<ProductData, int>();
+            // Initialize event publisher
+            if (eventPublisher == null)
+            {
+                var eventPublisherObject = new GameObject("InventoryEventPublisher");
+                eventPublisherObject.transform.SetParent(transform);
+                eventPublisher = eventPublisherObject.AddComponent<UnityInventoryEventPublisher>();
+            }
             
             isInitialized = true;
             Debug.Log("InventoryManager initialized successfully.");
@@ -245,7 +246,7 @@ namespace TabletopShop
             }
             
             // Trigger inventory changed event after all initialization
-            onInventoryChanged?.Invoke();
+            eventPublisher?.PublishInventoryChanged();
             
             Debug.Log($"Initialized starting inventory with {startingQuantityPerProduct} of each product type.");
             LogInventoryStatus();
@@ -444,8 +445,8 @@ namespace TabletopShop
             // Fire events if requested
             if (triggerEvents)
             {
-                onProductCountChanged?.Invoke(product, GetProductCount(product));
-                onInventoryChanged?.Invoke();
+                eventPublisher?.PublishProductCountChanged(product, GetProductCount(product));
+                eventPublisher?.PublishInventoryChanged();
             }
             
             // Log the addition
@@ -529,8 +530,8 @@ namespace TabletopShop
             }
             
             // Fire events
-            onProductCountChanged?.Invoke(product, GetProductCount(product));
-            onInventoryChanged?.Invoke();
+            eventPublisher?.PublishProductCountChanged(product, GetProductCount(product));
+            eventPublisher?.PublishInventoryChanged();
             
             Debug.Log($"Removed {amount} of {product.ProductName}. Remaining: {GetProductCount(product)}");
             return true;
@@ -791,6 +792,45 @@ namespace TabletopShop
             
             productRepository = repository;
             Debug.Log($"Product repository set to: {repository.GetType().Name}");
+        }
+        
+        /// <summary>
+        /// Set the event publisher (useful for testing or different implementations)
+        /// </summary>
+        /// <param name="publisher">The event publisher to use</param>
+        public void SetEventPublisher(IInventoryEventPublisher publisher)
+        {
+            if (publisher == null)
+            {
+                Debug.LogWarning("Cannot set null event publisher. Creating default UnityInventoryEventPublisher.");
+                var eventPublisherObject = new GameObject("InventoryEventPublisher");
+                eventPublisherObject.transform.SetParent(transform);
+                eventPublisher = eventPublisherObject.AddComponent<UnityInventoryEventPublisher>();
+                return;
+            }
+            
+            eventPublisher = publisher;
+            Debug.Log($"Event publisher set to: {publisher.GetType().Name}");
+        }
+        
+        /// <summary>
+        /// Get current event publisher configuration as formatted string
+        /// </summary>
+        /// <returns>String representation of event publisher settings</returns>
+        public string GetEventPublisherConfiguration()
+        {
+            if (eventPublisher == null)
+            {
+                return "Event Publisher Configuration: Not initialized";
+            }
+            
+            string publisherType = eventPublisher.GetType().Name;
+            bool isUnityPublisher = eventPublisher is UnityInventoryEventPublisher;
+            
+            return $"Event Publisher Configuration:\n" +
+                   $"- Publisher Type: {publisherType}\n" +
+                   $"- Unity Events Available: {isUnityPublisher}\n" +
+                   $"- Publisher Available: {eventPublisher != null}";
         }
         
         /// <summary>
@@ -1083,6 +1123,56 @@ namespace TabletopShop
             Debug.Log($"Result: {result5}, Count change: {countBeforeEvents} -> {GetProductCount(testProduct)}");
             
             Debug.Log("=== REFACTORED ADDPRODUCT TESTING COMPLETE ===");
+        }
+        
+        /// <summary>
+        /// Test event publisher integration
+        /// </summary>
+        [ContextMenu("Test Event Publisher Integration")]
+        public void TestEventPublisherIntegration()
+        {
+            Debug.Log("=== TESTING EVENT PUBLISHER INTEGRATION ===");
+            
+            // Test event publisher availability
+            Debug.Log($"Event Publisher Available: {eventPublisher != null}");
+            
+            if (eventPublisher != null)
+            {
+                Debug.Log(GetEventPublisherConfiguration());
+                
+                // Test manual event publishing
+                Debug.Log("Testing manual event publishing...");
+                eventPublisher.PublishInventoryChanged();
+                
+                if (availableProducts.Count > 0 && availableProducts[0] != null)
+                {
+                    var testProduct = availableProducts[0];
+                    eventPublisher.PublishProductSelected(testProduct);
+                    eventPublisher.PublishProductCountChanged(testProduct, GetProductCount(testProduct));
+                }
+                
+                // Test events through normal operations
+                Debug.Log("Testing events through normal operations...");
+                if (availableProducts.Count > 0 && availableProducts[0] != null)
+                {
+                    var testProduct = availableProducts[0];
+                    int originalCount = GetProductCount(testProduct);
+                    
+                    // Test adding product (should trigger events)
+                    AddProduct(testProduct, 1, true, null);
+                    
+                    // Test selecting product (should trigger events)
+                    SelectProduct(testProduct);
+                    
+                    Debug.Log($"Event publisher integration test completed. Product count: {originalCount} -> {GetProductCount(testProduct)}");
+                }
+            }
+            else
+            {
+                Debug.LogError("Event publisher not available for testing");
+            }
+            
+            Debug.Log("=== EVENT PUBLISHER INTEGRATION TEST COMPLETE ===");
         }
         
         #endregion
