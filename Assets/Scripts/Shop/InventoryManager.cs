@@ -367,6 +367,111 @@ namespace TabletopShop
         
         #endregion
         
+        #region Private Helper Methods for AddProduct
+        
+        /// <summary>
+        /// Validate basic product addition parameters
+        /// </summary>
+        /// <param name="product">The product to validate</param>
+        /// <param name="amount">The amount to validate</param>
+        /// <returns>ValidationResult indicating success or failure with error message</returns>
+        private ValidationResult ValidateProductAddition(ProductData product, int amount)
+        {
+            if (product == null)
+            {
+                return ValidationResult.Failure("Cannot add null product to inventory.");
+            }
+            
+            if (amount <= 0)
+            {
+                return ValidationResult.Failure($"Invalid amount {amount} for product addition. Amount must be positive.");
+            }
+            
+            return ValidationResult.Success();
+        }
+        
+        /// <summary>
+        /// Validate economic constraints for product addition
+        /// </summary>
+        /// <param name="product">The product to check constraints for</param>
+        /// <param name="amount">The amount being added</param>
+        /// <param name="costPerUnit">Optional cost per unit. If null, uses restock cost calculation</param>
+        /// <returns>True if economic constraints are satisfied or disabled</returns>
+        private bool ValidateEconomicConstraints(ProductData product, int amount, float? costPerUnit)
+        {
+            // Skip economic validation if constraints are disabled or no cost specified
+            if (!enableEconomicConstraints || !costPerUnit.HasValue)
+            {
+                return true;
+            }
+            
+            float totalCost = costPerUnit.Value * amount;
+            
+            // Validate economic transaction
+            if (!ValidateInventoryPurchase(product, amount, totalCost))
+            {
+                if (logEconomicTransactions)
+                {
+                    Debug.LogWarning($"Economic constraints prevented adding {amount} of {product.ProductName}. Cost: ${totalCost:F2}");
+                }
+                return false;
+            }
+            
+            // Process the economic transaction
+            if (!ProcessInventoryPurchase(product, amount, totalCost))
+            {
+                return false;
+            }
+            
+            return true;
+        }
+        
+        /// <summary>
+        /// Update inventory counts and notify listeners
+        /// </summary>
+        /// <param name="product">The product being added</param>
+        /// <param name="amount">The amount being added</param>
+        /// <param name="triggerEvents">Whether to trigger change events</param>
+        /// <param name="costPerUnit">Optional cost per unit for logging purposes</param>
+        private void UpdateInventoryAndNotify(ProductData product, int amount, bool triggerEvents, float? costPerUnit)
+        {
+            // Update inventory counts
+            if (productCounts.ContainsKey(product))
+            {
+                productCounts[product] += amount;
+            }
+            else
+            {
+                productCounts[product] = amount;
+                
+                // Add to available products if not already there
+                if (!availableProducts.Contains(product))
+                {
+                    availableProducts.Add(product);
+                }
+            }
+            
+            // Fire events if requested
+            if (triggerEvents)
+            {
+                onProductCountChanged?.Invoke(product, GetProductCount(product));
+                onInventoryChanged?.Invoke();
+            }
+            
+            // Log the addition
+            if (logEconomicTransactions && costPerUnit.HasValue)
+            {
+                float totalCost = costPerUnit.Value * amount;
+                Debug.Log($"Added {amount} of {product.ProductName} for ${totalCost:F2}. Total: {GetProductCount(product)}");
+            }
+            else
+            {
+                Debug.Log($"Added {amount} of {product.ProductName}. Total: {GetProductCount(product)}");
+            }
+        }
+        
+        #endregion
+
         #region Public Inventory Methods
         
         /// <summary>
@@ -451,72 +556,22 @@ namespace TabletopShop
         /// <returns>True if product was successfully added, false if economic constraints prevented it</returns>
         public bool AddProduct(ProductData product, int amount = 1, bool triggerEvents = true, float? cost = null)
         {
-            if (product == null)
+            // Step 1: Validate basic parameters
+            var validation = ValidateProductAddition(product, amount);
+            if (!validation.IsSuccess)
             {
-                Debug.LogWarning("Cannot add null product to inventory.");
+                Debug.LogWarning(validation.ErrorMessage);
                 return false;
             }
             
-            if (amount <= 0)
+            // Step 2: Validate economic constraints
+            if (!ValidateEconomicConstraints(product, amount, cost))
             {
-                Debug.LogWarning($"Invalid amount {amount} for product addition. Amount must be positive.");
                 return false;
             }
             
-            // Calculate total cost for economic validation
-            float totalCost = 0f;
-            if (enableEconomicConstraints && cost.HasValue)
-            {
-                totalCost = cost.Value * amount;
-                
-                // Validate economic transaction
-                if (!ValidateInventoryPurchase(product, amount, totalCost))
-                {
-                    if (logEconomicTransactions)
-                    {
-                        Debug.LogWarning($"Economic constraints prevented adding {amount} of {product.ProductName}. Cost: ${totalCost:F2}");
-                    }
-                    return false;
-                }
-                
-                // Process the economic transaction
-                if (!ProcessInventoryPurchase(product, amount, totalCost))
-                {
-                    return false;
-                }
-            }
-            
-            // Add to inventory (original logic preserved)
-            if (productCounts.ContainsKey(product))
-            {
-                productCounts[product] += amount;
-            }
-            else
-            {
-                productCounts[product] = amount;
-                
-                // Add to available products if not already there
-                if (!availableProducts.Contains(product))
-                {
-                    availableProducts.Add(product);
-                }
-            }
-            
-            // Fire events if requested
-            if (triggerEvents)
-            {
-                onProductCountChanged?.Invoke(product, GetProductCount(product));
-                onInventoryChanged?.Invoke();
-            }
-            
-            if (logEconomicTransactions && cost.HasValue)
-            {
-                Debug.Log($"Added {amount} of {product.ProductName} for ${totalCost:F2}. Total: {GetProductCount(product)}");
-            }
-            else
-            {
-                Debug.Log($"Added {amount} of {product.ProductName}. Total: {GetProductCount(product)}");
-            }
+            // Step 3: Update inventory and notify listeners
+            UpdateInventoryAndNotify(product, amount, triggerEvents, cost);
             
             return true;
         }
@@ -974,6 +1029,53 @@ namespace TabletopShop
                 }
             }
             Debug.Log("=== END DEBUG INFO ===");
+        }
+        
+        /// <summary>
+        /// Test the refactored AddProduct method with various scenarios
+        /// </summary>
+        [ContextMenu("Test Refactored AddProduct")]
+        public void TestRefactoredAddProduct()
+        {
+            Debug.Log("=== TESTING REFACTORED ADDPRODUCT METHOD ===");
+            
+            if (availableProducts.Count == 0 || availableProducts[0] == null)
+            {
+                Debug.LogWarning("No products available for testing");
+                return;
+            }
+            
+            var testProduct = availableProducts[0];
+            int initialCount = GetProductCount(testProduct);
+            
+            // Test 1: Valid addition without cost
+            Debug.Log("Test 1: Valid addition without cost");
+            bool result1 = AddProduct(testProduct, 5, true, null);
+            Debug.Log($"Result: {result1}, New Count: {GetProductCount(testProduct)}");
+            
+            // Test 2: Valid addition with cost
+            Debug.Log("Test 2: Valid addition with cost");
+            float testCost = CalculateRestockCost(testProduct, 1);
+            bool result2 = AddProduct(testProduct, 1, true, testCost);
+            Debug.Log($"Result: {result2}, New Count: {GetProductCount(testProduct)}");
+            
+            // Test 3: Invalid addition (null product)
+            Debug.Log("Test 3: Invalid addition (null product)");
+            bool result3 = AddProduct(null, 1, true, null);
+            Debug.Log($"Result: {result3} (should be false)");
+            
+            // Test 4: Invalid addition (negative amount)
+            Debug.Log("Test 4: Invalid addition (negative amount)");
+            bool result4 = AddProduct(testProduct, -1, true, null);
+            Debug.Log($"Result: {result4} (should be false)");
+            
+            // Test 5: Addition without triggering events
+            Debug.Log("Test 5: Addition without triggering events");
+            int countBeforeEvents = GetProductCount(testProduct);
+            bool result5 = AddProduct(testProduct, 2, false, null);
+            Debug.Log($"Result: {result5}, Count change: {countBeforeEvents} -> {GetProductCount(testProduct)}");
+            
+            Debug.Log("=== REFACTORED ADDPRODUCT TESTING COMPLETE ===");
         }
         
         #endregion
