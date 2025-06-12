@@ -2965,15 +2965,6 @@ MonoBehaviour:
   restockCostMultiplier: 0.7
   logEconomicTransactions: 1
   selectedProduct: {fileID: 0}
-  onInventoryChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  onProductSelected:
-    m_PersistentCalls:
-      m_Calls: []
-  onProductCountChanged:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!4 &590490616
 Transform:
   m_ObjectHideFlags: 0
@@ -11642,6 +11633,9 @@ MonoBehaviour:
   toggleInventoryKey: 113
   nextProductKey: 99
   previousProductKey: 122
+  inventoryCanvas: {fileID: 0}
+  inventoryText: {fileID: 0}
+  isInventoryVisible: 1
 --- !u!4 &2000765058
 Transform:
   m_ObjectHideFlags: 0
