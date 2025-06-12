@@ -29,7 +29,7 @@ namespace Unity.AI.Navigation.Samples
             if ((m_WasMoving && !isMoving) || (!m_WasMoving && isMoving))
             {
                 m_NavMeshModifier.ignoreFromBuild = isMoving;
-                GloballyUpdatedNavMeshSurface.RequestNavMeshUpdate();
+                //GloballyUpdatedNavMeshSurface.RequestNavMeshUpdate();
             }
 
             m_WasMoving = isMoving;

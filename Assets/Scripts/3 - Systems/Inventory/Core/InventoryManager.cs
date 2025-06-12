@@ -8,8 +8,9 @@ namespace TabletopShop
     /// <summary>
     /// Singleton manager for handling player inventory of products
     /// Manages product quantities, selection, and inventory operations
+    /// Implements both core inventory management and read-only query interfaces
     /// </summary>
-    public class InventoryManager : MonoBehaviour
+    public class InventoryManager : MonoBehaviour, IInventoryManager, IInventoryQuery
     {
         #region Singleton Pattern
         
