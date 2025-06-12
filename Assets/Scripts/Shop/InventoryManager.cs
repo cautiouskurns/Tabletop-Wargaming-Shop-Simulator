@@ -63,6 +63,9 @@ namespace TabletopShop
         private Dictionary<ProductData, int> productCounts = new Dictionary<ProductData, int>();
         private bool isInitialized = false;
         
+        // Economic validation abstraction
+        private IEconomicValidator economicValidator;
+        
         /// <summary>
         /// Currently selected product for placement
         /// </summary>
@@ -121,6 +124,10 @@ namespace TabletopShop
             {
                 _instance = this;
                 DontDestroyOnLoad(gameObject);
+                
+                // Initialize economic validator
+                economicValidator = new GameManagerEconomicValidator(logEconomicTransactions);
+                
                 InitializeInventory();
             }
             else if (_instance != this)
@@ -277,23 +284,12 @@ namespace TabletopShop
                 return true; // Economic constraints disabled
             }
             
-            float restockCost = CalculateRestockCost(product, amount);
-            
-            // Null-safe GameManager access with graceful degradation
-            if (GameManager.Instance == null)
-            {
-                if (logEconomicTransactions)
-                {
-                    Debug.LogWarning("GameManager not available for restock fund validation. Allowing operation.");
-                }
-                return true; // Graceful fallback when GameManager unavailable
-            }
-            
-            bool hasFunds = GameManager.Instance.HasSufficientFunds(restockCost);
+            float restockCost = economicValidator.CalculateRestockCost(amount, product.BasePrice, restockCostMultiplier);
+            bool hasFunds = economicValidator.CanAffordCost(restockCost);
             
             if (logEconomicTransactions)
             {
-                Debug.Log($"Restock fund check for {amount} of {product.ProductName}: Cost=${restockCost:F2}, Available=${GameManager.Instance.CurrentMoney:F2}, HasFunds={hasFunds}");
+                Debug.Log($"Restock fund check for {amount} of {product.ProductName}: Cost=${restockCost:F2}, Available=${economicValidator.GetAvailableFunds():F2}, HasFunds={hasFunds}");
             }
             
             return hasFunds;
@@ -308,7 +304,7 @@ namespace TabletopShop
         public float CalculateRestockCost(ProductData product, int amount = 1)
         {
             if (product == null) return 0f;
-            return product.BasePrice * restockCostMultiplier * amount;
+            return economicValidator.CalculateRestockCost(amount, product.BasePrice, restockCostMultiplier);
         }
         
         /// <summary>
@@ -320,12 +316,12 @@ namespace TabletopShop
         /// <returns>True if transaction can proceed</returns>
         private bool ValidateInventoryPurchase(ProductData product, int amount, float totalCost)
         {
-            // Null-safe GameManager access with graceful degradation
-            if (GameManager.Instance == null)
+            // Check if economic validator is available
+            if (!economicValidator.IsAvailable())
             {
                 if (logEconomicTransactions)
                 {
-                    Debug.LogWarning($"GameManager not available for inventory purchase validation of {product.ProductName}. Allowing operation.");
+                    Debug.LogWarning($"Economic validator not available for inventory purchase validation of {product.ProductName}. Allowing operation.");
                 }
                 return true; // Graceful fallback
             }
@@ -338,7 +334,7 @@ namespace TabletopShop
             }
             
             // Check sufficient funds
-            bool hasFunds = GameManager.Instance.HasSufficientFunds(totalCost);
+            bool hasFunds = economicValidator.CanAffordCost(totalCost);
             
             if (logEconomicTransactions)
             {
@@ -357,24 +353,11 @@ namespace TabletopShop
         /// <returns>True if transaction was successful</returns>
         private bool ProcessInventoryPurchase(ProductData product, int amount, float totalCost)
         {
-            // Null-safe GameManager access with graceful degradation
-            if (GameManager.Instance == null)
-            {
-                if (logEconomicTransactions)
-                {
-                    Debug.LogWarning($"GameManager not available for inventory purchase processing of {product.ProductName}. Allowing operation without economic impact.");
-                }
-                return true; // Graceful fallback
-            }
+            // Use economic validator to process transaction
+            string description = $"Inventory Purchase: {amount} x {product.ProductName}";
+            bool success = economicValidator.ProcessTransaction(totalCost, description);
             
-            // Process payment through GameManager
-            bool success = GameManager.Instance.SubtractMoney(totalCost, $"Inventory Purchase: {amount} x {product.ProductName}");
-            
-            if (success && logEconomicTransactions)
-            {
-                Debug.Log($"Processed inventory purchase: {amount} of {product.ProductName} for ${totalCost:F2}");
-            }
-            else if (!success)
+            if (!success && logEconomicTransactions)
             {
                 Debug.LogError($"Failed to process inventory purchase: {amount} of {product.ProductName} for ${totalCost:F2}");
             }
@@ -721,7 +704,31 @@ namespace TabletopShop
         public void SetEconomicLogging(bool enabled)
         {
             logEconomicTransactions = enabled;
+            
+            // Update validator logging if it supports it
+            if (economicValidator is GameManagerEconomicValidator gameManagerValidator)
+            {
+                gameManagerValidator.SetLogging(enabled);
+            }
+            
             Debug.Log($"Economic transaction logging {(enabled ? "enabled" : "disabled")}");
+        }
+        
+        /// <summary>
+        /// Set the economic validator (useful for testing or different implementations)
+        /// </summary>
+        /// <param name="validator">The economic validator to use</param>
+        public void SetEconomicValidator(IEconomicValidator validator)
+        {
+            if (validator == null)
+            {
+                Debug.LogWarning("Cannot set null economic validator. Using default GameManagerEconomicValidator.");
+                economicValidator = new GameManagerEconomicValidator(logEconomicTransactions);
+                return;
+            }
+            
+            economicValidator = validator;
+            Debug.Log($"Economic validator set to: {validator.GetType().Name}");
         }
         
         /// <summary>
@@ -734,7 +741,7 @@ namespace TabletopShop
                    $"- Constraints Enabled: {enableEconomicConstraints}\n" +
                    $"- Restock Cost Multiplier: {restockCostMultiplier:F2} ({restockCostMultiplier * 100:F0}% of retail)\n" +
                    $"- Transaction Logging: {logEconomicTransactions}\n" +
-                   $"- GameManager Available: {GameManager.Instance != null}";
+                   $"- Economic Validator Available: {economicValidator?.IsAvailable() ?? false}";
         }
         
         #endregion
@@ -749,15 +756,15 @@ namespace TabletopShop
         {
             Debug.Log("=== INVENTORY ECONOMIC INTEGRATION TEST ===");
             
-            // Test GameManager availability
-            bool gameManagerAvailable = GameManager.Instance != null;
-            Debug.Log($"GameManager Available: {gameManagerAvailable}");
+            // Test economic validator availability
+            bool validatorAvailable = economicValidator.IsAvailable();
+            Debug.Log($"Economic Validator Available: {validatorAvailable}");
             
-            if (gameManagerAvailable)
+            if (validatorAvailable)
             {
-                var economicStatus = GameManager.Instance.GetEconomicStatus();
-                Debug.Log($"Current Money: ${economicStatus.money:F2}");
-                Debug.Log($"Economic Validation Enabled: {GameManager.Instance != null}");
+                float currentFunds = economicValidator.GetAvailableFunds();
+                Debug.Log($"Current Money: ${currentFunds:F2}");
+                Debug.Log($"Economic Validation Enabled: {validatorAvailable}");
             }
             
             // Test economic configuration
