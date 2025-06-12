@@ -45,15 +45,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
-  slotPosition: {x: 0, y: 0, z: 0}
-  currentProduct: {fileID: 0}
-  highlightMaterial: {fileID: 0}
-  normalMaterial: {fileID: 0}
   emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
-  hasBeenMigrated: 0
+  showSlotGizmos: 1
 --- !u!114 &6664199553602357744
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -68,6 +64,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
   slotPosition: {x: 0, y: 0, z: 0}
   currentProduct: {fileID: 0}
+  enableGizmos: 0
 --- !u!1 &2831402895928025296
 GameObject:
   m_ObjectHideFlags: 0
@@ -113,15 +110,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
-  slotPosition: {x: 0, y: 0, z: 0}
-  currentProduct: {fileID: 0}
-  highlightMaterial: {fileID: 0}
-  normalMaterial: {fileID: 0}
   emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
-  hasBeenMigrated: 0
+  showSlotGizmos: 1
 --- !u!114 &4791009351993288837
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -136,6 +129,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
   slotPosition: {x: 0, y: 0, z: 0}
   currentProduct: {fileID: 0}
+  enableGizmos: 0
 --- !u!1 &4028624419644958173
 GameObject:
   m_ObjectHideFlags: 0
@@ -270,15 +264,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
-  slotPosition: {x: 0, y: 0, z: 0}
-  currentProduct: {fileID: 0}
-  highlightMaterial: {fileID: 0}
-  normalMaterial: {fileID: 0}
   emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
-  hasBeenMigrated: 0
+  showSlotGizmos: 1
 --- !u!114 &4266138022912377980
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -293,6 +283,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
   slotPosition: {x: 0, y: 0, z: 0}
   currentProduct: {fileID: 0}
+  enableGizmos: 0
 --- !u!1 &5579423599213339003
 GameObject:
   m_ObjectHideFlags: 0
@@ -338,15 +329,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
-  slotPosition: {x: 0, y: 0, z: 0}
-  currentProduct: {fileID: 0}
-  highlightMaterial: {fileID: 0}
-  normalMaterial: {fileID: 0}
   emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
-  hasBeenMigrated: 0
+  showSlotGizmos: 1
 --- !u!114 &287295576930288322
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -361,6 +348,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
   slotPosition: {x: 0, y: 0, z: 0}
   currentProduct: {fileID: 0}
+  enableGizmos: 0
 --- !u!1 &5989259834867794020
 GameObject:
   m_ObjectHideFlags: 0
@@ -406,15 +394,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
-  slotPosition: {x: 0, y: 0, z: 0}
-  currentProduct: {fileID: 0}
-  highlightMaterial: {fileID: 0}
-  normalMaterial: {fileID: 0}
   emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
-  hasBeenMigrated: 0
+  showSlotGizmos: 1
 --- !u!114 &7310788529786150823
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -429,6 +413,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
   slotPosition: {x: 0, y: 0, z: 0}
   currentProduct: {fileID: 0}
+  enableGizmos: 0
 --- !u!1 &7129242850737497655
 GameObject:
   m_ObjectHideFlags: 0
@@ -476,15 +461,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
-  slotPosition: {x: 0, y: 0, z: 0}
-  currentProduct: {fileID: 0}
-  highlightMaterial: {fileID: 0}
-  normalMaterial: {fileID: 0}
   emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
-  hasBeenMigrated: 0
+  showSlotGizmos: 1
 --- !u!114 &8126035930560749093
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -499,6 +480,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
   slotPosition: {x: 0, y: 0, z: 0}
   currentProduct: {fileID: 0}
+  enableGizmos: 0
 --- !u!114 &2531892785554641841
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -575,15 +557,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
-  slotPosition: {x: 0, y: 0, z: 0}
-  currentProduct: {fileID: 0}
-  highlightMaterial: {fileID: 0}
-  normalMaterial: {fileID: 0}
   emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
-  hasBeenMigrated: 0
+  showSlotGizmos: 1
 --- !u!114 &6944883352900943336
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -598,6 +576,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
   slotPosition: {x: 0, y: 0, z: 0}
   currentProduct: {fileID: 0}
+  enableGizmos: 0
 --- !u!1 &7647451544521864112
 GameObject:
   m_ObjectHideFlags: 0
@@ -671,7 +650,9 @@ MonoBehaviour:
   autoCreateSlots: 1
   slotPrefab: {fileID: 0}
   shelfMaterial: {fileID: 2100000, guid: 90fb029da3d6f4f9498aca7a3d3a4808, type: 2}
-  shelfDimensions: {x: 7.5, y: 0.2, z: 1}
+  shelfDimensions: {x: 7.5, y: 0.02, z: 1}
+  showShelfGizmos: 1
+  showSlotGizmos: 0
 --- !u!1 &7764066426610136478
 GameObject:
   m_ObjectHideFlags: 0
@@ -717,15 +698,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
-  slotPosition: {x: 0, y: 0, z: 0}
-  currentProduct: {fileID: 0}
-  highlightMaterial: {fileID: 0}
-  normalMaterial: {fileID: 0}
   emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
-  hasBeenMigrated: 0
+  showSlotGizmos: 1
 --- !u!114 &2599641760592834137
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -740,6 +717,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
   slotPosition: {x: 0, y: 0, z: 0}
   currentProduct: {fileID: 0}
+  enableGizmos: 0
 --- !u!1 &7948688537641982193
 GameObject:
   m_ObjectHideFlags: 0
@@ -785,15 +763,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
-  slotPosition: {x: 0, y: 0, z: 0}
-  currentProduct: {fileID: 0}
-  highlightMaterial: {fileID: 0}
-  normalMaterial: {fileID: 0}
   emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
-  hasBeenMigrated: 0
+  showSlotGizmos: 1
 --- !u!114 &2193397673197902344
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -808,6 +782,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
   slotPosition: {x: 0, y: 0, z: 0}
   currentProduct: {fileID: 0}
+  enableGizmos: 0
 --- !u!1 &9072554599393449449
 GameObject:
   m_ObjectHideFlags: 0
@@ -853,15 +828,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034265ef5a9154b78acd6b59713a2f4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ShelfSlot
-  slotPosition: {x: 0, y: 0, z: 0}
-  currentProduct: {fileID: 0}
-  highlightMaterial: {fileID: 0}
-  normalMaterial: {fileID: 0}
   emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   slotIndicator: {fileID: 1244042562062349960, guid: 2ba61bcc19ce942c88497396d174ff1f, type: 3}
   indicatorScale: {x: 0.8, y: 0.1, z: 0.8}
-  hasBeenMigrated: 0
+  showSlotGizmos: 1
 --- !u!114 &1911741956486051437
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -876,3 +847,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
   slotPosition: {x: 0, y: 0, z: 0}
   currentProduct: {fileID: 0}
+  enableGizmos: 0

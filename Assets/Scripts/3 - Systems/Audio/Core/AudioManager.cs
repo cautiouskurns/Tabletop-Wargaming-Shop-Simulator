@@ -56,6 +56,7 @@ namespace TabletopShop
         [SerializeField] private AudioClip purchaseSuccessClip;
         [SerializeField] private AudioClip uiClickClip;
         [SerializeField] private AudioClip shopAtmosphereClip;
+        [SerializeField] private AudioClip productScanBeepClip; // New product scanning beep sound
         
         [Header("Background Music")]
         [SerializeField] private AudioClip[] backgroundMusicTracks;
@@ -425,6 +426,24 @@ namespace TabletopShop
             if (clip != null)
             {
                 PlaySfxClip(clip, pitch, volume);
+            }
+        }
+        
+        /// <summary>
+        /// Play product scanning beep sound
+        /// Called when a product is scanned in the shop
+        /// </summary>
+        /// <param name="pitch">Optional pitch variation for variety (default: 1.0)</param>
+        public void PlayProductScanBeep(float pitch = 1f)
+        {
+            if (productScanBeepClip != null)
+            {
+                PlaySfxClip(productScanBeepClip, pitch);
+                Debug.Log("Product scan beep audio played");
+            }
+            else
+            {
+                Debug.LogWarning("Product scan beep audio clip not assigned!");
             }
         }
         

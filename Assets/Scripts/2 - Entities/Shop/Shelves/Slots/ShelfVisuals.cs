@@ -13,9 +13,9 @@ namespace TabletopShop
     /// </summary>
     public class ShelfVisuals : MonoBehaviour
     {
-        [Header("Visual Settings")]
-        [SerializeField] private Material shelfMaterial;
-        [SerializeField] private Vector3 shelfDimensions = new Vector3(7.5f, 0.2f, 1f);
+    [Header("Visual Settings")]
+    [SerializeField] private Material shelfMaterial;
+    [SerializeField] private Vector3 shelfDimensions = new Vector3(7.5f, 0.02f, 1f);
         
         [Header("Debug")]
         [SerializeField] private bool showShelfGizmos = true;

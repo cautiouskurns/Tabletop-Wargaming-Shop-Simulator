@@ -312,6 +312,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 45200457}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &52311956
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &52311957
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
 --- !u!1 &75696860 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7948688537641982193, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
@@ -829,6 +860,9 @@ Transform:
   m_Children:
   - {fileID: 500110049}
   - {fileID: 1891580392}
+  - {fileID: 1732652340}
+  - {fileID: 328738658}
+  - {fileID: 472703552}
   - {fileID: 1047240625}
   - {fileID: 274469690}
   - {fileID: 682135406}
@@ -885,6 +919,7 @@ MonoBehaviour:
   purchaseSuccessClip: {fileID: 8300000, guid: 7dda0538d2f6143dabb041d696522296, type: 3}
   uiClickClip: {fileID: 8300000, guid: 218c3513a4464462a8b1181382917aed, type: 3}
   shopAtmosphereClip: {fileID: 8300000, guid: 818d5b418d4ce4f47a79db456b39ef6b, type: 3}
+  productScanBeepClip: {fileID: 8300000, guid: 1e5bcce5a7525402ab3b37d085a46597, type: 3}
   backgroundMusicTracks:
   - {fileID: 8300000, guid: 4d851c8db3c324691a3a709a4c61f24b, type: 3}
   - {fileID: 8300000, guid: 307182718f152444c9d3ea17af1e9af3, type: 3}
@@ -1254,6 +1289,52 @@ Transform:
   - {fileID: 1800280773}
   m_Father: {fileID: 190786125}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &304153939
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &304153940
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!114 &304153941
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
+  enableGizmos: 0
 --- !u!1 &320177227
 GameObject:
   m_ObjectHideFlags: 0
@@ -1368,6 +1449,356 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 320177227}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &328738657
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 190786125}
+    m_Modifications:
+    - target: {fileID: 800048150188304937, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.125
+      objectReference: {fileID: 0}
+    - target: {fileID: 1237212235205480357, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -3.375
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -4.9961977
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.308
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -8.738
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1629350246249168267, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.875
+      objectReference: {fileID: 0}
+    - target: {fileID: 1792907038837539142, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.375
+      objectReference: {fileID: 0}
+    - target: {fileID: 2090388403223889632, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.625
+      objectReference: {fileID: 0}
+    - target: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2246814009642505600, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.125
+      objectReference: {fileID: 0}
+    - target: {fileID: 4028624419644958173, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 4277228756137354289, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3.375
+      objectReference: {fileID: 0}
+    - target: {fileID: 4545784934366442862, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: hasBeenMigrated
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5090660807666927385, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.875
+      objectReference: {fileID: 0}
+    - target: {fileID: 5579423599213339003, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 5883046904152599424, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -2.625
+      objectReference: {fileID: 0}
+    - target: {fileID: 6612150940083019140, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: slotSpacing
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 6612150940083019140, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: autoCreateSlots
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6612150940083019140, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: shelfDimensions.y
+      value: 0.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 7032157210456165468, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.375
+      objectReference: {fileID: 0}
+    - target: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7647451544521864112, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Name
+      value: BasicShelf_Prefab (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7647451544521864112, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7764066426610136478, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8603714860073987272, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: hasBeenMigrated
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9072554599393449449, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 4266138022912377980, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+    - {fileID: 4791009351993288837, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5579423599213339003, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 328738673}
+    - targetCorrespondingSourceObject: {fileID: 5579423599213339003, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 328738672}
+    - targetCorrespondingSourceObject: {fileID: 9072554599393449449, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2142845478}
+    - targetCorrespondingSourceObject: {fileID: 9072554599393449449, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2142845477}
+    - targetCorrespondingSourceObject: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 328738671}
+    - targetCorrespondingSourceObject: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 328738670}
+    - targetCorrespondingSourceObject: {fileID: 7764066426610136478, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 425690239}
+    - targetCorrespondingSourceObject: {fileID: 7764066426610136478, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 425690238}
+    - targetCorrespondingSourceObject: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 328738669}
+    - targetCorrespondingSourceObject: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 328738668}
+    - targetCorrespondingSourceObject: {fileID: 4268074578832089806, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1804581902}
+    - targetCorrespondingSourceObject: {fileID: 4268074578832089806, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1804581901}
+    - targetCorrespondingSourceObject: {fileID: 4268074578832089806, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1804581900}
+    - targetCorrespondingSourceObject: {fileID: 2831402895928025296, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 972957567}
+    - targetCorrespondingSourceObject: {fileID: 2831402895928025296, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 972957566}
+    - targetCorrespondingSourceObject: {fileID: 2831402895928025296, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 972957565}
+    - targetCorrespondingSourceObject: {fileID: 7948688537641982193, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 875189582}
+    - targetCorrespondingSourceObject: {fileID: 7948688537641982193, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 875189581}
+    - targetCorrespondingSourceObject: {fileID: 5989259834867794020, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 52311957}
+    - targetCorrespondingSourceObject: {fileID: 5989259834867794020, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 52311956}
+  m_SourcePrefab: {fileID: 100100000, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+--- !u!4 &328738658 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 328738657}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &328738659 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5989259834867794020, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 328738657}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &328738660 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7948688537641982193, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 328738657}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &328738661 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2831402895928025296, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 328738657}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &328738662 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4268074578832089806, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 328738657}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &328738663 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 328738657}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &328738664 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7764066426610136478, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 328738657}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &328738665 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 328738657}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &328738666 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9072554599393449449, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 328738657}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &328738667 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5579423599213339003, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 328738657}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &328738668
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738663}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &328738669
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738663}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!114 &328738670
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &328738671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!114 &328738672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &328738673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
 --- !u!1 &329239828
 GameObject:
   m_ObjectHideFlags: 0
@@ -1912,6 +2343,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1047240625}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &425690238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &425690239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
 --- !u!1 &427764297
 GameObject:
   m_ObjectHideFlags: 0
@@ -2301,6 +2763,356 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 446052909}
   m_CullTransparentMesh: 1
+--- !u!1001 &472703551
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 190786125}
+    m_Modifications:
+    - target: {fileID: 800048150188304937, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.125
+      objectReference: {fileID: 0}
+    - target: {fileID: 1237212235205480357, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -3.375
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.3909998
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.308
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -3.415
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.70710784
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.70710576
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1629350246249168267, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.875
+      objectReference: {fileID: 0}
+    - target: {fileID: 1792907038837539142, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.375
+      objectReference: {fileID: 0}
+    - target: {fileID: 2090388403223889632, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.625
+      objectReference: {fileID: 0}
+    - target: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2246814009642505600, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.125
+      objectReference: {fileID: 0}
+    - target: {fileID: 4028624419644958173, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 4277228756137354289, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3.375
+      objectReference: {fileID: 0}
+    - target: {fileID: 4545784934366442862, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: hasBeenMigrated
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5090660807666927385, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.875
+      objectReference: {fileID: 0}
+    - target: {fileID: 5579423599213339003, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 5883046904152599424, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -2.625
+      objectReference: {fileID: 0}
+    - target: {fileID: 6612150940083019140, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: slotSpacing
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 6612150940083019140, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: autoCreateSlots
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6612150940083019140, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: shelfDimensions.y
+      value: 0.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 7032157210456165468, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.375
+      objectReference: {fileID: 0}
+    - target: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7647451544521864112, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Name
+      value: BasicShelf_Prefab (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7647451544521864112, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7764066426610136478, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8603714860073987272, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: hasBeenMigrated
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9072554599393449449, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 4266138022912377980, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+    - {fileID: 4791009351993288837, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5579423599213339003, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 472703567}
+    - targetCorrespondingSourceObject: {fileID: 5579423599213339003, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 472703566}
+    - targetCorrespondingSourceObject: {fileID: 9072554599393449449, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1716295058}
+    - targetCorrespondingSourceObject: {fileID: 9072554599393449449, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1716295057}
+    - targetCorrespondingSourceObject: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 472703565}
+    - targetCorrespondingSourceObject: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 472703564}
+    - targetCorrespondingSourceObject: {fileID: 7764066426610136478, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 749000043}
+    - targetCorrespondingSourceObject: {fileID: 7764066426610136478, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 749000042}
+    - targetCorrespondingSourceObject: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 472703563}
+    - targetCorrespondingSourceObject: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 472703562}
+    - targetCorrespondingSourceObject: {fileID: 4268074578832089806, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 304153941}
+    - targetCorrespondingSourceObject: {fileID: 4268074578832089806, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 304153940}
+    - targetCorrespondingSourceObject: {fileID: 4268074578832089806, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 304153939}
+    - targetCorrespondingSourceObject: {fileID: 2831402895928025296, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1146656608}
+    - targetCorrespondingSourceObject: {fileID: 2831402895928025296, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1146656607}
+    - targetCorrespondingSourceObject: {fileID: 2831402895928025296, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1146656606}
+    - targetCorrespondingSourceObject: {fileID: 7948688537641982193, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1067362185}
+    - targetCorrespondingSourceObject: {fileID: 7948688537641982193, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1067362184}
+    - targetCorrespondingSourceObject: {fileID: 5989259834867794020, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 552847637}
+    - targetCorrespondingSourceObject: {fileID: 5989259834867794020, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 552847636}
+  m_SourcePrefab: {fileID: 100100000, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+--- !u!4 &472703552 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 472703551}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &472703553 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5989259834867794020, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 472703551}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &472703554 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7948688537641982193, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 472703551}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &472703555 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2831402895928025296, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 472703551}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &472703556 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4268074578832089806, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 472703551}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &472703557 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 472703551}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &472703558 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7764066426610136478, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 472703551}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &472703559 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 472703551}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &472703560 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9072554599393449449, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 472703551}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &472703561 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5579423599213339003, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 472703551}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &472703562
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &472703563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!114 &472703564
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703559}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &472703565
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703559}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!114 &472703566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &472703567
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
 --- !u!1 &477162718
 GameObject:
   m_ObjectHideFlags: 0
@@ -2654,6 +3466,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 539290085}
   m_CullTransparentMesh: 1
+--- !u!114 &552847636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703553}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &552847637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703553}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
 --- !u!1 &561527667
 GameObject:
   m_ObjectHideFlags: 0
@@ -3782,6 +4625,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 739889694}
   m_CullTransparentMesh: 1
+--- !u!114 &749000042
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &749000043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
 --- !u!1 &762014491
 GameObject:
   m_ObjectHideFlags: 0
@@ -4332,6 +5206,37 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &875189581
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738660}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &875189582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738660}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
 --- !u!1 &898342175
 GameObject:
   m_ObjectHideFlags: 0
@@ -4828,6 +5733,52 @@ Transform:
   - {fileID: 227574063}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &972957565
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738661}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &972957566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738661}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!114 &972957567
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738661}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
+  enableGizmos: 0
 --- !u!1 &1038586701
 GameObject:
   m_ObjectHideFlags: 0
@@ -4926,6 +5877,37 @@ Transform:
   - {fileID: 373795100}
   m_Father: {fileID: 190786125}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1067362184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703554}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &1067362185
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703554}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
 --- !u!1 &1080549689
 GameObject:
   m_ObjectHideFlags: 0
@@ -5454,6 +6436,52 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &1146656606
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &1146656607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!114 &1146656608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
+  enableGizmos: 0
 --- !u!1 &1152588031
 GameObject:
   m_ObjectHideFlags: 0
@@ -6639,7 +7667,7 @@ Transform:
   m_GameObject: {fileID: 1237276468}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -592.1539, y: -302.87955, z: -13.409659}
+  m_LocalPosition: {x: -588.35, y: -302.87955, z: -11.35}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9571,6 +10599,68 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1645027349}
   m_CullTransparentMesh: 1
+--- !u!114 &1645175131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &1645175132
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!114 &1652762535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652346}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &1652762536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652346}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
 --- !u!1 &1671659433
 GameObject:
   m_ObjectHideFlags: 0
@@ -9718,6 +10808,418 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+--- !u!114 &1714297953
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &1714297954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!114 &1716295057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &1716295058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472703560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!1001 &1732652339
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 190786125}
+    m_Modifications:
+    - target: {fileID: 800048150188304937, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.125
+      objectReference: {fileID: 0}
+    - target: {fileID: 1237212235205480357, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -3.375
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.391
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -3.415
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.70710784
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.70710576
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1629350246249168267, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.875
+      objectReference: {fileID: 0}
+    - target: {fileID: 1792907038837539142, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.375
+      objectReference: {fileID: 0}
+    - target: {fileID: 2090388403223889632, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.625
+      objectReference: {fileID: 0}
+    - target: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2246814009642505600, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.125
+      objectReference: {fileID: 0}
+    - target: {fileID: 4028624419644958173, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 4277228756137354289, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3.375
+      objectReference: {fileID: 0}
+    - target: {fileID: 4545784934366442862, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: hasBeenMigrated
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5090660807666927385, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.875
+      objectReference: {fileID: 0}
+    - target: {fileID: 5579423599213339003, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 5883046904152599424, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -2.625
+      objectReference: {fileID: 0}
+    - target: {fileID: 6612150940083019140, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: slotSpacing
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 6612150940083019140, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: autoCreateSlots
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6612150940083019140, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: shelfDimensions.y
+      value: 0.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 7032157210456165468, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.375
+      objectReference: {fileID: 0}
+    - target: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7647451544521864112, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Name
+      value: BasicShelf_Prefab (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7647451544521864112, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7764066426610136478, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8603714860073987272, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: hasBeenMigrated
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9072554599393449449, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 4266138022912377980, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+    - {fileID: 4791009351993288837, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5579423599213339003, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1732652355}
+    - targetCorrespondingSourceObject: {fileID: 5579423599213339003, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1732652354}
+    - targetCorrespondingSourceObject: {fileID: 9072554599393449449, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1645175132}
+    - targetCorrespondingSourceObject: {fileID: 9072554599393449449, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1645175131}
+    - targetCorrespondingSourceObject: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1732652353}
+    - targetCorrespondingSourceObject: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1732652352}
+    - targetCorrespondingSourceObject: {fileID: 7764066426610136478, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1652762536}
+    - targetCorrespondingSourceObject: {fileID: 7764066426610136478, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1652762535}
+    - targetCorrespondingSourceObject: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1732652351}
+    - targetCorrespondingSourceObject: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1732652350}
+    - targetCorrespondingSourceObject: {fileID: 4268074578832089806, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1960370251}
+    - targetCorrespondingSourceObject: {fileID: 4268074578832089806, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1960370250}
+    - targetCorrespondingSourceObject: {fileID: 4268074578832089806, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1960370249}
+    - targetCorrespondingSourceObject: {fileID: 2831402895928025296, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1983513348}
+    - targetCorrespondingSourceObject: {fileID: 2831402895928025296, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1983513347}
+    - targetCorrespondingSourceObject: {fileID: 2831402895928025296, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1983513346}
+    - targetCorrespondingSourceObject: {fileID: 7948688537641982193, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2084542059}
+    - targetCorrespondingSourceObject: {fileID: 7948688537641982193, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2084542058}
+    - targetCorrespondingSourceObject: {fileID: 5989259834867794020, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1714297954}
+    - targetCorrespondingSourceObject: {fileID: 5989259834867794020, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1714297953}
+  m_SourcePrefab: {fileID: 100100000, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+--- !u!4 &1732652340 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1473008577561291774, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1732652339}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1732652341 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5989259834867794020, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1732652339}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1732652342 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7948688537641982193, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1732652339}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1732652343 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2831402895928025296, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1732652339}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1732652344 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4268074578832089806, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1732652339}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1732652345 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7392343468210614318, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1732652339}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1732652346 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7764066426610136478, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1732652339}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1732652347 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2108092746729319724, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1732652339}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1732652348 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9072554599393449449, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1732652339}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1732652349 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5579423599213339003, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+  m_PrefabInstance: {fileID: 1732652339}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1732652350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652345}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &1732652351
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652345}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!114 &1732652352
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &1732652353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!114 &1732652354
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &1732652355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
 --- !u!1 &1745992523
 GameObject:
   m_ObjectHideFlags: 0
@@ -10289,6 +11791,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 274469690}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1804581900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &1804581901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!114 &1804581902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
+  enableGizmos: 0
 --- !u!1 &1815740826
 GameObject:
   m_ObjectHideFlags: 0
@@ -10989,6 +12537,10 @@ PrefabInstance:
       propertyPath: autoCreateSlots
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6612150940083019140, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
+      propertyPath: shelfDimensions.y
+      value: 0.02
+      objectReference: {fileID: 0}
     - target: {fileID: 7032157210456165468, guid: 6483eb520b08d4645b21ceafcfe927fc, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.375
@@ -11566,6 +13118,52 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &1960370249
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &1960370250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!114 &1960370251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
+  enableGizmos: 0
 --- !u!1 &1962747756
 GameObject:
   m_ObjectHideFlags: 0
@@ -11598,6 +13196,52 @@ Transform:
   - {fileID: 1395094050}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1983513346
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &1983513347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!114 &1983513348
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9c2d12785fb4061857186a85310e96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotLogic
+  slotPosition: {x: 0, y: 0, z: 0}
+  currentProduct: {fileID: 0}
+  enableGizmos: 0
 --- !u!1 &2000765056
 GameObject:
   m_ObjectHideFlags: 0
@@ -11869,6 +13513,37 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &2084542058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &2084542059
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732652342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
 --- !u!1 &2085796236
 GameObject:
   m_ObjectHideFlags: 0
@@ -12203,6 +13878,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2105342121}
   m_CullTransparentMesh: 1
+--- !u!114 &2142845477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51768c81e03494b8bbffc3f04e9bdcf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotVisuals
+  highlightMaterial: {fileID: 0}
+  normalMaterial: {fileID: 0}
+  emptySlotColor: {r: 0, g: 1, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  slotIndicator: {fileID: 0}
+  indicatorScale: {x: 0.2, y: 0.01, z: 0.2}
+  preservePrefabScale: 1
+--- !u!114 &2142845478
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 328738666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

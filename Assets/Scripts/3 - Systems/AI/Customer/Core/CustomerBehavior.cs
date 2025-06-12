@@ -326,6 +326,17 @@ namespace TabletopShop
                         if (product != null)
                         {
                             itemsProcessed++;
+                            
+                            // Play a beep sound when scanning each product
+                            // If AudioManager has PlayProductScanBeep method, use that instead
+                            if (AudioManager.Instance != null)
+                            {
+                                // Generate slightly different pitch for each product to add variety
+                                float randomPitch = 1.0f; //UnityEngine.Random.Range(1.1f, 1.3f);
+                                AudioManager.Instance.PlayUIClick(randomPitch);
+                                Debug.Log($"Product scan beep played for {product.ProductData?.ProductName ?? "Unknown Product"}");
+                            }
+                            
                             // Brief pause for each item being scanned
                             yield return new WaitForSeconds(purchaseTime / selectedProducts.Count);
                             
@@ -346,14 +357,28 @@ namespace TabletopShop
                     // Process purchase through GameManager
                     GameManager.Instance.ProcessCustomerPurchase(totalPurchaseAmount, customerSatisfaction);
                     
+                    // Play purchase success sound
+                    if (AudioManager.Instance != null)
+                    {
+                        AudioManager.Instance.PlayPurchaseSuccess();
+                        Debug.Log($"Purchase success sound played for ${totalPurchaseAmount:F2} transaction");
+                    }
+                    
                     // Mark products as purchased (finalizing the transaction)
                     // Products were already removed from shelves when they were selected
+                    // Create a temporary list to track successfully purchased products
+                    List<Product> purchasedProducts = new List<Product>();
+                    
                     foreach (Product product in selectedProducts)
                     {
                         if (product != null)
                         {
                             // This handles the financial transaction and updates product state to Purchased
                             product.Purchase();
+                            
+                            // Add to purchased list so we know not to destroy it on exit
+                            purchasedProducts.Add(product);
+                            Debug.Log($"CustomerBehavior {name} purchased {product.ProductData?.ProductName ?? "Product"} successfully");
                         }
                     }
                     
@@ -401,6 +426,9 @@ namespace TabletopShop
                 }
                 
                 Debug.Log($"CustomerBehavior {name} has left the shop");
+                
+                // Destroy all products the customer was carrying
+                DestroyCustomerProducts();
                 
                 // Optional: Destroy customer object after leaving
                 yield return new WaitForSeconds(2f);
@@ -697,5 +725,49 @@ namespace TabletopShop
         }
         
         #endregion
+
+        /// <summary>
+        /// Destroy all products that the customer has selected but not purchased
+        /// Called when the customer leaves the shop
+        /// </summary>
+        private void DestroyCustomerProducts()
+        {
+            // Count unpurchased products
+            int unpurchasedCount = 0;
+            foreach (Product product in selectedProducts)
+            {
+                if (product != null && !product.IsPurchased)
+                {
+                    unpurchasedCount++;
+                }
+            }
+            
+            // Log how many products the customer is taking with them
+            if (unpurchasedCount > 0)
+            {
+                Debug.Log($"CustomerBehavior {name} is leaving with {unpurchasedCount} unpurchased products - cleaning up");
+            
+                // Create a new list to avoid modification during iteration
+                List<Product> productsToDestroy = new List<Product>();
+                
+                foreach (Product product in selectedProducts)
+                {
+                    if (product != null && !product.IsPurchased)
+                    {
+                        productsToDestroy.Add(product);
+                    }
+                }
+                
+                // Destroy each product GameObject that hasn't been purchased
+                foreach (Product product in productsToDestroy)
+                {
+                    Debug.Log($"Destroying unpurchased product: {product.ProductData?.ProductName ?? "Unknown"}");
+                    Destroy(product.gameObject);
+                }
+            }
+            
+            // Clear the selected products list regardless
+            selectedProducts.Clear();
+        }
     }
 }
