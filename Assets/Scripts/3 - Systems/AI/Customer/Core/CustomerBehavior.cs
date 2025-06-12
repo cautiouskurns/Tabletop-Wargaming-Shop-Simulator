@@ -279,10 +279,13 @@ namespace TabletopShop
         
         /// <summary>
         /// Handle purchasing state behavior
+        /// Customer brings selected products to checkout and finalizes purchase
+        /// Products are already removed from shelves during shopping (TrySelectProductsAtCurrentShelf)
+        /// This method handles moving to checkout and processing the financial transaction
         /// </summary>
         private IEnumerator HandlePurchasingState()
         {
-            Debug.Log($"CustomerBehavior {name} proceeding to checkout");
+            Debug.Log($"CustomerBehavior {name} proceeding to checkout with {selectedProducts.Count} products");
             
             // ✅ ADD NULL CHECK HERE
             bool reachedCheckout = false;
@@ -343,11 +346,13 @@ namespace TabletopShop
                     // Process purchase through GameManager
                     GameManager.Instance.ProcessCustomerPurchase(totalPurchaseAmount, customerSatisfaction);
                     
-                    // Mark purchased products as bought
+                    // Mark products as purchased (finalizing the transaction)
+                    // Products were already removed from shelves when they were selected
                     foreach (Product product in selectedProducts)
                     {
                         if (product != null)
                         {
+                            // This handles the financial transaction and updates product state to Purchased
                             product.Purchase();
                         }
                     }
@@ -517,8 +522,24 @@ namespace TabletopShop
                 // Check if customer can afford and wants this product
                 if (canAfford && wantsProduct)
                 {
+                    // Add to selected products list before removing from shelf
                     selectedProducts.Add(availableProduct);
                     totalPurchaseAmount += availableProduct.CurrentPrice;
+                    
+                    // Remove product from shelf immediately - product is now in customer's possession
+                    // Use ShelfSlot's RemoveProduct which handles notifying the product correctly
+                    Product removedProduct = targetShelf.RemoveProduct();
+                    
+                    // Double-check the product was properly removed from the shelf
+                    if (removedProduct != null && removedProduct.IsOnShelf)
+                    {
+                        Debug.LogWarning($"Product {removedProduct.ProductData?.ProductName} still marked as on shelf after removal. Forcing removal.");
+                        removedProduct.RemoveFromShelf();
+                    }
+                    
+                    // Optional: Update the product's position to follow the customer
+                    // This visually shows the customer has the product
+                    StartCoroutine(AttachProductToCustomer(availableProduct));
                     
                     Debug.Log($"CustomerBehavior {name} ✅ SELECTED {availableProduct.ProductData?.ProductName ?? "Product"} for ${availableProduct.CurrentPrice} (Total: ${totalPurchaseAmount:F2}, Products: {selectedProducts.Count})");
                 }
@@ -592,6 +613,34 @@ namespace TabletopShop
             baseSatisfaction += UnityEngine.Random.Range(-0.1f, 0.1f);
             
             return Mathf.Clamp01(baseSatisfaction);
+        }
+        
+        /// <summary>
+        /// Attach a selected product to the customer (visually showing that they are carrying it)
+        /// </summary>
+        /// <param name="product">The product to attach</param>
+        private IEnumerator AttachProductToCustomer(Product product)
+        {
+            if (product != null)
+            {
+                // Define an offset position where the product will "follow" the customer
+                Vector3 offset = new Vector3(0.3f, 1.2f, 0.2f); 
+                
+                // While the customer exists and the product is selected but not purchased
+                while (this != null && product != null && selectedProducts.Contains(product))
+                {
+                    // Have the product follow the customer with a slight delay/smoothing
+                    if (product.transform != null && transform != null)
+                    {
+                        product.transform.position = Vector3.Lerp(
+                            product.transform.position, 
+                            transform.position + transform.rotation * offset, 
+                            Time.deltaTime * 5f);
+                    }
+                    
+                    yield return null;
+                }
+            }
         }
         
         /// <summary>
