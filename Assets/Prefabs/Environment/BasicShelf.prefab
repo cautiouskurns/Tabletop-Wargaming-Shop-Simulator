@@ -588,7 +588,7 @@ GameObject:
   - component: {fileID: 1473008577561291774}
   - component: {fileID: 6612150940083019140}
   m_Layer: 10
-  m_Name: BasicShelf_Prefab
+  m_Name: BasicShelf
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.ProductData
   productName: Core Rulebook
   basePrice: 25
+  costPrice: 0
   type: 2
   description: Complete rules for tabletop warfare. Includes basic rules, advanced
     tactics, and lore sections.
-  icon: {fileID: 21300000, guid: 722f20f6bcd80434a97ac3919dd6239f, type: 3}
+  icon: {fileID: 21300000, guid: 86667312e9e4a404c96eff670875e399, type: 3}
   prefab: {fileID: 451296204315812389, guid: 0319d0e81240e4855bdbe9ca611cb661, type: 3}

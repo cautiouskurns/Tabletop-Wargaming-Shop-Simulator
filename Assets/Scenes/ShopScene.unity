@@ -7252,10 +7252,10 @@ PrefabInstance:
     - target: {fileID: 1688503734856842156, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: c93780ff4fea84a6189e039153ccf9f0, type: 3}
+      objectReference: {fileID: 21300000, guid: 021b67ae451f94513ade5610fa50a60a, type: 3}
     - target: {fileID: 1688503734856842156, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
       propertyPath: m_Color.a
-      value: 0.8
+      value: 0.9019608
       objectReference: {fileID: 0}
     - target: {fileID: 2750870657419809933, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
       propertyPath: m_AdditionalShaderChannelsFlag
@@ -7312,18 +7312,18 @@ PrefabInstance:
     - target: {fileID: 6915354330255524693, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 722f20f6bcd80434a97ac3919dd6239f, type: 3}
+      objectReference: {fileID: 21300000, guid: 86667312e9e4a404c96eff670875e399, type: 3}
     - target: {fileID: 6915354330255524693, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
       propertyPath: m_Color.a
-      value: 0.8
+      value: 0.9019608
       objectReference: {fileID: 0}
     - target: {fileID: 7836373335639824262, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: f0649e2c8806342e69809665c7512baa, type: 3}
+      objectReference: {fileID: 21300000, guid: c1537783d952e41d0880428b52edd001, type: 3}
     - target: {fileID: 7836373335639824262, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
       propertyPath: m_Color.a
-      value: 0.8
+      value: 0.9019608
       objectReference: {fileID: 0}
     - target: {fileID: 9121325313428564418, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
       propertyPath: m_AnchorMax.y
@@ -7445,7 +7445,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.InventoryUISetupHelper
   miniatureBoxIcon: {fileID: 21300000, guid: c93780ff4fea84a6189e039153ccf9f0, type: 3}
   paintPotIcon: {fileID: 21300000, guid: f0649e2c8806342e69809665c7512baa, type: 3}
-  rulebookIcon: {fileID: 21300000, guid: 722f20f6bcd80434a97ac3919dd6239f, type: 3}
+  rulebookIcon: {fileID: 21300000, guid: 86667312e9e4a404c96eff670875e399, type: 3}
   inventoryUI: {fileID: 1174955271}
   productButtons:
   - {fileID: 1174955269}
