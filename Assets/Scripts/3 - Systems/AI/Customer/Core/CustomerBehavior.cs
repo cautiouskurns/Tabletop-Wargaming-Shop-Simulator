@@ -194,7 +194,7 @@ namespace TabletopShop
                 ChangeState(CustomerState.Purchasing);
             }
             
-            // Phase 3: Purchasing (move to checkout area)
+            // Phase 3: Purchasing (move to checkout area and make purchase)
             if (currentState == CustomerState.Purchasing)
             {
                 yield return StartCoroutine(HandlePurchasingState());
@@ -304,12 +304,38 @@ namespace TabletopShop
                     yield return new WaitForSeconds(0.5f);
                 }
                 
-                // Process actual purchase through GameManager
+                Debug.Log($"CustomerBehavior {name} has reached the checkout point");
+                
+                // Small delay at checkout before starting transaction
+                yield return new WaitForSeconds(1.0f);
+                
+                // Process actual purchase through GameManager after reaching checkout
                 if (selectedProducts.Count > 0 && totalPurchaseAmount > 0)
                 {
+                    // Simulate the checkout process (scanning items, payment, etc.)
                     float purchaseTime = UnityEngine.Random.Range(3f, 8f);
                     Debug.Log($"CustomerBehavior {name} making purchase (taking {purchaseTime:F1}s) - ${totalPurchaseAmount:F2} for {selectedProducts.Count} items");
-                    yield return new WaitForSeconds(purchaseTime);
+                    
+                    // Loop through products to simulate scanning each item
+                    int itemsProcessed = 0;
+                    foreach (Product product in selectedProducts)
+                    {
+                        if (product != null)
+                        {
+                            itemsProcessed++;
+                            // Brief pause for each item being scanned
+                            yield return new WaitForSeconds(purchaseTime / selectedProducts.Count);
+                            
+                            if (itemsProcessed == selectedProducts.Count)
+                            {
+                                Debug.Log($"CustomerBehavior {name} finished scanning all {itemsProcessed} items");
+                            }
+                        }
+                    }
+                    
+                    // Final payment processing
+                    Debug.Log($"CustomerBehavior {name} processing payment of ${totalPurchaseAmount:F2}");
+                    yield return new WaitForSeconds(1.5f);
                     
                     // Calculate customer satisfaction based on experience
                     float customerSatisfaction = CalculateCustomerSatisfaction();
@@ -324,6 +350,13 @@ namespace TabletopShop
                         {
                             product.Purchase();
                         }
+                    }
+                    
+                    // Force UI to update immediately
+                    if (GameManager.Instance != null)
+                    {
+                        // Trigger the money changed event explicitly to ensure UI updates
+                        GameManager.Instance.OnMoneyChanged.Invoke();
                     }
                     
                     Debug.Log($"CustomerBehavior {name} completed purchase of ${totalPurchaseAmount:F2} with satisfaction {customerSatisfaction:F2}");

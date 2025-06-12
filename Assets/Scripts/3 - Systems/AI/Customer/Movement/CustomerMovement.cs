@@ -190,22 +190,46 @@ namespace TabletopShop
         /// <returns>True if checkout destination was set successfully</returns>
         public bool MoveToCheckoutPoint()
         {
-            // Look for checkout area or use a central location
+            // Look for checkout area with more detailed search options
             GameObject checkout = null;
             
-            // Try to find checkout by tag first
+            // Try to find checkout by tag first (preferred method)
             try
             {
                 GameObject[] checkouts = GameObject.FindGameObjectsWithTag("Checkout");
                 if (checkouts.Length > 0)
                 {
-                    checkout = checkouts[0];
+                    // If multiple checkouts exist, find the closest one
+                    if (checkouts.Length > 1)
+                    {
+                        float closestDistance = float.MaxValue;
+                        foreach (GameObject checkoutPoint in checkouts)
+                        {
+                            float distance = Vector3.Distance(transform.position, checkoutPoint.transform.position);
+                            if (distance < closestDistance)
+                            {
+                                closestDistance = distance;
+                                checkout = checkoutPoint;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        checkout = checkouts[0];
+                    }
                 }
             }
             catch (UnityException)
             {
                 // Checkout tag doesn't exist, that's okay
-                Debug.Log($"CustomerMovement {name}: Checkout tag not defined, using fallback");
+                Debug.Log($"CustomerMovement {name}: Checkout tag not defined, searching by name");
+                
+                // Try to find by name as fallback
+                GameObject checkoutByName = GameObject.Find("Checkout");
+                if (checkoutByName != null)
+                {
+                    checkout = checkoutByName;
+                }
             }
             
             if (checkout != null)
