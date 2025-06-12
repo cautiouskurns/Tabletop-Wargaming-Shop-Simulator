@@ -66,6 +66,9 @@ namespace TabletopShop
         // Economic validation abstraction
         private IEconomicValidator economicValidator;
         
+        // Product data access abstraction
+        private IProductRepository productRepository;
+        
         /// <summary>
         /// Currently selected product for placement
         /// </summary>
@@ -128,6 +131,9 @@ namespace TabletopShop
                 // Initialize economic validator
                 economicValidator = new GameManagerEconomicValidator(logEconomicTransactions);
                 
+                // Initialize product repository
+                productRepository = new ResourcesProductRepository("Products", logEconomicTransactions);
+                
                 InitializeInventory();
             }
             else if (_instance != this)
@@ -141,7 +147,7 @@ namespace TabletopShop
         {
             if (autoLoadProductsOnStart)
             {
-                LoadAvailableProducts();
+                LoadAvailableProductsFromRepository();
                 InitializeStartingInventory();
             }
         }
@@ -172,58 +178,42 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Load all available ProductData assets from Resources
+        /// Load all available ProductData assets using the product repository
         /// </summary>
-        private void LoadAvailableProducts()
+        private void LoadAvailableProductsFromRepository()
         {
-            Debug.Log($"LoadAvailableProducts called. Current available products count: {availableProducts.Count}");
+            Debug.Log($"LoadAvailableProductsFromRepository called. Current available products count: {availableProducts.Count}");
             
+            // If products are manually assigned in the inspector, use those instead
             if (availableProducts.Count > 0)
             {
                 Debug.Log($"Using {availableProducts.Count} manually assigned products:");
                 for (int i = 0; i < availableProducts.Count; i++)
                 {
-                    if (availableProducts[i] != null)
+                    if (productRepository.IsValidProduct(availableProducts[i]))
                     {
                         Debug.Log($"  - {i}: {availableProducts[i].ProductName} (Type: {availableProducts[i].Type})");
                     }
                     else
                     {
-                        Debug.LogWarning($"  - {i}: NULL PRODUCT FOUND!");
+                        Debug.LogWarning($"  - {i}: INVALID PRODUCT FOUND: {availableProducts[i]?.name ?? "NULL"}");
                     }
                 }
                 return;
             }
             
-            // Try to load ProductData assets from Resources folder
-            ProductData[] foundProducts = Resources.LoadAll<ProductData>("Products");
+            // Load products from repository
+            List<ProductData> loadedProducts = productRepository.LoadAllProducts();
             
-            if (foundProducts.Length > 0)
+            if (loadedProducts.Count > 0)
             {
-                availableProducts.AddRange(foundProducts);
-                Debug.Log($"Loaded {foundProducts.Length} products from Resources/Products folder:");
-                foreach (var product in foundProducts)
-                {
-                    Debug.Log($"  - {product.ProductName} (Type: {product.Type})");
-                }
+                availableProducts.AddRange(loadedProducts);
+                Debug.Log($"Successfully loaded {loadedProducts.Count} products from repository");
             }
             else
             {
-                Debug.LogWarning("No ProductData assets found. You may need to create some or assign them manually.");
-                CreateDefaultProducts();
+                Debug.LogWarning("No ProductData assets found in repository. You may need to create some or assign them manually.");
             }
-        }
-        
-        /// <summary>
-        /// Create default products if none are found
-        /// </summary>
-        private void CreateDefaultProducts()
-        {
-            Debug.Log("Creating default product entries for testing...");
-            
-            // Note: These are placeholder references. In a real setup, you'd have actual ProductData ScriptableObject assets
-            // For now, we'll just log that we need actual ProductData assets
-            Debug.LogWarning("To fully test the inventory system, create ProductData ScriptableObject assets and assign them to the InventoryManager.");
         }
         
         /// <summary>
@@ -787,6 +777,23 @@ namespace TabletopShop
         }
         
         /// <summary>
+        /// Set the product repository (useful for testing or different implementations)
+        /// </summary>
+        /// <param name="repository">The product repository to use</param>
+        public void SetProductRepository(IProductRepository repository)
+        {
+            if (repository == null)
+            {
+                Debug.LogWarning("Cannot set null product repository. Using default ResourcesProductRepository.");
+                productRepository = new ResourcesProductRepository("Products", logEconomicTransactions);
+                return;
+            }
+            
+            productRepository = repository;
+            Debug.Log($"Product repository set to: {repository.GetType().Name}");
+        }
+        
+        /// <summary>
         /// Get current economic configuration as formatted string
         /// </summary>
         /// <returns>String representation of economic settings</returns>
@@ -994,7 +1001,7 @@ namespace TabletopShop
             productCounts.Clear();
             selectedProduct = null;
             
-            LoadAvailableProducts();
+            LoadAvailableProductsFromRepository();
             InitializeStartingInventory();
             
             Debug.Log("=== INVENTORY RELOAD COMPLETE ===");
