@@ -11,7 +11,7 @@ namespace TabletopShop
     public class CustomerSpawner : MonoBehaviour
     {
         [Header("Customer Prefab Configuration")]
-        [SerializeField] private GameObject customerPrefab;
+        [SerializeField] private List<GameObject> customerPrefabs = new List<GameObject>();
         
         [Header("Spawn Location Configuration")]
         [SerializeField] private Transform spawnPoint;
@@ -38,7 +38,7 @@ namespace TabletopShop
         public bool IsSpawning => isSpawning;
         public bool CanSpawnCustomer => CanSpawnCustomerInternal();
         public bool IsAtMaxCapacity => GetActiveCustomerCount() >= maxCustomers;
-        public GameObject CustomerPrefab => customerPrefab;
+        public GameObject CustomerPrefab => customerPrefabs.Count > 0 ? customerPrefabs[0] : null;
         public Transform SpawnPoint => spawnPoint;
         public Transform ExitPoint => exitPoint;
         
@@ -142,19 +142,29 @@ namespace TabletopShop
         {
             bool hasErrors = false;
             
-            if (customerPrefab == null)
+            if (customerPrefabs == null || customerPrefabs.Count == 0)
             {
-                Debug.LogError($"CustomerSpawner on {name}: Customer Prefab is not assigned!");
+                Debug.LogError($"CustomerSpawner on {name}: No Customer Prefabs assigned!");
                 hasErrors = true;
             }
             else
             {
-                // Validate that the prefab has a Customer component
-                Customer customerComponent = customerPrefab.GetComponent<Customer>();
-                if (customerComponent == null)
+                // Validate that all prefabs have Customer components
+                for (int i = 0; i < customerPrefabs.Count; i++)
                 {
-                    Debug.LogError($"CustomerSpawner on {name}: Customer Prefab does not have a Customer component!");
-                    hasErrors = true;
+                    if (customerPrefabs[i] == null)
+                    {
+                        Debug.LogError($"CustomerSpawner on {name}: Customer Prefab at index {i} is null!");
+                        hasErrors = true;
+                        continue;
+                    }
+                    
+                    Customer customerComponent = customerPrefabs[i].GetComponent<Customer>();
+                    if (customerComponent == null)
+                    {
+                        Debug.LogError($"CustomerSpawner on {name}: Customer Prefab '{customerPrefabs[i].name}' does not have a Customer component!");
+                        hasErrors = true;
+                    }
                 }
             }
             
@@ -209,14 +219,14 @@ namespace TabletopShop
                 Debug.Log($"- Max Customers: {maxCustomers}");
                 Debug.Log($"- Spawn Point: {(spawnPoint != null ? spawnPoint.name : "Not Set")}");
                 Debug.Log($"- Exit Point: {(exitPoint != null ? exitPoint.name : "Not Set")}");
-                Debug.Log($"- Customer Prefab: {(customerPrefab != null ? customerPrefab.name : "Not Set")}");
+                Debug.Log($"- Customer Prefabs: {customerPrefabs.Count} assigned");
             }
             
             // Start regular cleanup coroutine
             StartCleanupCoroutine();
             
             // Auto-start spawning if all requirements are met
-            if (customerPrefab != null && spawnPoint != null)
+            if (customerPrefabs.Count > 0 && spawnPoint != null)
             {
                 StartSpawning();
             }
@@ -244,7 +254,7 @@ namespace TabletopShop
                 return;
             }
             
-            if (customerPrefab == null || spawnPoint == null)
+            if (customerPrefabs.Count == 0 || spawnPoint == null)
             {
                 Debug.LogError($"CustomerSpawner on {name}: Cannot start spawning - missing required references");
                 return;
@@ -337,7 +347,7 @@ namespace TabletopShop
         /// </summary>
         private void SpawnCustomer()
         {
-            if (customerPrefab == null || spawnPoint == null)
+            if (customerPrefabs.Count == 0 || spawnPoint == null)
             {
                 Debug.LogError($"CustomerSpawner on {name}: Cannot spawn customer - missing required references");
                 return;
@@ -354,8 +364,11 @@ namespace TabletopShop
             
             try
             {
+                // Randomly select a customer prefab for variety
+                GameObject selectedPrefab = customerPrefabs[Random.Range(0, customerPrefabs.Count)];
+                
                 // Instantiate customer at spawn point
-                GameObject customerObject = Instantiate(customerPrefab, spawnPoint.position, spawnPoint.rotation);
+                GameObject customerObject = Instantiate(selectedPrefab, spawnPoint.position, spawnPoint.rotation);
                 
                 // Get the Customer component
                 Customer customerComponent = customerObject.GetComponent<Customer>();
@@ -562,7 +575,7 @@ namespace TabletopShop
                    $"SpawnInterval={minSpawnInterval}-{maxSpawnInterval}s, " +
                    $"HasSpawnPoint={spawnPoint != null}, " +
                    $"HasExitPoint={exitPoint != null}, " +
-                   $"HasPrefab={customerPrefab != null}";
+                   $"HasPrefabs={customerPrefabs.Count > 0}";
         }
         
         /// <summary>
