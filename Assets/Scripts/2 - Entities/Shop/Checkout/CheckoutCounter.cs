@@ -51,13 +51,12 @@ namespace TabletopShop
                 checkoutUI.TrackCheckoutCounter(this);
                 Debug.Log($"CheckoutCounter: Found and connected to CheckoutUI");
                 
-                // Only show on start if testing
-                // if (showUIOnStart)
-                // {
-                //     checkoutUI.Show();
-                //     checkoutUI.UpdateCustomer("Test Customer");
-                //     checkoutUI.UpdateTotal(0f);
-                // }
+                if (showUIOnStart)
+                {
+                    checkoutUI.Show();
+                    checkoutUI.UpdateCustomer("Test Customer");
+                    checkoutUI.UpdateTotal(0f);
+                }
             }
             else
             {
@@ -95,6 +94,9 @@ namespace TabletopShop
             product.transform.position = newPosition;
             product.transform.SetParent(checkoutArea);
             
+            // Ensure the product stays stationary by disabling movement components
+            EnsureProductStationary(product);
+            
             // Update UI
             if (checkoutUI != null)
             {
@@ -107,7 +109,46 @@ namespace TabletopShop
                 Debug.LogWarning("CheckoutCounter: No CheckoutUI found - cannot update UI");
             }
             
-            Debug.Log($"Placed {product.ProductData?.ProductName ?? product.name} at checkout (${product.CurrentPrice})");
+            Debug.Log($"Placed {product.ProductData?.ProductName ?? product.name} at checkout (${product.CurrentPrice}) and made stationary");
+        }
+        
+        /// <summary>
+        /// Ensure a product remains stationary after being placed on the counter
+        /// </summary>
+        /// <param name="product">The product to make stationary</param>
+        private void EnsureProductStationary(Product product)
+        {
+            if (product == null) return;
+            
+            // Disable NavMeshAgent if present
+            UnityEngine.AI.NavMeshAgent navAgent = product.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (navAgent != null)
+            {
+                navAgent.enabled = false;
+                Debug.Log($"CheckoutCounter: Disabled NavMeshAgent on {product.name}");
+            }
+            
+            // Make Rigidbody kinematic if present
+            Rigidbody rb = product.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = true;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                Debug.Log($"CheckoutCounter: Set Rigidbody to kinematic on {product.name}");
+            }
+            
+            // Disable any movement scripts that might interfere
+            MonoBehaviour[] scripts = product.GetComponents<MonoBehaviour>();
+            foreach (MonoBehaviour script in scripts)
+            {
+                string scriptName = script.GetType().Name.ToLower();
+                if (scriptName.Contains("movement") || scriptName.Contains("mover") || scriptName.Contains("follow"))
+                {
+                    script.enabled = false;
+                    Debug.Log($"CheckoutCounter: Disabled movement script {script.GetType().Name} on {product.name}");
+                }
+            }
         }
         
         /// <summary>

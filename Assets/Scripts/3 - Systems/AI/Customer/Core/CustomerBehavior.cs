@@ -35,6 +35,7 @@ namespace TabletopShop
     
     // Checkout state tracking
     private bool isWaitingForCheckout = false;
+    private List<Product> placedOnCounterProducts = new List<Product>();
 
         // Events
         public event Action<CustomerState, CustomerState> OnStateChangeRequested;
@@ -78,6 +79,7 @@ namespace TabletopShop
         public void ResetShoppingState()
         {
             selectedProducts.Clear();
+            placedOnCounterProducts.Clear();
             totalPurchaseAmount = 0f;
             targetShelf = null;
             InitializeShoppingTime();
@@ -592,8 +594,8 @@ namespace TabletopShop
                 // Define an offset position where the product will "follow" the customer
                 Vector3 offset = new Vector3(0.3f, 1.2f, 0.2f); 
                 
-                // While the customer exists and the product is selected but not purchased
-                while (this != null && product != null && selectedProducts.Contains(product))
+                // While the customer exists and the product is selected but not placed on counter or purchased
+                while (this != null && product != null && selectedProducts.Contains(product) && !placedOnCounterProducts.Contains(product))
                 {
                     // Have the product follow the customer with a slight delay/smoothing
                     if (product.transform != null && transform != null)
@@ -606,6 +608,8 @@ namespace TabletopShop
                     
                     yield return null;
                 }
+                
+                Debug.Log($"CustomerBehavior {name} stopped attaching product {product.ProductData?.ProductName ?? "Product"} - either placed on counter or purchased");
             }
         }
         
@@ -704,8 +708,9 @@ namespace TabletopShop
                 }
             }
             
-            // Clear the selected products list regardless
+            // Clear all product lists regardless
             selectedProducts.Clear();
+            placedOnCounterProducts.Clear();
         }
         
         /// <summary>
@@ -755,10 +760,16 @@ namespace TabletopShop
             {
                 if (product != null)
                 {
+                    // Add to placed products list FIRST to stop the attachment coroutine
+                    placedOnCounterProducts.Add(product);
+                    
                     // Place the existing product on the checkout counter
                     checkoutCounter.PlaceProduct(product);
                     
-                    Debug.Log($"CustomerBehavior {name} placed {product.ProductData?.ProductName ?? product.name} on checkout counter");
+                    // Disable any movement components to ensure the product stays put
+                    DisableProductMovement(product);
+                    
+                    Debug.Log($"CustomerBehavior {name} placed {product.ProductData?.ProductName ?? product.name} on checkout counter and disabled movement");
                     
                     // Small delay between placing each item
                     yield return new WaitForSeconds(UnityEngine.Random.Range(0.5f, 1.0f));
@@ -766,6 +777,44 @@ namespace TabletopShop
             }
             
             Debug.Log($"CustomerBehavior {name} finished placing all items on checkout counter");
+        }
+        
+        /// <summary>
+        /// Disable any movement components on a product to ensure it stays stationary after placement
+        /// </summary>
+        /// <param name="product">The product to disable movement for</param>
+        private void DisableProductMovement(Product product)
+        {
+            if (product == null) return;
+            
+            // Disable NavMeshAgent if present
+            UnityEngine.AI.NavMeshAgent navAgent = product.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (navAgent != null)
+            {
+                navAgent.enabled = false;
+                Debug.Log($"Disabled NavMeshAgent on {product.name}");
+            }
+            
+            // Disable Rigidbody if present
+            Rigidbody rb = product.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = true;
+                Debug.Log($"Set Rigidbody to kinematic on {product.name}");
+            }
+            
+            // Disable any custom movement scripts that might be attached
+            MonoBehaviour[] customScripts = product.GetComponents<MonoBehaviour>();
+            foreach (MonoBehaviour script in customScripts)
+            {
+                // Check for common movement script patterns
+                string scriptName = script.GetType().Name.ToLower();
+                if (scriptName.Contains("movement") || scriptName.Contains("mover") || scriptName.Contains("follow"))
+                {
+                    script.enabled = false;
+                    Debug.Log($"Disabled movement script {script.GetType().Name} on {product.name}");
+                }
+            }
         }
         
         /// <summary>
@@ -835,5 +884,47 @@ namespace TabletopShop
             Debug.Log($"CustomerBehavior {name} received checkout completion notification");
             isWaitingForCheckout = false;
         }
+        
+        #region Debug and Testing Methods
+        
+        /// <summary>
+        /// Test method to verify the product placement fix
+        /// </summary>
+        [ContextMenu("Test Product Placement Fix")]
+        public void TestProductPlacementFix()
+        {
+            Debug.Log($"=== Testing Product Placement Fix for {name} ===");
+            Debug.Log($"Selected products: {selectedProducts.Count}");
+            Debug.Log($"Placed on counter products: {placedOnCounterProducts.Count}");
+            
+            foreach (Product product in selectedProducts)
+            {
+                if (product != null)
+                {
+                    bool isPlaced = placedOnCounterProducts.Contains(product);
+                    Debug.Log($"Product: {product.ProductData?.ProductName ?? product.name} - Placed: {isPlaced}");
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Force place all selected products on checkout counter for testing
+        /// </summary>
+        [ContextMenu("Force Place Products on Counter")]
+        public void ForceePlaceProductsOnCounter()
+        {
+            CheckoutCounter counter = FindNearestCheckoutCounter();
+            if (counter != null && selectedProducts.Count > 0)
+            {
+                Debug.Log($"Force placing {selectedProducts.Count} products on counter for testing");
+                StartCoroutine(PlaceItemsOnCounter(counter));
+            }
+            else
+            {
+                Debug.LogWarning("Cannot force place products - no counter found or no selected products");
+            }
+        }
+        
+        #endregion
     }
 }
