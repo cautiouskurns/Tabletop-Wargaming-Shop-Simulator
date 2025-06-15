@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace TabletopShop
 {
@@ -152,8 +153,17 @@ namespace TabletopShop
         /// <param name="product">Product to add</param>
         public void AddProduct(Product product)
         {
-            if (product == null || productUIItems.ContainsKey(product))
+            if (product == null)
+            {
+                Debug.LogWarning("CheckoutUI: Cannot add null product");
                 return;
+            }
+            
+            if (productUIItems.ContainsKey(product))
+            {
+                Debug.LogWarning($"CheckoutUI: Product {product.ProductData?.ProductName ?? product.name} is already in UI list");
+                return;
+            }
             
             if (productListParent == null || productItemPrefab == null)
             {
@@ -167,6 +177,8 @@ namespace TabletopShop
             
             // Update the product item display
             UpdateProductItem(product, productItem);
+            
+            Debug.Log($"CheckoutUI: Added product {product.ProductData?.ProductName ?? product.name} to UI list");
         }
         
         /// <summary>
@@ -253,6 +265,33 @@ namespace TabletopShop
             UpdateTotal(0f);
         }
         
+        /// <summary>
+        /// Refresh the entire checkout UI by rebuilding the product list
+        /// Call this if the UI gets out of sync with the checkout counter
+        /// </summary>
+        public void RefreshUI()
+        {
+            if (trackedCheckout == null)
+            {
+                Debug.LogWarning("CheckoutUI: Cannot refresh UI - no tracked checkout counter");
+                return;
+            }
+            
+            // Use the checkout counter's refresh method
+            trackedCheckout.RefreshUI();
+            
+            Debug.Log("CheckoutUI: Triggered UI refresh via checkout counter");
+        }
+        
+        /// <summary>
+        /// Get the number of products currently displayed in the UI
+        /// </summary>
+        /// <returns>Number of products in UI</returns>
+        public int GetProductCount()
+        {
+            return productUIItems.Count;
+        }
+        
         #endregion
         
         #region Private Methods
@@ -265,17 +304,22 @@ namespace TabletopShop
         private void UpdateProductItem(Product product, GameObject productItem)
         {
             if (product == null || productItem == null)
+            {
+                Debug.LogWarning("CheckoutUI: Cannot update product item - null reference");
                 return;
+            }
             
-            // Get text component
-            Text productText = productItem.GetComponent<Text>();
-            if (productText == null)
-                productText = productItem.GetComponentInChildren<Text>();
+// 15/06/2025 AI-Tag
+// This was created with the help of Assistant, a Unity Artificial Intelligence product.
+
+        TextMeshProUGUI productText = productItem.GetComponent<TextMeshProUGUI>();
+        if (productText == null)
+            productText = productItem.GetComponentInChildren<TextMeshProUGUI>();
             
             if (productText != null)
             {
-                // Format product name and scan status
-                string productName = product.ProductData?.ProductName ?? product.name;
+                // Format product name with better fallback naming
+                string productName = GetProductDisplayName(product);
                 string scanIcon = product.IsScannedAtCheckout ? "✓" : "-";
                 string priceText = product.CurrentPrice > 0 ? $" (${product.CurrentPrice:F2})" : "";
                 
@@ -283,7 +327,38 @@ namespace TabletopShop
                 
                 // Update color based on scan status
                 productText.color = product.IsScannedAtCheckout ? scannedColor : unscannedColor;
+                
+                Debug.Log($"CheckoutUI: Updated product item - {productText.text}");
             }
+            else
+            {
+                Debug.LogWarning("CheckoutUI: No Text component found in product item");
+            }
+        }
+        
+        /// <summary>
+        /// Get a proper display name for a product with fallbacks
+        /// </summary>
+        /// <param name="product">Product to get name for</param>
+        /// <returns>Display name for the product</returns>
+        private string GetProductDisplayName(Product product)
+        {
+            if (product == null)
+                return "Unknown Product";
+            
+            // Try ProductData name first
+            if (product.ProductData != null && !string.IsNullOrEmpty(product.ProductData.ProductName))
+                return product.ProductData.ProductName;
+            
+            // Fallback to GameObject name, but clean it up
+            if (!string.IsNullOrEmpty(product.name))
+            {
+                string cleanName = product.name.Replace("(Clone)", "").Trim();
+                return string.IsNullOrEmpty(cleanName) ? "Product" : cleanName;
+            }
+            
+            // Final fallback
+            return "Product";
         }
         
         #endregion
@@ -415,5 +490,41 @@ namespace TabletopShop
         }
         
         #endregion
+        
+        /// <summary>
+        /// Test UI refresh and synchronization
+        /// </summary>
+        [ContextMenu("Test UI Refresh")]
+        public void TestUIRefresh()
+        {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("UI refresh test requires Play mode");
+                return;
+            }
+            
+            Debug.Log("=== CHECKOUT UI REFRESH TEST ===");
+            Debug.Log($"Tracked Checkout: {(trackedCheckout != null ? trackedCheckout.name : "None")}");
+            Debug.Log($"Products in UI: {productUIItems.Count}");
+            
+            if (trackedCheckout != null)
+            {
+                var checkoutProducts = trackedCheckout.GetProductsAtCheckout();
+                Debug.Log($"Products at checkout counter: {checkoutProducts.Count}");
+                
+                foreach (var product in checkoutProducts)
+                {
+                    if (product != null)
+                    {
+                        string name = GetProductDisplayName(product);
+                        bool inUI = productUIItems.ContainsKey(product);
+                        Debug.Log($"  - {name} (in UI: {inUI})");
+                    }
+                }
+            }
+            
+            RefreshUI();
+            Debug.Log("UI refresh completed");
+        }
     }
 }

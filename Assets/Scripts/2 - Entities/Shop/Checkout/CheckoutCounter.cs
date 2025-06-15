@@ -341,6 +341,9 @@ namespace TabletopShop
             
             Debug.Log($"Processed payment of ${runningTotal:F2} for {productsAtCheckout.Count} products");
             
+            // Mark all products as purchased and remove them from counter
+            RemoveProductsFromCounter();
+            
             // Notify customer that checkout is completed
             if (currentCustomer != null)
             {
@@ -356,8 +359,6 @@ namespace TabletopShop
                     Debug.LogWarning($"CustomerBehavior component not found on customer {currentCustomer.name}");
                 }
             }
-            
-            // Note: Don't clear checkout here - let customer departure handle it
         }
         
         /// <summary>
@@ -384,6 +385,34 @@ namespace TabletopShop
             }
             
             Debug.Log("Cleared checkout counter");
+        }
+        
+        /// <summary>
+        /// Remove all products from the checkout counter after payment is processed
+        /// Products are marked as purchased and visually removed from the counter
+        /// </summary>
+        private void RemoveProductsFromCounter()
+        {
+            List<Product> productsToRemove = new List<Product>(productsAtCheckout);
+            
+            foreach (Product product in productsToRemove)
+            {
+                if (product != null)
+                {
+                    // Mark product as purchased
+                    product.Purchase();
+                    
+                    // Remove product from counter visually (disable or move off counter)
+                    product.gameObject.SetActive(false);
+                    
+                    Debug.Log($"Removed and purchased product: {product.ProductData?.ProductName ?? product.name}");
+                }
+            }
+            
+            // Clear the checkout state
+            ClearCheckout();
+            
+            Debug.Log($"Removed {productsToRemove.Count} products from checkout counter after payment");
         }
         
         #endregion
@@ -800,6 +829,12 @@ namespace TabletopShop
             
             Debug.Log("=== PRODUCT SCANNING TEST ===");
             Debug.Log($"Products at checkout: {productsAtCheckout.Count}");
+            Debug.Log($"CheckoutUI connected: {checkoutUI != null}");
+            
+            if (checkoutUI != null)
+            {
+                Debug.Log($"Products in UI: {checkoutUI.GetProductCount()}");
+            }
             
             foreach (Product product in productsAtCheckout)
             {
@@ -818,8 +853,51 @@ namespace TabletopShop
                     Debug.Log($"  - Parent: {product.transform.parent?.name ?? "None"}");
                 }
             }
+            
+            // Test UI refresh
+            Debug.Log("Testing UI refresh...");
+            RefreshUI();
         }
         
         #endregion
+
+        /// <summary>
+        /// Get all products currently at checkout (for UI synchronization)
+        /// </summary>
+        /// <returns>Read-only list of products at checkout</returns>
+        public IReadOnlyList<Product> GetProductsAtCheckout()
+        {
+            return productsAtCheckout.AsReadOnly();
+        }
+        
+        /// <summary>
+        /// Force UI update with current checkout state
+        /// </summary>
+        public void RefreshUI()
+        {
+            if (checkoutUI != null)
+            {
+                // Clear UI and rebuild it
+                checkoutUI.ClearProducts();
+                
+                // Add all current products
+                foreach (Product product in productsAtCheckout)
+                {
+                    if (product != null)
+                    {
+                        checkoutUI.AddProduct(product);
+                    }
+                }
+                
+                // Update totals and customer info
+                checkoutUI.UpdateTotal(runningTotal);
+                if (currentCustomer != null)
+                {
+                    checkoutUI.UpdateCustomer(currentCustomer.name);
+                }
+                
+                Debug.Log($"CheckoutCounter: Refreshed UI with {productsAtCheckout.Count} products");
+            }
+        }
     }
 }

@@ -780,6 +780,9 @@ namespace TabletopShop
             
             // Reorganize products on the counter for better layout after all items are placed
             checkoutCounter.ReorganizeProducts();
+            
+            // Force UI refresh to ensure all products are visible
+            checkoutCounter.RefreshUI();
         }
         
         /// <summary>
