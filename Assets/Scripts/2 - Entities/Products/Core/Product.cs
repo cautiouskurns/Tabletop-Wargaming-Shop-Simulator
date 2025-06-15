@@ -16,6 +16,10 @@ namespace TabletopShop
         [SerializeField] private bool isOnShelf = false;
         [SerializeField] private bool isPurchased = false;
         
+        [Header("Checkout Scanning")]
+        [SerializeField] private bool isScannedAtCheckout = false;
+        [SerializeField] private Material scannedMaterial; // Optional visual feedback
+        
         // Component references for composition pattern
         private ProductEconomics productEconomics;
         private ProductVisuals productVisuals;
@@ -35,6 +39,9 @@ namespace TabletopShop
         public bool IsPurchased => isPurchased;
         public ProductState CurrentState => currentState;
         public ShelfSlot CurrentShelfSlot => currentShelfSlot;
+        
+        // Checkout scanning properties
+        public bool IsScannedAtCheckout => isScannedAtCheckout;
         
         // IInteractable Properties - delegate to interaction component
         public string InteractionText => productInteraction?.InteractionText ?? "Product";
@@ -306,6 +313,45 @@ namespace TabletopShop
             Debug.Log($"Placed {productData?.ProductName ?? name} on shelf with price ${currentPrice}");
         }
         
+        /// <summary>
+        /// Scan product at checkout - marks as scanned and optionally changes material
+        /// </summary>
+        public void ScanAtCheckout()
+        {
+            if (isScannedAtCheckout)
+            {
+                Debug.LogWarning($"Product {productData?.ProductName ?? name} is already scanned at checkout!");
+                return;
+            }
+            
+            isScannedAtCheckout = true;
+            
+            // Log the scan event
+            Debug.Log($"SCANNED: {productData?.ProductName ?? name} (${currentPrice}) at checkout");
+            
+            // Optionally change material for visual feedback
+            if (scannedMaterial != null && meshRenderer != null)
+            {
+                meshRenderer.material = scannedMaterial;
+                Debug.Log($"Applied scanned material to {productData?.ProductName ?? name}");
+            }
+        }
+        
+        /// <summary>
+        /// Reset the scan state - clears the scanned flag
+        /// </summary>
+        public void ResetScanState()
+        {
+            if (!isScannedAtCheckout)
+            {
+                Debug.Log($"Product {productData?.ProductName ?? name} scan state is already reset");
+                return;
+            }
+            
+            isScannedAtCheckout = false;
+            Debug.Log($"Reset scan state for {productData?.ProductName ?? name}");
+        }
+
         #endregion
         
         #region IInteractable Implementation - Delegate to Interaction Component
@@ -383,6 +429,7 @@ namespace TabletopShop
         }
         
         #endregion
+        
         
         #region Testing & Integration
         
