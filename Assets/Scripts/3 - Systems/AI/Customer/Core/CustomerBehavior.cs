@@ -753,19 +753,12 @@ namespace TabletopShop
             
             foreach (Product product in selectedProducts)
             {
-                if (product != null && product.ProductData != null)
+                if (product != null)
                 {
-                    // Create a checkout item from the product data
-                    CheckoutItem checkoutItem = checkoutCounter.CreateAndPlaceItem(product.ProductData);
+                    // Place the existing product on the checkout counter
+                    checkoutCounter.PlaceProduct(product);
                     
-                    if (checkoutItem != null)
-                    {
-                        Debug.Log($"CustomerBehavior {name} placed {product.ProductData.ProductName} on checkout counter");
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"CustomerBehavior {name} failed to place {product.ProductData.ProductName} on checkout counter");
-                    }
+                    Debug.Log($"CustomerBehavior {name} placed {product.ProductData?.ProductName ?? product.name} on checkout counter");
                     
                     // Small delay between placing each item
                     yield return new WaitForSeconds(UnityEngine.Random.Range(0.5f, 1.0f));
@@ -825,8 +818,8 @@ namespace TabletopShop
                 }
             }
             
-            // Clear the checkout counter
-            checkoutCounter.ClearCheckout();
+            // Notify checkout counter that customer is departing
+            checkoutCounter.OnCustomerDeparture();
             
             Debug.Log($"CustomerBehavior {name} completed purchase collection, proceeding to leave");
             

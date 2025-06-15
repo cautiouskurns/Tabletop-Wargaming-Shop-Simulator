@@ -22,10 +22,17 @@ namespace TabletopShop
         [SerializeField] private bool showDebugRay = true;
         [SerializeField] private Color debugRayColor = Color.red;
         
+        [Header("Checkout Settings")]
+        [SerializeField] private float checkoutDetectionRange = 5f;
+        
         // Protected fields that can be accessed by derived classes
         protected IInteractable currentInteractable;
         protected Ray interactionRay;
         protected RaycastHit hitInfo;
+        
+        // Checkout-specific fields
+        private CheckoutCounter nearbyCheckout;
+        private bool isNearCheckout = false;
         
         #region Unity Lifecycle
         
@@ -58,6 +65,9 @@ namespace TabletopShop
         
         private void Update()
         {
+            // Check for nearby checkout counter
+            DetectNearbyCheckout();
+            
             // Perform interaction raycast
             PerformInteractionRaycast();
             
@@ -85,6 +95,67 @@ namespace TabletopShop
                 {
                     Gizmos.color = Color.green;
                     Gizmos.DrawWireSphere(hitInfo.point, 0.1f);
+                }
+            }
+            
+            // Draw checkout detection range
+            if (isNearCheckout && nearbyCheckout != null)
+            {
+                Gizmos.color = Color.cyan;
+                Gizmos.DrawWireSphere(transform.position, checkoutDetectionRange);
+                
+                // Draw line to nearby checkout
+                Gizmos.color = Color.magenta;
+                Gizmos.DrawLine(transform.position, nearbyCheckout.transform.position);
+            }
+        }
+        
+        #endregion
+        
+        #region Checkout Detection
+        
+        /// <summary>
+        /// Detect nearby checkout counters for context-aware interactions
+        /// </summary>
+        private void DetectNearbyCheckout()
+        {
+            CheckoutCounter closestCheckout = null;
+            float closestDistance = float.MaxValue;
+            
+            // Find all checkout counters in scene
+            CheckoutCounter[] checkouts = FindObjectsByType<CheckoutCounter>(FindObjectsSortMode.None);
+            
+            foreach (CheckoutCounter checkout in checkouts)
+            {
+                if (checkout != null)
+                {
+                    float distance = Vector3.Distance(transform.position, checkout.transform.position);
+                    
+                    if (distance <= checkoutDetectionRange && distance < closestDistance)
+                    {
+                        closestDistance = distance;
+                        closestCheckout = checkout;
+                    }
+                }
+            }
+            
+            // Update checkout detection state
+            bool wasNearCheckout = isNearCheckout;
+            CheckoutCounter previousCheckout = nearbyCheckout;
+            
+            nearbyCheckout = closestCheckout;
+            isNearCheckout = nearbyCheckout != null;
+            
+            // Log checkout state changes for debugging
+            if (wasNearCheckout != isNearCheckout)
+            {
+                if (isNearCheckout)
+                {
+                    Debug.Log($"PlayerInteraction: Near checkout counter - {nearbyCheckout.name}");
+                }
+                else
+                {
+                    Debug.Log("PlayerInteraction: Left checkout area");
                 }
             }
         }
@@ -140,7 +211,7 @@ namespace TabletopShop
                     currentInteractable.OnInteractionEnter();
                     if (crosshairUI != null)
                     {
-                        string interactionText = $"[{interactionKey}] {currentInteractable.InteractionText}";
+                        string interactionText = GetContextualInteractionText();
                         crosshairUI.ShowInteractable(interactionText);
                     }
                 }
@@ -148,17 +219,93 @@ namespace TabletopShop
         }
         
         /// <summary>
+        /// Get contextual interaction text based on current state and object type
+        /// </summary>
+        /// <returns>Formatted interaction text</returns>
+        private string GetContextualInteractionText()
+        {
+            if (currentInteractable == null)
+                return "";
+            
+            // Check if we're looking at a product while near checkout
+            Product product = currentInteractable as Product;
+            if (product != null && isNearCheckout)
+            {
+                if (product.IsScannedAtCheckout)
+                {
+                    return $"Scanned ✓ - {product.ProductData?.ProductName ?? product.name}";
+                }
+                else
+                {
+                    return $"[{interactionKey}] Scan {product.ProductData?.ProductName ?? product.name}";
+                }
+            }
+            
+            // Check if we're looking at a checkout counter
+            CheckoutCounter checkout = currentInteractable as CheckoutCounter;
+            if (checkout != null)
+            {
+                if (!checkout.HasCustomer)
+                {
+                    return "Checkout Counter (No Customer)";
+                }
+                else if (!checkout.HasProducts)
+                {
+                    return "Waiting for Products";
+                }
+                else if (checkout.AllProductsScanned)
+                {
+                    return $"[{interactionKey}] Process Payment";
+                }
+                else
+                {
+                    // Count unscanned products
+                    // Note: We can't access the products list directly, so we'll use the checkout's interaction text
+                    return $"[{interactionKey}] {checkout.InteractionText}";
+                }
+            }
+            
+            // Default interaction text for other objects
+            return $"[{interactionKey}] {currentInteractable.InteractionText}";
+        }
+
+        /// <summary>
         /// Attempt to interact with the current interactable object
         /// </summary>
         private void TryInteract()
         {
             if (currentInteractable != null && currentInteractable.CanInteract)
             {
+                // Handle checkout-specific interactions for products
+                Product product = currentInteractable as Product;
+                if (product != null && isNearCheckout && !product.IsScannedAtCheckout)
+                {
+                    // Scan the product through the nearby checkout
+                    nearbyCheckout.ScanProduct(product);
+                    Debug.Log($"Scanned product: {product.ProductData?.ProductName ?? product.name}");
+                    
+                    // Update the interaction text immediately
+                    if (crosshairUI != null)
+                    {
+                        string newText = GetContextualInteractionText();
+                        crosshairUI.ShowInteractable(newText);
+                    }
+                    return;
+                }
+                
+                // Handle normal interactions (including checkout counter interactions)
                 currentInteractable.Interact(gameObject);
                 Debug.Log($"Interacted with: {currentInteractable.InteractionText}");
+                
+                // Update interaction text after interaction (in case state changed)
+                if (crosshairUI != null)
+                {
+                    string newText = GetContextualInteractionText();
+                    crosshairUI.ShowInteractable(newText);
+                }
             }
         }
-        
+
         #endregion
         
         #region UI Setup
@@ -252,6 +399,33 @@ namespace TabletopShop
             return currentInteractable != null && currentInteractable.CanInteract;
         }
         
+        /// <summary>
+        /// Check if player is near a checkout counter
+        /// </summary>
+        /// <returns>True if near a checkout counter</returns>
+        public bool IsNearCheckout()
+        {
+            return isNearCheckout;
+        }
+        
+        /// <summary>
+        /// Get the nearby checkout counter
+        /// </summary>
+        /// <returns>The nearby checkout counter, or null if none</returns>
+        public CheckoutCounter GetNearbyCheckout()
+        {
+            return nearbyCheckout;
+        }
+        
+        /// <summary>
+        /// Set the checkout detection range
+        /// </summary>
+        /// <param name="range">New checkout detection range</param>
+        public void SetCheckoutDetectionRange(float range)
+        {
+            checkoutDetectionRange = Mathf.Max(0.1f, range);
+        }
+        
         #endregion
         
         #region Debug Methods
@@ -262,16 +436,38 @@ namespace TabletopShop
         /// <returns>Debug info string</returns>
         public string GetDebugInfo()
         {
+            string info = "";
+            
+            // Interaction info
             if (currentInteractable != null)
             {
-                return $"Looking at: {currentInteractable.InteractionText}\n" +
-                       $"Can Interact: {currentInteractable.CanInteract}\n" +
-                       $"Distance: {hitInfo.distance:F2}m";
+                info += $"Looking at: {currentInteractable.InteractionText}\n";
+                info += $"Can Interact: {currentInteractable.CanInteract}\n";
+                info += $"Distance: {hitInfo.distance:F2}m\n";
+                
+                // Add product-specific info if applicable
+                Product product = currentInteractable as Product;
+                if (product != null)
+                {
+                    info += $"Product Scanned: {product.IsScannedAtCheckout}\n";
+                }
             }
             else
             {
-                return "No interactable in range";
+                info += "No interactable in range\n";
             }
+            
+            // Checkout info
+            info += $"Near Checkout: {isNearCheckout}\n";
+            if (isNearCheckout && nearbyCheckout != null)
+            {
+                info += $"Checkout: {nearbyCheckout.name}\n";
+                info += $"Has Customer: {nearbyCheckout.HasCustomer}\n";
+                info += $"Has Products: {nearbyCheckout.HasProducts}\n";
+                info += $"All Scanned: {nearbyCheckout.AllProductsScanned}\n";
+            }
+            
+            return info;
         }
         
         #endregion
