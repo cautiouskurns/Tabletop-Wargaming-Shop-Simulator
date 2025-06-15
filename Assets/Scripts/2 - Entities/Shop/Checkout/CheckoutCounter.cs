@@ -26,9 +26,9 @@ namespace TabletopShop
         // IInteractable properties
         public string InteractionText => GetInteractionText();
         public bool CanInteract => true;
-        
+
         #region Unity Lifecycle
-        
+
         private void Awake()
         {
             // Set up checkout area if not assigned
@@ -36,6 +36,9 @@ namespace TabletopShop
             {
                 checkoutArea = transform;
             }
+            
+            Canvas canvas = FindFirstObjectByType<Canvas>();
+            CheckoutUI checkoutUI = CheckoutUI.CreateBasicCheckoutUI(canvas);
         }
         
         #endregion
@@ -151,7 +154,10 @@ namespace TabletopShop
             // Process the purchase through GameManager
             if (GameManager.Instance != null)
             {
-                GameManager.Instance.ProcessCustomerPurchase(runningTotal, productsAtCheckout.Count);
+                // Calculate customer satisfaction (could be enhanced based on wait time, service quality, etc.)
+                float customerSatisfaction = 0.8f; // Default satisfaction level
+                
+                GameManager.Instance.ProcessCustomerPurchase(runningTotal, customerSatisfaction);
             }
             else
             {
@@ -161,8 +167,23 @@ namespace TabletopShop
             
             Debug.Log($"Processed payment of ${runningTotal:F2} for {productsAtCheckout.Count} products");
             
-            // Clear checkout after successful payment
-            ClearCheckout();
+            // Notify customer that checkout is completed
+            if (currentCustomer != null)
+            {
+                // Get the CustomerBehavior component and notify completion
+                CustomerBehavior customerBehavior = currentCustomer.GetComponent<CustomerBehavior>();
+                if (customerBehavior != null)
+                {
+                    customerBehavior.OnCheckoutCompleted();
+                    Debug.Log($"Notified customer {currentCustomer.name} that checkout is completed");
+                }
+                else
+                {
+                    Debug.LogWarning($"CustomerBehavior component not found on customer {currentCustomer.name}");
+                }
+            }
+            
+            // Note: Don't clear checkout here - let customer departure handle it
         }
         
         /// <summary>
