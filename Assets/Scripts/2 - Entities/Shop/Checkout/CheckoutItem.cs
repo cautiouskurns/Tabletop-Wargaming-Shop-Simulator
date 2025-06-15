@@ -55,8 +55,8 @@ namespace TabletopShop
         /// </summary>
         private void InitializeCheckoutItem()
         {
-            // Set interaction layer if needed
-            // InteractionLayers.SetShelfLayer(gameObject);
+            // Set interaction layer - CheckoutItems should be on Product layer so they can be interacted with
+            InteractionLayers.SetProductLayer(gameObject);
             
             // Find parent counter if not assigned
             if (parentCounter == null)
@@ -68,6 +68,42 @@ namespace TabletopShop
             if (visualFeedback == null)
             {
                 visualFeedback = GetComponent<ProductVisuals>();
+            }
+            
+            // Ensure the item has a visible material
+            EnsureVisibleMaterial();
+        }
+        
+        /// <summary>
+        /// Ensures the checkout item has a visible material
+        /// </summary>
+        private void EnsureVisibleMaterial()
+        {
+            MeshRenderer renderer = GetComponent<MeshRenderer>();
+            if (renderer != null && (renderer.material == null || renderer.material.name.Contains("Default")))
+            {
+                // Create a basic visible material if none exists
+                Material defaultMaterial = new Material(Shader.Find("Standard"));
+                
+                // Set different colors based on scan state
+                if (isScanned)
+                {
+                    defaultMaterial.color = scannedMaterial != null ? scannedMaterial.color : Color.green;
+                }
+                else
+                {
+                    defaultMaterial.color = unscannedMaterial != null ? unscannedMaterial.color : Color.white;
+                }
+                
+                renderer.material = defaultMaterial;
+            }
+            
+            // Also check if we have product data with a texture
+            if (productData != null && renderer != null)
+            {
+                // If ProductData has texture information, apply it
+                // This would depend on your ProductData structure
+                // For now, we'll just ensure the material is visible
             }
         }
         
@@ -123,6 +159,11 @@ namespace TabletopShop
             this.parentCounter = checkoutCounter;
             this.isScanned = false;
             
+            // Ensure proper layer assignment
+            InteractionLayers.SetProductLayer(gameObject);
+            
+            // Update visuals with the new product data
+            EnsureVisibleMaterial();
             UpdateVisualFeedback();
         }
         
