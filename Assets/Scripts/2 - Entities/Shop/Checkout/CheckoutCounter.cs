@@ -12,6 +12,8 @@ namespace TabletopShop
         [Header("Checkout Configuration")]
         [SerializeField] private Transform checkoutArea;
         [SerializeField] private float productSpacing = 0.5f;
+        [SerializeField] private Transform queueStartPoint;
+        [SerializeField] private float queueSpacing = 2f;
         
         [Header("UI Settings")]
         [SerializeField] private bool showUIOnStart = true; // For testing
@@ -20,6 +22,8 @@ namespace TabletopShop
         [SerializeField] private List<Product> productsAtCheckout = new List<Product>();
         [SerializeField] private Customer currentCustomer;
         [SerializeField] private float runningTotal = 0f;
+        [SerializeField] private Queue<Customer> customerQueue = new Queue<Customer>();
+        [SerializeField] private bool isProcessingCustomer = false;
         
         // UI reference
         private CheckoutUI checkoutUI;
@@ -28,6 +32,8 @@ namespace TabletopShop
         public bool HasCustomer => currentCustomer != null;
         public bool HasProducts => productsAtCheckout.Count > 0;
         public bool AllProductsScanned => HasProducts && productsAtCheckout.All(p => p.IsScannedAtCheckout);
+        public bool IsOccupied => isProcessingCustomer || HasCustomer;
+        public int QueueLength => customerQueue.Count;
         
         // IInteractable properties
         public string InteractionText => GetInteractionText();
@@ -41,6 +47,17 @@ namespace TabletopShop
             if (checkoutArea == null)
             {
                 checkoutArea = transform;
+            }
+            
+            // Set up queue start point if not assigned
+            if (queueStartPoint == null)
+            {
+                // Create a queue start point behind the checkout area
+                GameObject queueGO = new GameObject("QueueStartPoint");
+                queueGO.transform.SetParent(transform);
+                queueGO.transform.localPosition = Vector3.back * 3f; // 3 units behind checkout
+                queueStartPoint = queueGO.transform;
+                Debug.Log("CheckoutCounter: Created default queue start point");
             }
             
             // Find existing CheckoutUI in the scene
@@ -204,8 +221,10 @@ namespace TabletopShop
         private Vector3 GetNextProductPosition()
         {
             Vector3 basePosition = checkoutArea.position;
-            float offset = productsAtCheckout.Count * productSpacing;
-            return basePosition + checkoutArea.right * offset;
+            // Place products on the counter surface (slightly elevated)
+            Vector3 surfaceOffset = checkoutArea.up * 0.1f; // 10cm above the counter
+            float horizontalOffset = productsAtCheckout.Count * productSpacing;
+            return basePosition + surfaceOffset + checkoutArea.right * horizontalOffset;
         }
         
         #endregion
