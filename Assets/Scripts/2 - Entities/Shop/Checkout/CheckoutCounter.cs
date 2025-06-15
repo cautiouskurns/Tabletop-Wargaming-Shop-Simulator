@@ -13,10 +13,16 @@ namespace TabletopShop
         [SerializeField] private Transform checkoutArea;
         [SerializeField] private float productSpacing = 0.5f;
         
+        [Header("UI Settings")]
+        [SerializeField] private bool showUIOnStart = true; // For testing
+        
         [Header("Checkout State")]
         [SerializeField] private List<Product> productsAtCheckout = new List<Product>();
         [SerializeField] private Customer currentCustomer;
         [SerializeField] private float runningTotal = 0f;
+        
+        // UI reference
+        private CheckoutUI checkoutUI;
         
         // Properties for checkout state
         public bool HasCustomer => currentCustomer != null;
@@ -37,8 +43,29 @@ namespace TabletopShop
                 checkoutArea = transform;
             }
             
+            // Create and setup checkout UI
             Canvas canvas = FindFirstObjectByType<Canvas>();
-            CheckoutUI checkoutUI = CheckoutUI.CreateBasicCheckoutUI(canvas);
+            if (canvas != null)
+            {
+                checkoutUI = CheckoutUI.CreateBasicCheckoutUI(canvas);
+                if (checkoutUI != null)
+                {
+                    checkoutUI.TrackCheckoutCounter(this);
+                    
+                    // Show UI for testing if enabled
+                    if (showUIOnStart)
+                    {
+                        checkoutUI.Show();
+                        checkoutUI.UpdateCustomer("Test Customer");
+                        checkoutUI.UpdateTotal(0f);
+                        Debug.Log("CheckoutUI: Showing for testing");
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogWarning("CheckoutCounter: No Canvas found - cannot create UI");
+            }
         }
         
         #endregion
@@ -70,6 +97,13 @@ namespace TabletopShop
             Vector3 newPosition = GetNextProductPosition();
             product.transform.position = newPosition;
             product.transform.SetParent(checkoutArea);
+            
+            // Update UI
+            if (checkoutUI != null)
+            {
+                checkoutUI.AddProduct(product);
+                checkoutUI.Show(); // Make sure UI is visible when products are added
+            }
             
             Debug.Log($"Placed {product.ProductData?.ProductName ?? product.name} at checkout (${product.CurrentPrice})");
         }
@@ -103,6 +137,13 @@ namespace TabletopShop
             
             // Add to running total
             runningTotal += product.CurrentPrice;
+            
+            // Update UI
+            if (checkoutUI != null)
+            {
+                checkoutUI.UpdateProductScanStatus(product);
+                checkoutUI.UpdateTotal(runningTotal);
+            }
             
             // Play scan sound
             if (AudioManager.Instance != null)
@@ -202,6 +243,13 @@ namespace TabletopShop
             productsAtCheckout.Clear();
             runningTotal = 0f;
             
+            // Update UI
+            if (checkoutUI != null)
+            {
+                checkoutUI.ClearProducts();
+                checkoutUI.UpdateTotal(0f);
+            }
+            
             Debug.Log("Cleared checkout counter");
         }
         
@@ -228,6 +276,14 @@ namespace TabletopShop
             }
             
             currentCustomer = customer;
+            
+            // Update UI
+            if (checkoutUI != null)
+            {
+                checkoutUI.UpdateCustomer(customer.name);
+                checkoutUI.Show();
+            }
+            
             Debug.Log($"Customer {customer.name} arrived at checkout");
         }
         
@@ -249,6 +305,20 @@ namespace TabletopShop
             if (HasProducts)
             {
                 ClearCheckout();
+            }
+            
+            // Update UI
+            if (checkoutUI != null)
+            {
+                checkoutUI.UpdateCustomer("");
+                checkoutUI.ClearProducts();
+                checkoutUI.UpdateTotal(0f);
+                
+                // Hide UI when no activity
+                if (!showUIOnStart)
+                {
+                    checkoutUI.Hide();
+                }
             }
         }
         
@@ -353,6 +423,30 @@ namespace TabletopShop
             Debug.Log($"Running Total: ${runningTotal:F2}");
             Debug.Log($"Products Count: {productsAtCheckout.Count}");
             Debug.Log($"Interaction Text: {InteractionText}");
+            Debug.Log($"CheckoutUI Present: {checkoutUI != null}");
+            
+            if (checkoutUI != null)
+            {
+                checkoutUI.Show();
+                Debug.Log("Forced CheckoutUI to show");
+            }
+        }
+        
+        /// <summary>
+        /// Toggle the checkout UI visibility (for testing)
+        /// </summary>
+        [ContextMenu("Toggle Checkout UI")]
+        public void ToggleCheckoutUI()
+        {
+            if (checkoutUI != null)
+            {
+                checkoutUI.Toggle();
+                Debug.Log("Toggled checkout UI visibility");
+            }
+            else
+            {
+                Debug.LogWarning("No checkout UI found");
+            }
         }
         
         #endregion

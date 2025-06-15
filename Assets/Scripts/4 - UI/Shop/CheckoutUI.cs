@@ -328,7 +328,7 @@ namespace TabletopShop
             customerObj.transform.SetParent(checkoutPanel.transform, false);
             Text customerText = customerObj.AddComponent<Text>();
             customerText.text = "No Customer";
-            customerText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            customerText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             customerText.fontSize = 16;
             customerText.color = Color.white;
             
@@ -345,7 +345,7 @@ namespace TabletopShop
             totalObj.transform.SetParent(checkoutPanel.transform, false);
             Text totalText = totalObj.AddComponent<Text>();
             totalText.text = "Total: $0.00";
-            totalText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            totalText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             totalText.fontSize = 18;
             totalText.color = Color.yellow;
             totalText.fontStyle = FontStyle.Bold;
@@ -399,7 +399,7 @@ namespace TabletopShop
             // Create simple product item prefab
             GameObject prefab = new GameObject("ProductItemPrefab");
             Text prefabText = prefab.AddComponent<Text>();
-            prefabText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            prefabText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             prefabText.fontSize = 14;
             prefabText.color = Color.white;
             
