@@ -434,16 +434,16 @@ namespace TabletopShop
         /// Called when a product is scanned in the shop
         /// </summary>
         /// <param name="pitch">Optional pitch variation for variety (default: 1.0)</param>
-        public void PlayProductScanBeep(float pitch = 1f)
+        public void PlayProductScanBeep()
         {
             if (productScanBeepClip != null)
             {
-                PlaySfxClip(productScanBeepClip, pitch);
-                Debug.Log("Product scan beep audio played");
+            PlaySfxClip(productScanBeepClip);
+            Debug.Log("Product scan beep audio played");
             }
             else
             {
-                Debug.LogWarning("Product scan beep audio clip not assigned!");
+            Debug.LogWarning("Product scan beep audio clip not assigned!");
             }
         }
         

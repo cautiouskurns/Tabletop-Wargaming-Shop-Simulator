@@ -332,8 +332,7 @@ namespace TabletopShop
                             if (AudioManager.Instance != null)
                             {
                                 // Generate slightly different pitch for each product to add variety
-                                float randomPitch = 1.0f; //UnityEngine.Random.Range(1.1f, 1.3f);
-                                AudioManager.Instance.PlayUIClick(randomPitch);
+                                AudioManager.Instance.PlayProductScanBeep();
                                 Debug.Log($"Product scan beep played for {product.ProductData?.ProductName ?? "Unknown Product"}");
                             }
                             

@@ -33,6 +33,12 @@ namespace TabletopShop
                         _instance = go.AddComponent<InventoryManager>();
                         DontDestroyOnLoad(go);
                     }
+                    
+                    // Ensure the instance is properly initialized
+                    if (_instance != null && !_instance.isInitialized)
+                    {
+                        _instance.InitializeInventoryIfNeeded();
+                    }
                 }
                 return _instance;
             }
@@ -103,20 +109,38 @@ namespace TabletopShop
         /// <summary>
         /// Event fired when inventory changes
         /// </summary>
-        public UnityEvent OnInventoryChanged => 
-            eventPublisher is UnityInventoryEventPublisher unityPublisher ? unityPublisher.OnInventoryChanged : null;
+        public UnityEvent OnInventoryChanged 
+        { 
+            get 
+            {
+                EnsureEventPublisherInitialized();
+                return eventPublisher is UnityInventoryEventPublisher unityPublisher ? unityPublisher.OnInventoryChanged : null;
+            }
+        }
         
         /// <summary>
         /// Event fired when a product is selected
         /// </summary>
-        public UnityEvent<ProductData> OnProductSelected => 
-            eventPublisher is UnityInventoryEventPublisher unityPublisher ? unityPublisher.OnProductSelected : null;
+        public UnityEvent<ProductData> OnProductSelected 
+        { 
+            get 
+            {
+                EnsureEventPublisherInitialized();
+                return eventPublisher is UnityInventoryEventPublisher unityPublisher ? unityPublisher.OnProductSelected : null;
+            }
+        }
         
         /// <summary>
         /// Event fired when a specific product count changes
         /// </summary>
-        public UnityEvent<ProductData, int> OnProductCountChanged => 
-            eventPublisher is UnityInventoryEventPublisher unityPublisher ? unityPublisher.OnProductCountChanged : null;
+        public UnityEvent<ProductData, int> OnProductCountChanged 
+        { 
+            get 
+            {
+                EnsureEventPublisherInitialized();
+                return eventPublisher is UnityInventoryEventPublisher unityPublisher ? unityPublisher.OnProductCountChanged : null;
+            }
+        }
         
         #endregion
         
@@ -167,12 +191,23 @@ namespace TabletopShop
             
             productCounts = new Dictionary<ProductData, int>();
             
-            // Initialize event publisher
+            // Initialize event publisher - ensure it's always available
             if (eventPublisher == null)
             {
                 var eventPublisherObject = new GameObject("InventoryEventPublisher");
                 eventPublisherObject.transform.SetParent(transform);
                 eventPublisher = eventPublisherObject.AddComponent<UnityInventoryEventPublisher>();
+                Debug.Log("Created new UnityInventoryEventPublisher");
+            }
+            
+            // Validate event publisher was created successfully
+            if (eventPublisher == null)
+            {
+                Debug.LogError("Failed to initialize event publisher! UI events will not work properly.");
+            }
+            else
+            {
+                Debug.Log("Event publisher initialized successfully");
             }
             
             isInitialized = true;
@@ -185,6 +220,13 @@ namespace TabletopShop
         private void LoadAvailableProductsFromRepository()
         {
             Debug.Log($"LoadAvailableProductsFromRepository called. Current available products count: {availableProducts.Count}");
+            
+            // Ensure we have a product repository
+            if (productRepository == null)
+            {
+                Debug.LogWarning("ProductRepository is null, initializing with default ResourcesProductRepository");
+                productRepository = new ResourcesProductRepository("Products", logEconomicTransactions);
+            }
             
             // If products are manually assigned in the inspector, use those instead
             if (availableProducts.Count > 0)
@@ -251,6 +293,29 @@ namespace TabletopShop
             
             Debug.Log($"Initialized starting inventory with {startingQuantityPerProduct} of each product type.");
             LogInventoryStatus();
+        }
+        
+        /// <summary>
+        /// Initialize inventory system if not already initialized (safe to call multiple times)
+        /// </summary>
+        private void InitializeInventoryIfNeeded()
+        {
+            if (!isInitialized)
+            {
+                // Initialize economic validator if needed
+                if (economicValidator == null)
+                {
+                    economicValidator = new GameManagerEconomicValidator(logEconomicTransactions);
+                }
+                
+                // Initialize product repository if needed  
+                if (productRepository == null)
+                {
+                    productRepository = new ResourcesProductRepository("Products", logEconomicTransactions);
+                }
+                
+                InitializeInventory();
+            }
         }
         
         #endregion
@@ -883,6 +948,24 @@ namespace TabletopShop
             }
             
             return isValid;
+        }
+        
+        #endregion
+        
+        #region Emergency Event Publisher
+        
+        /// <summary>
+        /// Ensure the event publisher is initialized before accessing events
+        /// </summary>
+        private void EnsureEventPublisherInitialized()
+        {
+            if (eventPublisher == null)
+            {
+                Debug.LogWarning("Event publisher was null, initializing emergency backup...");
+                var eventPublisherObject = new GameObject("InventoryEventPublisher_Emergency");
+                eventPublisherObject.transform.SetParent(transform);
+                eventPublisher = eventPublisherObject.AddComponent<UnityInventoryEventPublisher>();
+            }
         }
         
         #endregion
