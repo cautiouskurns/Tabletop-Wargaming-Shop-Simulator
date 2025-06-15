@@ -4641,7 +4641,7 @@ GameObject:
   - component: {fileID: 624411022}
   - component: {fileID: 624411026}
   m_Layer: 0
-  m_Name: ShopCounter
+  m_Name: CheckoutCounter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4736,7 +4736,8 @@ Transform:
   m_LocalPosition: {x: -4.4047995, y: -1.8479002, z: 5.9369993}
   m_LocalScale: {x: 2, y: 0.8985024, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1591413244}
   m_Father: {fileID: 500110049}
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!114 &624411026
@@ -4751,12 +4752,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79139f5eb358046c2b46c5af9a3106b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TabletopShop::TabletopShop.CheckoutCounter
-  checkoutArea: {fileID: 0}
+  checkoutArea: {fileID: 1591413244}
   productSpacing: 0.5
+  queueStartPoint: {fileID: 744932269}
+  queueSpacing: 2
+  maxProductsPerRow: 3
+  rowSpacing: 0.4
+  checkoutAreaSize: {x: 1.5, y: 0.1, z: 1}
+  arrangeInGrid: 1
   showUIOnStart: 1
   productsAtCheckout: []
   currentCustomer: {fileID: 0}
   runningTotal: 0
+  isProcessingCustomer: 0
 --- !u!1001 &637874865
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5286,57 +5294,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1178834947}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &689467277
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 689467278}
-  - component: {fileID: 689467279}
-  m_Layer: 0
-  m_Name: CheckoutCounter
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &689467278
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 689467277}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.823, y: 0.868, z: 8.861}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1591413244}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &689467279
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 689467277}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 79139f5eb358046c2b46c5af9a3106b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: TabletopShop::TabletopShop.CheckoutCounter
-  checkoutArea: {fileID: 1591413244}
-  productSpacing: 0.5
-  showUIOnStart: 1
-  productsAtCheckout: []
-  currentCustomer: {fileID: 0}
-  runningTotal: 0
 --- !u!1 &699177123
 GameObject:
   m_ObjectHideFlags: 0
@@ -5715,6 +5672,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!1 &744932268
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 744932269}
+  m_Layer: 0
+  m_Name: QueueStartPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &744932269
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 744932268}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -592.58, y: -302.757, z: -16.76}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1047240625}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &749000042
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7039,6 +7027,7 @@ Transform:
   - {fileID: 432496435}
   - {fileID: 1237276469}
   - {fileID: 373795100}
+  - {fileID: 744932269}
   m_Father: {fileID: 1178834947}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1067362184
@@ -11070,12 +11059,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1591413243}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.065, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: 0.70710576, z: -0, w: 0.70710784}
+  m_LocalPosition: {x: 0.034550097, y: 0.6264759, z: 0.06300088}
+  m_LocalScale: {x: 1, y: 1.1129631, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 689467278}
+  m_Father: {fileID: 624411025}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1591694191
 GameObject:
@@ -14403,4 +14392,3 @@ SceneRoots:
   - {fileID: 22612439}
   - {fileID: 937171243}
   - {fileID: 1162074222}
-  - {fileID: 689467278}

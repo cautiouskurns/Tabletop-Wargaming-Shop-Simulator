@@ -15,6 +15,12 @@ namespace TabletopShop
         [SerializeField] private Transform queueStartPoint;
         [SerializeField] private float queueSpacing = 2f;
         
+        [Header("Product Layout")]
+        [SerializeField] private int maxProductsPerRow = 3;
+        [SerializeField] private float rowSpacing = 0.4f;
+        [SerializeField] private Vector3 checkoutAreaSize = new Vector3(1.5f, 0.1f, 1.0f); // Width, Height, Depth of checkout area
+        [SerializeField] private bool arrangeInGrid = true;
+        
         [Header("UI Settings")]
         [SerializeField] private bool showUIOnStart = true; // For testing
         
@@ -110,6 +116,17 @@ namespace TabletopShop
             Vector3 newPosition = GetNextProductPosition();
             product.transform.position = newPosition;
             product.transform.SetParent(checkoutArea);
+            
+            // Add slight random rotation for more natural look
+            if (arrangeInGrid)
+            {
+                Vector3 randomRotation = new Vector3(
+                    0f,
+                    UnityEngine.Random.Range(-15f, 15f), // Small random Y rotation
+                    0f
+                );
+                product.transform.rotation = checkoutArea.rotation * Quaternion.Euler(randomRotation);
+            }
             
             // Ensure the product stays stationary by disabling movement components
             EnsureProductStationary(product);
@@ -215,13 +232,67 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Get the next position for placing a product
+        /// Get the next position for placing a product using an orderly grid layout
         /// </summary>
         /// <returns>World position for the next product</returns>
         private Vector3 GetNextProductPosition()
         {
+            if (arrangeInGrid)
+            {
+                return GetGridProductPosition();
+            }
+            else
+            {
+                return GetLinearProductPosition();
+            }
+        }
+        
+        /// <summary>
+        /// Get product position using a grid layout (recommended for better organization)
+        /// </summary>
+        /// <returns>World position for the next product in grid layout</returns>
+        private Vector3 GetGridProductPosition()
+        {
             Vector3 basePosition = checkoutArea.position;
-            // Place products on the counter surface (slightly elevated)
+            Vector3 surfaceOffset = checkoutArea.up * 0.1f; // 10cm above the counter
+            
+            // Calculate grid position
+            int productIndex = productsAtCheckout.Count;
+            int row = productIndex / maxProductsPerRow;
+            int col = productIndex % maxProductsPerRow;
+            
+            // Calculate offsets based on checkout area size
+            float totalWidth = checkoutAreaSize.x;
+            float totalDepth = checkoutAreaSize.z;
+            
+            // Center the grid within the checkout area
+            float startX = -(totalWidth * 0.5f) + (totalWidth / (maxProductsPerRow + 1));
+            float startZ = -(totalDepth * 0.5f) + (totalDepth * 0.25f);
+            
+            // Calculate spacing between products
+            float xSpacing = totalWidth / (maxProductsPerRow + 1);
+            float zSpacing = rowSpacing;
+            
+            // Calculate final position
+            Vector3 localOffset = new Vector3(
+                startX + (col * xSpacing),
+                0f,
+                startZ + (row * zSpacing)
+            );
+            
+            // Transform local offset to world space using checkout area's orientation
+            Vector3 worldOffset = checkoutArea.TransformDirection(localOffset);
+            
+            return basePosition + surfaceOffset + worldOffset;
+        }
+        
+        /// <summary>
+        /// Get product position using a linear layout (fallback method)
+        /// </summary>
+        /// <returns>World position for the next product in linear layout</returns>
+        private Vector3 GetLinearProductPosition()
+        {
+            Vector3 basePosition = checkoutArea.position;
             Vector3 surfaceOffset = checkoutArea.up * 0.1f; // 10cm above the counter
             float horizontalOffset = productsAtCheckout.Count * productSpacing;
             return basePosition + surfaceOffset + checkoutArea.right * horizontalOffset;
@@ -513,6 +584,203 @@ namespace TabletopShop
             else
             {
                 Debug.LogWarning("No checkout UI found");
+            }
+        }
+        
+        /// <summary>
+        /// Test the checkout area layout system
+        /// </summary>
+        [ContextMenu("Test Checkout Layout")]
+        public void TestCheckoutLayout()
+        {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("Layout test requires Play mode");
+                return;
+            }
+            
+            Debug.Log("=== CHECKOUT LAYOUT TEST ===");
+            Debug.Log($"Grid Layout Enabled: {arrangeInGrid}");
+            Debug.Log($"Max Products Per Row: {maxProductsPerRow}");
+            Debug.Log($"Checkout Area Size: {checkoutAreaSize}");
+            Debug.Log($"Row Spacing: {rowSpacing}");
+            Debug.Log($"Product Spacing: {productSpacing}");
+            Debug.Log($"Current Products: {productsAtCheckout.Count}");
+            
+            // Show next few positions that would be used
+            for (int i = productsAtCheckout.Count; i < productsAtCheckout.Count + 3; i++)
+            {
+                Vector3 pos = GetGridProductPositionAtIndex(i);
+                Debug.Log($"Next position {i}: {pos}");
+            }
+        }
+        
+        /// <summary>
+        /// Reorganize products manually (for testing)
+        /// </summary>
+        [ContextMenu("Reorganize Products")]
+        public void ManualReorganizeProducts()
+        {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("Reorganize requires Play mode");
+                return;
+            }
+            
+            ReorganizeProducts();
+        }
+        
+        /// <summary>
+        /// Draw checkout area gizmos in Scene view for visual debugging
+        /// </summary>
+        private void OnDrawGizmosSelected()
+        {
+            if (checkoutArea == null) return;
+            
+            // Draw checkout area bounds
+            Gizmos.color = Color.yellow;
+            Gizmos.matrix = checkoutArea.localToWorldMatrix;
+            
+            // Draw the checkout area as a wireframe box
+            Vector3 center = Vector3.up * (checkoutAreaSize.y * 0.5f);
+            Gizmos.DrawWireCube(center, checkoutAreaSize);
+            
+            // Draw the surface plane
+            Gizmos.color = new Color(1f, 1f, 0f, 0.2f);
+            Vector3 surfaceCenter = Vector3.up * 0.05f;
+            Vector3 surfaceSize = new Vector3(checkoutAreaSize.x, 0.01f, checkoutAreaSize.z);
+            Gizmos.DrawCube(surfaceCenter, surfaceSize);
+            
+            // Draw grid positions
+            if (arrangeInGrid && Application.isPlaying)
+            {
+                DrawProductGridPositions();
+            }
+        }
+        
+        /// <summary>
+        /// Draw visual markers for each grid position
+        /// </summary>
+        private void DrawProductGridPositions()
+        {
+            // Draw positions for current products
+            Gizmos.color = Color.green;
+            for (int i = 0; i < productsAtCheckout.Count; i++)
+            {
+                Vector3 gridPos = GetGridProductPositionAtIndex(i);
+                Gizmos.DrawWireSphere(gridPos, 0.1f);
+            }
+            
+            // Draw next few available positions
+            Gizmos.color = Color.cyan;
+            for (int i = productsAtCheckout.Count; i < productsAtCheckout.Count + 3; i++)
+            {
+                Vector3 gridPos = GetGridProductPositionAtIndex(i);
+                Gizmos.DrawWireSphere(gridPos, 0.05f);
+            }
+        }
+        
+        #endregion
+        
+        #region Product Reorganization
+
+        /// <summary>
+        /// Reorganize all products in the checkout area to maintain orderly layout
+        /// Call this after removing products to fill gaps
+        /// </summary>
+        public void ReorganizeProducts()
+        {
+            if (!arrangeInGrid || productsAtCheckout.Count == 0)
+                return;
+            
+            for (int i = 0; i < productsAtCheckout.Count; i++)
+            {
+                Product product = productsAtCheckout[i];
+                if (product != null)
+                {
+                    // Temporarily store the current count and calculate position for index i
+                    int originalCount = productsAtCheckout.Count;
+                    productsAtCheckout.RemoveAt(i);
+                    
+                    // Calculate position as if this product is at index i
+                    Vector3 targetPosition = GetGridProductPositionAtIndex(i);
+                    
+                    // Restore the list
+                    productsAtCheckout.Insert(i, product);
+                    
+                    // Smoothly move product to new position if it's significantly different
+                    if (Vector3.Distance(product.transform.position, targetPosition) > 0.1f)
+                    {
+                        StartCoroutine(SmoothMoveProduct(product, targetPosition));
+                    }
+                }
+            }
+            
+            Debug.Log($"Reorganized {productsAtCheckout.Count} products in checkout area");
+        }
+        
+        /// <summary>
+        /// Get the grid position for a product at a specific index
+        /// </summary>
+        /// <param name="index">Index of the product in the list</param>
+        /// <returns>World position for the product at the given index</returns>
+        private Vector3 GetGridProductPositionAtIndex(int index)
+        {
+            Vector3 basePosition = checkoutArea.position;
+            Vector3 surfaceOffset = checkoutArea.up * 0.1f;
+            
+            int row = index / maxProductsPerRow;
+            int col = index % maxProductsPerRow;
+            
+            float totalWidth = checkoutAreaSize.x;
+            float totalDepth = checkoutAreaSize.z;
+            
+            float startX = -(totalWidth * 0.5f) + (totalWidth / (maxProductsPerRow + 1));
+            float startZ = -(totalDepth * 0.5f) + (totalDepth * 0.25f);
+            
+            float xSpacing = totalWidth / (maxProductsPerRow + 1);
+            float zSpacing = rowSpacing;
+            
+            Vector3 localOffset = new Vector3(
+                startX + (col * xSpacing),
+                0f,
+                startZ + (row * zSpacing)
+            );
+            
+            Vector3 worldOffset = checkoutArea.TransformDirection(localOffset);
+            return basePosition + surfaceOffset + worldOffset;
+        }
+        
+        /// <summary>
+        /// Smoothly move a product to a new position
+        /// </summary>
+        /// <param name="product">Product to move</param>
+        /// <param name="targetPosition">Target position</param>
+        /// <returns>Coroutine enumerator</returns>
+        private System.Collections.IEnumerator SmoothMoveProduct(Product product, Vector3 targetPosition)
+        {
+            if (product == null) yield break;
+            
+            Vector3 startPosition = product.transform.position;
+            float moveTime = 0.5f; // Half second to move
+            float elapsed = 0f;
+            
+            while (elapsed < moveTime && product != null)
+            {
+                elapsed += Time.deltaTime;
+                float progress = elapsed / moveTime;
+                
+                // Use smooth curve for more natural movement
+                float smoothProgress = Mathf.SmoothStep(0f, 1f, progress);
+                
+                product.transform.position = Vector3.Lerp(startPosition, targetPosition, smoothProgress);
+                yield return null;
+            }
+            
+            // Ensure final position is exact
+            if (product != null)
+            {
+                product.transform.position = targetPosition;
             }
         }
         

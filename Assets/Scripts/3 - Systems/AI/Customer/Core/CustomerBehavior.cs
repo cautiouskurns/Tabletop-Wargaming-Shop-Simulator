@@ -777,6 +777,9 @@ namespace TabletopShop
             }
             
             Debug.Log($"CustomerBehavior {name} finished placing all items on checkout counter");
+            
+            // Reorganize products on the counter for better layout after all items are placed
+            checkoutCounter.ReorganizeProducts();
         }
         
         /// <summary>
