@@ -505,5 +505,50 @@ namespace TabletopShop
         }
         
         #endregion
+
+        /// <summary>
+        /// Move to a specific world position (used for queue positioning)
+        /// </summary>
+        /// <param name="position">Target world position</param>
+        /// <returns>True if movement was initiated successfully</returns>
+        public bool MoveToPosition(Vector3 position)
+        {
+            if (navMeshAgent == null)
+            {
+                Debug.LogError($"CustomerMovement {name} cannot move - NavMeshAgent not found!");
+                return false;
+            }
+            
+            if (!navMeshAgent.enabled)
+            {
+                Debug.LogWarning($"CustomerMovement {name} cannot move - NavMeshAgent is disabled!");
+                return false;
+            }
+            
+            // Check if position is on NavMesh
+            NavMeshHit hit;
+            if (!NavMesh.SamplePosition(position, out hit, 2f, NavMesh.AllAreas))
+            {
+                Debug.LogWarning($"CustomerMovement {name} cannot reach position {position} - not on NavMesh");
+                return false;
+            }
+            
+            bool pathSet = navMeshAgent.SetDestination(hit.position);
+            
+            if (pathSet)
+            {
+                currentDestination = hit.position;
+                hasDestination = true;
+                pathfindingRetries = 0;
+                StartStuckDetection();
+                Debug.Log($"CustomerMovement {name} moving to position: {hit.position}");
+            }
+            else
+            {
+                Debug.LogWarning($"CustomerMovement {name} failed to set destination: {position}");
+            }
+            
+            return pathSet;
+        }
     }
 }

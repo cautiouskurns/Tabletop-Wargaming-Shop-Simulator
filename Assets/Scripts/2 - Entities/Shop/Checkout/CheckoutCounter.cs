@@ -95,11 +95,19 @@ namespace TabletopShop
         /// Place a product at the checkout counter
         /// </summary>
         /// <param name="product">The product to place at checkout</param>
-        public void PlaceProduct(Product product)
+        /// <param name="customer">The customer placing the product (optional, for queue validation)</param>
+        public void PlaceProduct(Product product, Customer customer = null)
         {
             if (product == null)
             {
                 Debug.LogWarning("Cannot place null product at checkout");
+                return;
+            }
+            
+            // Check if customer is allowed to place items (queue management)
+            if (customer != null && !CanCustomerPlaceItems(customer))
+            {
+                Debug.LogWarning($"Customer {customer.name} cannot place items - they are not the current customer or checkout is processing");
                 return;
             }
             
@@ -358,6 +366,9 @@ namespace TabletopShop
                 {
                     Debug.LogWarning($"CustomerBehavior component not found on customer {currentCustomer.name}");
                 }
+                
+                // Process customer departure to handle queue
+                OnCustomerDeparture();
             }
         }
         
@@ -433,11 +444,57 @@ namespace TabletopShop
             
             if (HasCustomer)
             {
-                Debug.LogWarning($"Customer {currentCustomer.name} is already at checkout - cannot add {customer.name}");
+                // Add customer to queue if checkout is occupied
+                AddCustomerToQueue(customer);
                 return;
             }
             
+            // Set as current customer if checkout is free
+            SetCurrentCustomer(customer);
+        }
+        
+        /// <summary>
+        /// Add a customer to the checkout queue
+        /// </summary>
+        /// <param name="customer">Customer to add to queue</param>
+        public void AddCustomerToQueue(Customer customer)
+        {
+            if (customer == null) return;
+            
+            if (customerQueue.Contains(customer))
+            {
+                Debug.LogWarning($"Customer {customer.name} is already in the queue");
+                return;
+            }
+            
+            customerQueue.Enqueue(customer);
+            
+            // Position customer in queue
+            Vector3 queuePosition = GetQueuePosition(customerQueue.Count - 1);
+            CustomerBehavior customerBehavior = customer.GetComponent<CustomerBehavior>();
+            CustomerMovement customerMovement = customer.GetComponent<CustomerMovement>();
+            
+            if (customerMovement != null)
+            {
+                customerMovement.MoveToPosition(queuePosition);
+                Debug.Log($"Customer {customer.name} added to queue position {customerQueue.Count} at {queuePosition}");
+            }
+            
+            // Notify customer they are in queue
+            if (customerBehavior != null)
+            {
+                customerBehavior.OnJoinedQueue(this, customerQueue.Count - 1);
+            }
+        }
+        
+        /// <summary>
+        /// Set the current customer and notify them they can proceed
+        /// </summary>
+        /// <param name="customer">Customer to set as current</param>
+        private void SetCurrentCustomer(Customer customer)
+        {
             currentCustomer = customer;
+            isProcessingCustomer = true;
             
             // Update UI
             if (checkoutUI != null)
@@ -446,49 +503,99 @@ namespace TabletopShop
                 checkoutUI.Show();
                 Debug.Log("CheckoutCounter: Showing UI because customer arrived");
             }
-            else
-            {
-                Debug.LogWarning("CheckoutCounter: No CheckoutUI found - cannot update UI");
-            }
             
-            Debug.Log($"Customer {customer.name} arrived at checkout");
+            Debug.Log($"Customer {customer.name} is now being served at checkout");
+            
+            // Notify customer they can start placing items
+            CustomerBehavior customerBehavior = customer.GetComponent<CustomerBehavior>();
+            if (customerBehavior != null)
+            {
+                customerBehavior.OnCheckoutReady(this);
+            }
         }
         
         /// <summary>
-        /// Handle customer departure from checkout
+        /// Process the next customer in queue when current customer leaves
         /// </summary>
-        public void OnCustomerDeparture()
+        private void ProcessNextCustomerInQueue()
         {
-            if (!HasCustomer)
+            if (customerQueue.Count > 0)
             {
-                Debug.LogWarning("No customer to handle departure");
-                return;
-            }
-            
-            Debug.Log($"Customer {currentCustomer.name} departed from checkout");
-            currentCustomer = null;
-            
-            // Clear any remaining products if customer leaves
-            if (HasProducts)
-            {
-                ClearCheckout();
-            }
-            
-            // Update UI
-            if (checkoutUI != null)
-            {
-                checkoutUI.UpdateCustomer("");
-                checkoutUI.ClearProducts();
-                checkoutUI.UpdateTotal(0f);
-                
-                // Hide UI when no activity
-                if (!showUIOnStart)
+                Customer nextCustomer = customerQueue.Dequeue();
+                if (nextCustomer != null)
                 {
-                    checkoutUI.Hide();
+                    Debug.Log($"Processing next customer in queue: {nextCustomer.name}");
+                    SetCurrentCustomer(nextCustomer);
+                    
+                    // Move remaining customers forward in queue
+                    UpdateQueuePositions();
+                }
+            }
+            else
+            {
+                isProcessingCustomer = false;
+                Debug.Log("No more customers in queue - checkout is now free");
+            }
+        }
+        
+        /// <summary>
+        /// Update positions of all customers in queue
+        /// </summary>
+        private void UpdateQueuePositions()
+        {
+            var queueArray = customerQueue.ToArray();
+            for (int i = 0; i < queueArray.Length; i++)
+            {
+                Customer customer = queueArray[i];
+                if (customer != null)
+                {
+                    Vector3 newPosition = GetQueuePosition(i);
+                    CustomerMovement customerMovement = customer.GetComponent<CustomerMovement>();
+                    if (customerMovement != null)
+                    {
+                        customerMovement.MoveToPosition(newPosition);
+                    }
+                    
+                    // Update their queue position
+                    CustomerBehavior customerBehavior = customer.GetComponent<CustomerBehavior>();
+                    if (customerBehavior != null)
+                    {
+                        customerBehavior.OnQueuePositionChanged(i);
+                    }
                 }
             }
         }
         
+        /// <summary>
+        /// Get the world position for a customer at a specific queue index
+        /// </summary>
+        /// <param name="queueIndex">Index in the queue (0 = first in line)</param>
+        /// <returns>World position for the customer</returns>
+        private Vector3 GetQueuePosition(int queueIndex)
+        {
+            if (queueStartPoint == null)
+            {
+                Debug.LogWarning("No queue start point defined - using checkout position");
+                return checkoutArea.position + Vector3.back * ((queueIndex + 1) * queueSpacing);
+            }
+            
+            // Calculate position based on queue start point and spacing
+            Vector3 basePosition = queueStartPoint.position;
+            Vector3 queueDirection = queueStartPoint.forward * -1; // Customers face towards checkout
+            Vector3 offset = queueDirection * (queueIndex * queueSpacing);
+            
+            return basePosition + offset;
+        }
+        
+        /// <summary>
+        /// Check if a customer can place items on the counter (i.e., they are the current customer)
+        /// </summary>
+        /// <param name="customer">Customer to check</param>
+        /// <returns>True if customer can place items</returns>
+        public bool CanCustomerPlaceItems(Customer customer)
+        {
+            return currentCustomer == customer;
+        }
         #endregion
         
         #region IInteractable Implementation
@@ -898,6 +1005,78 @@ namespace TabletopShop
                 
                 Debug.Log($"CheckoutCounter: Refreshed UI with {productsAtCheckout.Count} products");
             }
+        }
+
+        /// <summary>
+        /// Handle customer departure from checkout
+        /// </summary>
+        public void OnCustomerDeparture()
+        {
+            if (!HasCustomer)
+            {
+                Debug.LogWarning("No customer to handle departure");
+                return;
+            }
+            
+            Debug.Log($"Customer {currentCustomer.name} departed from checkout");
+            Customer departingCustomer = currentCustomer;
+            currentCustomer = null;
+            
+            // Clear any remaining products if customer leaves
+            if (HasProducts)
+            {
+                ClearCheckout();
+            }
+            
+            // Process next customer in queue
+            ProcessNextCustomerInQueue();
+            
+            // Update UI only if no new customer was processed
+            if (!HasCustomer && checkoutUI != null)
+            {
+                checkoutUI.UpdateCustomer("");
+                checkoutUI.ClearProducts();
+                checkoutUI.UpdateTotal(0f);
+                
+                // Hide UI when no activity
+                if (!showUIOnStart)
+                {
+                    checkoutUI.Hide();
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Test the queue system with multiple customers
+        /// </summary>
+        [ContextMenu("Test Queue System")]
+        public void TestQueueSystem()
+        {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("Queue system test requires Play mode");
+                return;
+            }
+            
+            Debug.Log("=== CHECKOUT QUEUE SYSTEM TEST ===");
+            Debug.Log($"Current Customer: {(currentCustomer != null ? currentCustomer.name : "None")}");
+            Debug.Log($"Queue Length: {customerQueue.Count}");
+            Debug.Log($"Is Processing Customer: {isProcessingCustomer}");
+            Debug.Log($"Has Products: {HasProducts}");
+            Debug.Log($"Products at Checkout: {productsAtCheckout.Count}");
+            
+            if (customerQueue.Count > 0)
+            {
+                Debug.Log("Customers in queue:");
+                var queueArray = customerQueue.ToArray();
+                for (int i = 0; i < queueArray.Length; i++)
+                {
+                    Customer customer = queueArray[i];
+                    Debug.Log($"  Position {i + 1}: {(customer != null ? customer.name : "NULL")}");
+                }
+            }
+            
+            Debug.Log("================================");
         }
     }
 }

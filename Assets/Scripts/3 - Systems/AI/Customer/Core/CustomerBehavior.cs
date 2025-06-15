@@ -37,6 +37,12 @@ namespace TabletopShop
     private bool isWaitingForCheckout = false;
     private List<Product> placedOnCounterProducts = new List<Product>();
 
+        // Queue state tracking
+        private bool isInQueue = false;
+        private int queuePosition = -1;
+        private CheckoutCounter queuedCheckout = null;
+        private bool waitingForCheckoutTurn = false;
+
         // Events
         public event Action<CustomerState, CustomerState> OnStateChangeRequested;
         public event Action<ShelfSlot> OnTargetShelfChanged;
@@ -318,13 +324,10 @@ namespace TabletopShop
                 
                 Debug.Log($"CustomerBehavior {name} has reached the checkout counter");
                 
-                // Notify the checkout counter that customer has arrived
+                // Notify the checkout counter that customer has arrived (this handles queue management)
                 targetCheckoutCounter.OnCustomerArrival(GetComponent<Customer>());
                 
-                // Place items on the checkout counter
-                yield return StartCoroutine(PlaceItemsOnCounter(targetCheckoutCounter));
-                
-                // Wait for checkout completion
+                // Wait for checkout completion (customer will wait in queue if needed)
                 yield return StartCoroutine(WaitForCheckoutCompletion(targetCheckoutCounter));
                 
                 // Collect items and complete transaction
@@ -756,6 +759,9 @@ namespace TabletopShop
         {
             Debug.Log($"CustomerBehavior {name} placing {selectedProducts.Count} items on checkout counter");
             
+            // Get customer component for validation
+            Customer customerComponent = GetComponent<Customer>();
+            
             foreach (Product product in selectedProducts)
             {
                 if (product != null)
@@ -763,8 +769,8 @@ namespace TabletopShop
                     // Add to placed products list FIRST to stop the attachment coroutine
                     placedOnCounterProducts.Add(product);
                     
-                    // Place the existing product on the checkout counter
-                    checkoutCounter.PlaceProduct(product);
+                    // Place the existing product on the checkout counter with customer validation
+                    checkoutCounter.PlaceProduct(product, customerComponent);
                     
                     // Disable any movement components to ensure the product stays put
                     DisableProductMovement(product);
@@ -929,6 +935,43 @@ namespace TabletopShop
             {
                 Debug.LogWarning("Cannot force place products - no counter found or no selected products");
             }
+        }
+        
+        #endregion        
+        #region Queue Management
+        
+        /// <summary>
+        /// Called when customer joins a checkout queue
+        /// </summary>
+        /// <param name="checkoutCounter">The checkout counter they're queuing for</param>
+        /// <param name="position">Their position in the queue (0 = next in line)</param>
+        public void OnJoinedQueue(CheckoutCounter checkoutCounter, int position)
+        {
+            Debug.Log($"CustomerBehavior {name} joined queue at position {position + 1} for checkout {checkoutCounter.name}");
+            
+            // Customer should wait patiently in queue
+            isWaitingForCheckout = true;
+        }
+        
+        /// <summary>
+        /// Called when customer's position in queue changes
+        /// </summary>
+        /// <param name="newPosition">New position in queue</param>
+        public void OnQueuePositionChanged(int newPosition)
+        {
+            Debug.Log($"CustomerBehavior {name} moved to queue position {newPosition + 1}");
+        }
+        
+        /// <summary>
+        /// Called when it's the customer's turn at checkout
+        /// </summary>
+        /// <param name="checkoutCounter">The checkout counter that's ready</param>
+        public void OnCheckoutReady(CheckoutCounter checkoutCounter)
+        {
+            Debug.Log($"CustomerBehavior {name} can now proceed to checkout counter {checkoutCounter.name}");
+            
+            // Customer can now place items on the counter
+            StartCoroutine(PlaceItemsOnCounter(checkoutCounter));
         }
         
         #endregion
