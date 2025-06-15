@@ -19,7 +19,7 @@ namespace TabletopShop
         
         [Header("Interaction Settings")]
         [SerializeField] private Transform itemPlacementArea;
-        [SerializeField] private float maxCheckoutDistance = 2f;
+        [SerializeField] private float maxCheckoutDistance = 10f;
         
         [Header("Debug")]
         [SerializeField] private bool enableDebugLogging = true;
@@ -57,8 +57,8 @@ namespace TabletopShop
         /// </summary>
         private void InitializeCheckoutCounter()
         {
-            // Set interaction layer
-            InteractionLayers.SetShelfLayer(gameObject);
+            // Set interaction layer - CheckoutCounter should be interactable, not shelf
+            InteractionLayers.SetInteractableLayer(gameObject);
             
             // Initialize collections
             if (placedItems == null)
