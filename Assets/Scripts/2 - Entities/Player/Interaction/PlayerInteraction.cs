@@ -13,6 +13,7 @@ namespace TabletopShop
         [SerializeField] private LayerMask interactableLayer; // Will be set in Awake
         [SerializeField] private KeyCode interactionKey = KeyCode.E;
         
+        
         [Header("UI References")]
         [SerializeField] private CrosshairUI crosshairUI;
         [SerializeField] private Canvas uiCanvas;
