@@ -16,7 +16,6 @@ namespace TabletopShop
         [SerializeField] private KeyCode finalizePurchaseKey = KeyCode.P; // Additional key for finalizing
         
         [Header("UI References")]
-        [SerializeField] private CrosshairUI crosshairUI;
         [SerializeField] private CheckoutUI checkoutUIManager;
         
         [Header("Checkout Context")]
@@ -42,18 +41,6 @@ namespace TabletopShop
         private CheckoutItem currentCheckoutItem;
         private List<CheckoutCounter> nearbyCheckoutCounters = new List<CheckoutCounter>();
         private bool wasInCheckoutMode = false;
-        
-        // Component references
-        private Camera playerCamera;
-        
-        // Regular interaction fields (inherited from PlayerInteraction functionality)
-        [Header("Base Interaction Settings")]
-        [SerializeField] private float interactionRange = 3f;
-        [SerializeField] private LayerMask interactableLayer;
-        
-        private IInteractable currentInteractable;
-        private Ray interactionRay;
-        private RaycastHit hitInfo;
         
         // Properties
         public bool InCheckoutMode => inCheckoutMode;
@@ -665,15 +652,6 @@ namespace TabletopShop
                     }
                 }
             }
-        }
-        
-        /// <summary>
-        /// Get the current interactable object
-        /// </summary>
-        /// <returns>The current interactable, or null if none</returns>
-        public new IInteractable GetCurrentInteractable()
-        {
-            return currentInteractable;
         }
         
         #endregion
