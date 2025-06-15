@@ -13,6 +13,7 @@ namespace TabletopShop
         [Header("Checkout Configuration")]
         [SerializeField] private List<CheckoutItem> placedItems = new List<CheckoutItem>();
         [SerializeField] private CheckoutUI checkoutUI;
+        [SerializeField] private CheckoutItemPlacement itemPlacement;
         [SerializeField] private Customer currentCustomer;
         [SerializeField] private float runningTotal = 0f;
         
@@ -63,6 +64,19 @@ namespace TabletopShop
             if (placedItems == null)
             {
                 placedItems = new List<CheckoutItem>();
+            }
+            
+            // Initialize placement system
+            if (itemPlacement == null)
+            {
+                itemPlacement = GetComponentInChildren<CheckoutItemPlacement>();
+                if (itemPlacement == null)
+                {
+                    if (enableDebugLogging)
+                    {
+                        Debug.LogWarning($"CheckoutCounter {name}: No CheckoutItemPlacement found in children");
+                    }
+                }
             }
             
             // Initialize UI
@@ -431,6 +445,39 @@ namespace TabletopShop
                 return null;
             }
             
+            CheckoutItem checkoutItem = null;
+            
+            // Try to use placement system if available
+            if (itemPlacement != null)
+            {
+                checkoutItem = itemPlacement.CreateCheckoutItem(productData);
+                
+                if (checkoutItem != null)
+                {
+                    // Add to placed items list
+                    placedItems.Add(checkoutItem);
+                    
+                    if (enableDebugLogging)
+                    {
+                        Debug.Log($"CheckoutCounter {name}: Created checkout item using placement system - {productData.ProductName}");
+                    }
+                    
+                    return checkoutItem;
+                }
+            }
+            
+            // Fallback to manual creation if placement system is not available
+            return CreateCheckoutItemManually(productData, itemPrefab);
+        }
+        
+        /// <summary>
+        /// Manually create a checkout item (fallback method)
+        /// </summary>
+        /// <param name="productData">The product data to create item from</param>
+        /// <param name="itemPrefab">Prefab for the checkout item</param>
+        /// <returns>The created CheckoutItem MonoBehaviour, or null if failed</returns>
+        private CheckoutItem CreateCheckoutItemManually(ProductData productData, GameObject itemPrefab = null)
+        {
             // Create the checkout item GameObject
             GameObject itemObject;
             if (itemPrefab != null)
@@ -457,7 +504,7 @@ namespace TabletopShop
             // Initialize with product data
             checkoutItem.Initialize(productData, this);
             
-            // Place the item
+            // Place the item using manual positioning
             if (PlaceItem(checkoutItem))
             {
                 return checkoutItem;
@@ -586,19 +633,24 @@ namespace TabletopShop
                 Debug.Log($"CheckoutCounter {name}: Clearing checkout - {placedItems.Count} items");
             }
             
-            // Return unscanned items to shelf (if needed)
-            // TODO: Implement item return logic for MonoBehaviour CheckoutItems
-            foreach (var item in placedItems)
+            // Use placement system to clear items if available
+            if (itemPlacement != null)
             {
-                // Item return logic would go here
-                // For now, just destroy the checkout item GameObject
-                if (item != null && !item.IsScanned)
+                itemPlacement.ClearAllItems();
+            }
+            else
+            {
+                // Fallback: manually clear items
+                foreach (var item in placedItems)
                 {
-                    if (enableDebugLogging)
+                    if (item != null)
                     {
-                        Debug.Log($"CheckoutCounter {name}: Returning unscanned item {item.ProductName} to shelf");
+                        if (!item.IsScanned && enableDebugLogging)
+                        {
+                            Debug.Log($"CheckoutCounter {name}: Returning unscanned item {item.ProductName} to shelf");
+                        }
+                        Destroy(item.gameObject);
                     }
-                    Destroy(item.gameObject);
                 }
             }
             
