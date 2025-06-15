@@ -519,6 +519,21 @@ namespace TabletopShop
                 }
             }
             
+            // Notify customer that checkout is completed
+            if (currentCustomer != null)
+            {
+                var customerBehavior = currentCustomer.GetComponent<CustomerBehavior>();
+                if (customerBehavior != null)
+                {
+                    customerBehavior.OnCheckoutCompleted();
+                    
+                    if (enableDebugLogging)
+                    {
+                        Debug.Log($"CheckoutCounter {name}: Notified customer {currentCustomer.name} of checkout completion");
+                    }
+                }
+            }
+            
             // Clear checkout
             ClearCheckout();
             
