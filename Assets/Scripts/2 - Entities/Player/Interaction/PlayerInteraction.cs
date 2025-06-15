@@ -8,24 +8,24 @@ namespace TabletopShop
     public class PlayerInteraction : MonoBehaviour
     {
         [Header("Interaction Settings")]
-        [SerializeField] private Camera playerCamera;
-        [SerializeField] private float interactionRange = 3f;
-        [SerializeField] private LayerMask interactableLayer; // Will be set in Awake
+        [SerializeField] protected Camera playerCamera;
+        [SerializeField] protected float interactionRange = 3f;
+        [SerializeField] protected LayerMask interactableLayer; // Will be set in Awake
         [SerializeField] private KeyCode interactionKey = KeyCode.E;
         
         
         [Header("UI References")]
-        [SerializeField] private CrosshairUI crosshairUI;
+        [SerializeField] protected CrosshairUI crosshairUI;
         [SerializeField] private Canvas uiCanvas;
         
         [Header("Debug Settings")]
         [SerializeField] private bool showDebugRay = true;
         [SerializeField] private Color debugRayColor = Color.red;
         
-        // Private fields
-        private IInteractable currentInteractable;
-        private Ray interactionRay;
-        private RaycastHit hitInfo;
+        // Protected fields that can be accessed by derived classes
+        protected IInteractable currentInteractable;
+        protected Ray interactionRay;
+        protected RaycastHit hitInfo;
         
         #region Unity Lifecycle
         

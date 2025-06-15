@@ -32,7 +32,10 @@ namespace TabletopShop
     // Purchase tracking
     private List<Product> selectedProducts = new List<Product>();
     private float totalPurchaseAmount = 0f;
-        
+    
+    // Checkout state tracking
+    private bool isWaitingForCheckout = false;
+
         // Events
         public event Action<CustomerState, CustomerState> OnStateChangeRequested;
         public event Action<ShelfSlot> OnTargetShelfChanged;
@@ -279,19 +282,23 @@ namespace TabletopShop
         
         /// <summary>
         /// Handle purchasing state behavior
-        /// Customer brings selected products to checkout and finalizes purchase
-        /// Products are already removed from shelves during shopping (TrySelectProductsAtCurrentShelf)
-        /// This method handles moving to checkout and processing the financial transaction
+        /// Customer brings selected products to checkout counter and waits for completion
+        /// Uses the new checkout counter workflow instead of direct purchase processing
         /// </summary>
         private IEnumerator HandlePurchasingState()
         {
             Debug.Log($"CustomerBehavior {name} proceeding to checkout with {selectedProducts.Count} products");
             
-            // ✅ ADD NULL CHECK HERE
+            // Move to checkout counter
             bool reachedCheckout = false;
+            CheckoutCounter targetCheckoutCounter = null;
+            
             if (customerMovement != null)
             {
                 reachedCheckout = customerMovement.MoveToCheckoutPoint();
+                
+                // Find the checkout counter we're moving to
+                targetCheckoutCounter = FindNearestCheckoutCounter();
             }
             else
             {
@@ -299,101 +306,33 @@ namespace TabletopShop
                 yield break;
             }
             
-            if (reachedCheckout)
+            if (reachedCheckout && targetCheckoutCounter != null)
             {
-                // ✅ ADD NULL CHECK HERE
+                // Wait until we reach the checkout counter
                 while (customerMovement != null && !customerMovement.HasReachedDestination())
                 {
                     yield return new WaitForSeconds(0.5f);
                 }
                 
-                Debug.Log($"CustomerBehavior {name} has reached the checkout point");
+                Debug.Log($"CustomerBehavior {name} has reached the checkout counter");
                 
-                // Small delay at checkout before starting transaction
-                yield return new WaitForSeconds(1.0f);
+                // Notify the checkout counter that customer has arrived
+                targetCheckoutCounter.OnCustomerArrival(GetComponent<Customer>());
                 
-                // Process actual purchase through GameManager after reaching checkout
-                if (selectedProducts.Count > 0 && totalPurchaseAmount > 0)
-                {
-                    // Simulate the checkout process (scanning items, payment, etc.)
-                    float purchaseTime = UnityEngine.Random.Range(3f, 8f);
-                    Debug.Log($"CustomerBehavior {name} making purchase (taking {purchaseTime:F1}s) - ${totalPurchaseAmount:F2} for {selectedProducts.Count} items");
-                    
-                    // Loop through products to simulate scanning each item
-                    int itemsProcessed = 0;
-                    foreach (Product product in selectedProducts)
-                    {
-                        if (product != null)
-                        {
-                            itemsProcessed++;
-                            
-                            // Play a beep sound when scanning each product
-                            // If AudioManager has PlayProductScanBeep method, use that instead
-                            if (AudioManager.Instance != null)
-                            {
-                                // Generate slightly different pitch for each product to add variety
-                                AudioManager.Instance.PlayProductScanBeep();
-                                Debug.Log($"Product scan beep played for {product.ProductData?.ProductName ?? "Unknown Product"}");
-                            }
-                            
-                            // Brief pause for each item being scanned
-                            yield return new WaitForSeconds(purchaseTime / selectedProducts.Count);
-                            
-                            if (itemsProcessed == selectedProducts.Count)
-                            {
-                                Debug.Log($"CustomerBehavior {name} finished scanning all {itemsProcessed} items");
-                            }
-                        }
-                    }
-                    
-                    // Final payment processing
-                    Debug.Log($"CustomerBehavior {name} processing payment of ${totalPurchaseAmount:F2}");
-                    yield return new WaitForSeconds(1.5f);
-                    
-                    // Calculate customer satisfaction based on experience
-                    float customerSatisfaction = CalculateCustomerSatisfaction();
-                    
-                    // Process purchase through GameManager
-                    GameManager.Instance.ProcessCustomerPurchase(totalPurchaseAmount, customerSatisfaction);
-                    
-                    // Play purchase success sound
-                    if (AudioManager.Instance != null)
-                    {
-                        AudioManager.Instance.PlayPurchaseSuccess();
-                        Debug.Log($"Purchase success sound played for ${totalPurchaseAmount:F2} transaction");
-                    }
-                    
-                    // Mark products as purchased (finalizing the transaction)
-                    // Products were already removed from shelves when they were selected
-                    // Create a temporary list to track successfully purchased products
-                    List<Product> purchasedProducts = new List<Product>();
-                    
-                    foreach (Product product in selectedProducts)
-                    {
-                        if (product != null)
-                        {
-                            // This handles the financial transaction and updates product state to Purchased
-                            product.Purchase();
-                            
-                            // Add to purchased list so we know not to destroy it on exit
-                            purchasedProducts.Add(product);
-                            Debug.Log($"CustomerBehavior {name} purchased {product.ProductData?.ProductName ?? "Product"} successfully");
-                        }
-                    }
-                    
-                    // Force UI to update immediately
-                    if (GameManager.Instance != null)
-                    {
-                        // Trigger the money changed event explicitly to ensure UI updates
-                        GameManager.Instance.OnMoneyChanged.Invoke();
-                    }
-                    
-                    Debug.Log($"CustomerBehavior {name} completed purchase of ${totalPurchaseAmount:F2} with satisfaction {customerSatisfaction:F2}");
-                }
-                else
-                {
-                    Debug.Log($"CustomerBehavior {name} left without purchasing anything");
-                }
+                // Place items on the checkout counter
+                yield return StartCoroutine(PlaceItemsOnCounter(targetCheckoutCounter));
+                
+                // Wait for checkout completion
+                yield return StartCoroutine(WaitForCheckoutCompletion(targetCheckoutCounter));
+                
+                // Collect items and complete transaction
+                yield return StartCoroutine(CollectItemsAndLeave(targetCheckoutCounter));
+            }
+            else
+            {
+                Debug.LogWarning($"CustomerBehavior {name} could not find checkout counter or failed to reach it");
+                // Fallback to leaving without purchase
+                ChangeState(CustomerState.Leaving);
             }
         }
         
@@ -767,6 +706,141 @@ namespace TabletopShop
             
             // Clear the selected products list regardless
             selectedProducts.Clear();
+        }
+        
+        /// <summary>
+        /// Find the nearest checkout counter to this customer
+        /// </summary>
+        /// <returns>The nearest CheckoutCounter component, or null if none found</returns>
+        private CheckoutCounter FindNearestCheckoutCounter()
+        {
+            CheckoutCounter[] checkoutCounters = FindObjectsByType<CheckoutCounter>(FindObjectsSortMode.None);
+            CheckoutCounter nearest = null;
+            float closestDistance = float.MaxValue;
+            
+            foreach (CheckoutCounter counter in checkoutCounters)
+            {
+                if (counter != null)
+                {
+                    float distance = Vector3.Distance(transform.position, counter.transform.position);
+                    if (distance < closestDistance)
+                    {
+                        closestDistance = distance;
+                        nearest = counter;
+                    }
+                }
+            }
+            
+            if (nearest != null)
+            {
+                Debug.Log($"CustomerBehavior {name} found nearest checkout counter: {nearest.name} at distance {closestDistance:F1}");
+            }
+            else
+            {
+                Debug.LogWarning($"CustomerBehavior {name} could not find any checkout counters");
+            }
+            
+            return nearest;
+        }
+        
+        /// <summary>
+        /// Coroutine to place selected items on the checkout counter
+        /// </summary>
+        /// <param name="checkoutCounter">The checkout counter to place items on</param>
+        private IEnumerator PlaceItemsOnCounter(CheckoutCounter checkoutCounter)
+        {
+            Debug.Log($"CustomerBehavior {name} placing {selectedProducts.Count} items on checkout counter");
+            
+            foreach (Product product in selectedProducts)
+            {
+                if (product != null && product.ProductData != null)
+                {
+                    // Create a checkout item from the product data
+                    CheckoutItem checkoutItem = checkoutCounter.CreateAndPlaceItem(product.ProductData);
+                    
+                    if (checkoutItem != null)
+                    {
+                        Debug.Log($"CustomerBehavior {name} placed {product.ProductData.ProductName} on checkout counter");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"CustomerBehavior {name} failed to place {product.ProductData.ProductName} on checkout counter");
+                    }
+                    
+                    // Small delay between placing each item
+                    yield return new WaitForSeconds(UnityEngine.Random.Range(0.5f, 1.0f));
+                }
+            }
+            
+            Debug.Log($"CustomerBehavior {name} finished placing all items on checkout counter");
+        }
+        
+        /// <summary>
+        /// Coroutine to wait for checkout completion
+        /// Customer waits patiently while items are scanned and payment is processed
+        /// </summary>
+        /// <param name="checkoutCounter">The checkout counter being used</param>
+        private IEnumerator WaitForCheckoutCompletion(CheckoutCounter checkoutCounter)
+        {
+            Debug.Log($"CustomerBehavior {name} waiting for checkout completion");
+            
+            // Set flag to indicate we're waiting for checkout
+            isWaitingForCheckout = true;
+            
+            // Wait until checkout is completed (OnCheckoutCompleted will be called)
+            while (isWaitingForCheckout)
+            {
+                // Optional: Add some idle animations or behaviors here
+                yield return new WaitForSeconds(0.5f);
+                
+                // Safety check - if checkout counter becomes null or inactive, stop waiting
+                if (checkoutCounter == null || !checkoutCounter.gameObject.activeInHierarchy)
+                {
+                    Debug.LogWarning($"CustomerBehavior {name} checkout counter became invalid, stopping wait");
+                    break;
+                }
+            }
+            
+            Debug.Log($"CustomerBehavior {name} checkout completed, proceeding to collect items");
+        }
+        
+        /// <summary>
+        /// Coroutine to collect items after purchase and prepare to leave
+        /// </summary>
+        /// <param name="checkoutCounter">The checkout counter to collect from</param>
+        private IEnumerator CollectItemsAndLeave(CheckoutCounter checkoutCounter)
+        {
+            Debug.Log($"CustomerBehavior {name} collecting items after purchase");
+            
+            // Brief delay for collecting items
+            yield return new WaitForSeconds(UnityEngine.Random.Range(1.0f, 2.0f));
+            
+            // Mark products as purchased
+            foreach (Product product in selectedProducts)
+            {
+                if (product != null)
+                {
+                    product.Purchase();
+                    Debug.Log($"CustomerBehavior {name} purchased {product.ProductData?.ProductName ?? "Product"} successfully");
+                }
+            }
+            
+            // Clear the checkout counter
+            checkoutCounter.ClearCheckout();
+            
+            Debug.Log($"CustomerBehavior {name} completed purchase collection, proceeding to leave");
+            
+            // Transition to leaving state
+            ChangeState(CustomerState.Leaving);
+        }
+        
+        /// <summary>
+        /// Public method called by checkout counter when checkout process is completed
+        /// </summary>
+        public void OnCheckoutCompleted()
+        {
+            Debug.Log($"CustomerBehavior {name} received checkout completion notification");
+            isWaitingForCheckout = false;
         }
     }
 }
