@@ -67,6 +67,9 @@ namespace TabletopShop
             // Setup checkout counter
             SetupCheckoutCounter();
             
+            // Setup item placement system
+            SetupCheckoutItemPlacement();
+            
             // Configure checkout UI
             ConfigureCheckoutUI();
             
@@ -229,11 +232,14 @@ namespace TabletopShop
             // Ensure counter is on proper layer
             if (counterObject.layer == 0) // Default layer
             {
-                counterObject.layer = InteractionLayers.InteractableLayerMask;
+                InteractionLayers.SetInteractableLayer(counterObject);
             }
             
             if (showDebugLogs)
                 Debug.Log($"CheckoutSceneSetup: Checkout counter created at {spawnPosition}");
+            
+            // Setup item placement for the checkout counter
+            SetupCheckoutItemPlacement();
         }
         
         /// <summary>
@@ -336,6 +342,150 @@ namespace TabletopShop
                 Debug.Log("CheckoutSceneSetup: Checkout components linked successfully");
         }
         
+        /// <summary>
+        /// Sets up CheckoutItemPlacement component for the checkout counter
+        /// </summary>
+        public void SetupCheckoutItemPlacement()
+        {
+            if (spawnedCheckoutCounter == null)
+            {
+                Debug.LogError("CheckoutSceneSetup: Cannot setup item placement - checkout counter not found!");
+                return;
+            }
+            
+            // Check if placement component already exists
+            CheckoutItemPlacement placement = spawnedCheckoutCounter.GetComponentInChildren<CheckoutItemPlacement>();
+            
+            if (placement == null)
+            {
+                // Create placement object as child of checkout counter
+                GameObject placementObject;
+                
+                if (checkoutItemPlacementPrefab != null)
+                {
+                    placementObject = Instantiate(checkoutItemPlacementPrefab, spawnedCheckoutCounter.transform);
+                }
+                else
+                {
+                    placementObject = new GameObject("Checkout Item Placement");
+                    placementObject.transform.SetParent(spawnedCheckoutCounter.transform);
+                    placement = placementObject.AddComponent<CheckoutItemPlacement>();
+                }
+                
+                // Position the placement surface above the counter
+                placementObject.transform.localPosition = new Vector3(0, 1f, 0);
+                placementObject.name = "Checkout Item Placement";
+                
+                if (showDebugLogs)
+                    Debug.Log("CheckoutSceneSetup: Created CheckoutItemPlacement component");
+            }
+            else if (showDebugLogs)
+            {
+                Debug.Log("CheckoutSceneSetup: CheckoutItemPlacement already exists");
+            }
+        }
+
+        /// <summary>
+        /// Creates a default CheckoutItem prefab for testing purposes
+        /// </summary>
+        [ContextMenu("Create Default CheckoutItem Prefab")]
+        public void CreateDefaultCheckoutItemPrefab()
+        {
+            if (showDebugLogs)
+                Debug.Log("CheckoutSceneSetup: Creating default CheckoutItem prefab...");
+
+            // Create a basic cube as checkout item
+            GameObject prefabObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            prefabObject.name = "DefaultCheckoutItem";
+            prefabObject.transform.localScale = new Vector3(0.5f, 0.1f, 0.5f);
+            
+            // Add CheckoutItem component
+            CheckoutItem checkoutItem = prefabObject.AddComponent<CheckoutItem>();
+            
+            // Add basic visuals if ProductVisuals exists
+            ProductVisuals visuals = prefabObject.GetComponent<ProductVisuals>();
+            if (visuals == null)
+            {
+                visuals = prefabObject.AddComponent<ProductVisuals>();
+            }
+            
+            // Set layer
+            InteractionLayers.SetProductLayer(prefabObject);
+            
+            if (showDebugLogs)
+                Debug.Log("CheckoutSceneSetup: Default CheckoutItem prefab created. Please save it as a prefab in your project.");
+        }
+
+        /// <summary>
+        /// Diagnoses common issues with the checkout system setup
+        /// </summary>
+        [ContextMenu("Diagnose Checkout Issues")]
+        public void DiagnoseCheckoutIssues()
+        {
+            Debug.Log("=== CHECKOUT SYSTEM DIAGNOSIS ===");
+            
+            // Check for CheckoutCounter in scene
+            CheckoutCounter[] counters = FindObjectsByType<CheckoutCounter>(FindObjectsSortMode.None);
+            Debug.Log($"Found {counters.Length} CheckoutCounter(s) in scene");
+            
+            foreach (CheckoutCounter counter in counters)
+            {
+                Debug.Log($"CheckoutCounter: {counter.name}");
+                Debug.Log($"  - Layer: {LayerMask.LayerToName(counter.gameObject.layer)}");
+                Debug.Log($"  - Position: {counter.transform.position}");
+                
+                // Check for CheckoutItemPlacement
+                CheckoutItemPlacement placement = counter.GetComponentInChildren<CheckoutItemPlacement>();
+                if (placement != null)
+                {
+                    Debug.Log($"  - Has CheckoutItemPlacement: YES");
+                    Debug.Log($"    - Max Items: {placement.MaxItems}");
+                    Debug.Log($"    - Available Space: {placement.HasAvailableSpace}");
+                }
+                else
+                {
+                    Debug.LogWarning($"  - Has CheckoutItemPlacement: NO - This will prevent item placement!");
+                }
+                
+                // Check IInteractable
+                if (counter.CanInteract)
+                {
+                    Debug.Log($"  - Can Interact: YES - '{counter.InteractionText}'");
+                }
+                else
+                {
+                    Debug.LogWarning($"  - Can Interact: NO");
+                }
+            }
+            
+            // Check for Customer behavior
+            CustomerBehavior[] customers = FindObjectsByType<CustomerBehavior>(FindObjectsSortMode.None);
+            Debug.Log($"Found {customers.Length} Customer(s) in scene");
+            
+            // Check for Player interaction
+            CheckoutPlayerController checkoutPlayer = FindAnyObjectByType<CheckoutPlayerController>();
+            PlayerInteraction playerInteraction = FindAnyObjectByType<PlayerInteraction>();
+            
+            if (checkoutPlayer != null)
+            {
+                Debug.Log("Player Controller: CheckoutPlayerController found - GOOD");
+            }
+            else if (playerInteraction != null)
+            {
+                Debug.LogWarning("Player Controller: Only PlayerInteraction found - checkout interactions may be limited");
+            }
+            else
+            {
+                Debug.LogError("Player Controller: NO player interaction system found!");
+            }
+            
+            // Check layers
+            bool layersValid = InteractionLayers.ValidateLayers();
+            Debug.Log($"Interaction Layers Valid: {layersValid}");
+            
+            Debug.Log("=== END DIAGNOSIS ===");
+        }
+
         #endregion
         
         #region Public Getters
