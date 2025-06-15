@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4428825610177319970}
   - component: {fileID: 9068830915073577321}
   - component: {fileID: 3042209675828456565}
-  m_Layer: 9
+  m_Layer: 8
   m_Name: MiniatureBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}

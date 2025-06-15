@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7309413115954338301}
   - component: {fileID: 7333204720448938268}
   - component: {fileID: 8971336134635334962}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Rulebook
   m_TagString: Untagged
   m_Icon: {fileID: 0}
