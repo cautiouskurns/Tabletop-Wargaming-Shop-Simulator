@@ -26,7 +26,24 @@ namespace TabletopShop
             get 
             {
                 if (product == null) return "Product";
-                return product.IsPurchased ? "Already Purchased" : $"Buy {product.ProductData?.ProductName ?? "Product"} (${product.CurrentPrice})";
+                
+                if (product.IsPurchased) 
+                    return "Already Purchased";
+                
+                // Check if product is at checkout for scanning
+                if (IsAtCheckout())
+                {
+                    if (product.IsScannedAtCheckout)
+                        return $"{product.ProductData?.ProductName ?? "Product"} (Scanned)";
+                    else
+                        return $"Scan {product.ProductData?.ProductName ?? "Product"} (${product.CurrentPrice})";
+                }
+                
+                // Normal purchase on shelf
+                if (product.IsOnShelf)
+                    return $"Buy {product.ProductData?.ProductName ?? "Product"} (${product.CurrentPrice})";
+                
+                return product.ProductData?.ProductName ?? "Product";
             }
         }
         
@@ -34,8 +51,25 @@ namespace TabletopShop
         { 
             get 
             {
-                return product != null && !product.IsPurchased && product.IsOnShelf;
+                if (product == null || product.IsPurchased) 
+                    return false;
+                
+                // Can interact if on shelf (for purchase) or at checkout (for scanning)
+                return product.IsOnShelf || IsAtCheckout();
             }
+        }
+        
+        /// <summary>
+        /// Quick check if product is at checkout (used by properties)
+        /// </summary>
+        private bool IsAtCheckout()
+        {
+            if (product == null || product.IsOnShelf || product.IsPurchased)
+                return false;
+            
+            // Check if parent contains "checkout" in name (simple check)
+            Transform parent = transform.parent;
+            return parent != null && parent.name.ToLower().Contains("checkout");
         }
         
         #endregion
@@ -63,6 +97,7 @@ namespace TabletopShop
         /// <summary>
         /// Handle player interaction with this product
         /// Integrates with ProductEconomics for transaction processing
+        /// Now also handles checkout scanning when product is at checkout
         /// </summary>
         /// <param name="player">The player GameObject</param>
         public void Interact(GameObject player)
@@ -75,6 +110,29 @@ namespace TabletopShop
             
             Debug.Log($"Player interacting with {product.ProductData?.ProductName ?? name}");
             
+            // Check if product is at checkout counter for scanning
+            if (IsAtCheckout())
+            {
+                HandleCheckoutScanning();
+                return;
+            }
+            
+            // Normal purchase flow for products on shelf
+            if (product.IsOnShelf)
+            {
+                HandleNormalPurchase(player);
+                return;
+            }
+            
+            Debug.LogWarning($"Product {product.ProductData?.ProductName ?? name} is not on shelf or at checkout - cannot interact");
+        }
+        
+        /// <summary>
+        /// Handle normal purchase when product is on shelf
+        /// </summary>
+        /// <param name="player">The player GameObject</param>
+        private void HandleNormalPurchase(GameObject player)
+        {
             // Process interaction through economics component
             bool purchaseSuccessful = false;
             
@@ -108,6 +166,106 @@ namespace TabletopShop
             
             // Fire interaction event
             OnPlayerInteract?.Invoke(player);
+        }
+        
+        /// <summary>
+        /// Handle checkout scanning when product is at checkout counter
+        /// </summary>
+        private void HandleCheckoutScanning()
+        {
+            if (product.IsScannedAtCheckout)
+            {
+                Debug.Log($"Product {product.ProductData?.ProductName ?? name} is already scanned!");
+                return;
+            }
+            
+            // Find the checkout counter this product belongs to
+            CheckoutCounter checkoutCounter = FindAssociatedCheckoutCounter();
+            if (checkoutCounter != null)
+            {
+                // Use the checkout counter's scan method to handle the scan
+                checkoutCounter.ScanProduct(product);
+                Debug.Log($"Scanned {product.ProductData?.ProductName ?? name} at checkout!");
+            }
+            else
+            {
+                Debug.LogWarning($"Could not find checkout counter for product {product.ProductData?.ProductName ?? name}");
+            }
+        }
+        
+        /// <summary>
+        /// Check if this product is currently at a checkout counter (enhanced version)
+        /// </summary>
+        /// <returns>True if product is at checkout</returns>
+        private bool IsProductAtCheckout()
+        {
+            // A product is at checkout if:
+            // 1. It's not on shelf
+            // 2. It's not purchased yet
+            // 3. Its parent is a checkout area (or it's very close to a checkout counter)
+            if (product.IsOnShelf || product.IsPurchased)
+                return false;
+            
+            // Check if parent is a checkout area
+            Transform parent = transform.parent;
+            if (parent != null && parent.name.ToLower().Contains("checkout"))
+                return true;
+            
+            // Alternative: Check proximity to checkout counter
+            CheckoutCounter nearbyCheckout = FindNearestCheckoutCounter();
+            if (nearbyCheckout != null)
+            {
+                float distance = Vector3.Distance(transform.position, nearbyCheckout.transform.position);
+                return distance <= 5f; // Within 5 units of checkout counter
+            }
+            
+            return false;
+        }
+        
+        /// <summary>
+        /// Find the checkout counter this product is associated with
+        /// </summary>
+        /// <returns>The associated checkout counter, or null</returns>
+        private CheckoutCounter FindAssociatedCheckoutCounter()
+        {
+            // First try to find by parent relationship
+            Transform parent = transform.parent;
+            while (parent != null)
+            {
+                CheckoutCounter checkout = parent.GetComponent<CheckoutCounter>();
+                if (checkout != null)
+                    return checkout;
+                parent = parent.parent;
+            }
+            
+            // If not found by parent, find the nearest checkout counter
+            return FindNearestCheckoutCounter();
+        }
+        
+        /// <summary>
+        /// Find the nearest checkout counter to this product
+        /// </summary>
+        /// <returns>The nearest checkout counter, or null</returns>
+        private CheckoutCounter FindNearestCheckoutCounter()
+        {
+            CheckoutCounter[] checkouts = FindObjectsByType<CheckoutCounter>(FindObjectsSortMode.None);
+            CheckoutCounter nearest = null;
+            float nearestDistance = float.MaxValue;
+            
+            foreach (CheckoutCounter checkout in checkouts)
+            {
+                if (checkout != null)
+                {
+                    float distance = Vector3.Distance(transform.position, checkout.transform.position);
+                    if (distance < nearestDistance)
+                    {
+                        nearestDistance = distance;
+                        nearest = checkout;
+                    }
+                }
+            }
+            
+            return nearest;
         }
         
         /// <summary>
@@ -372,6 +530,41 @@ namespace TabletopShop
                 Debug.Log("Testing direct interaction...");
                 Interact(null);
                 Debug.Log("✅ Interaction system test completed!");
+            }
+        }
+        
+        /// <summary>
+        /// Test product checkout scanning functionality
+        /// </summary>
+        [ContextMenu("Test Checkout Scanning")]
+        public void TestCheckoutScanning()
+        {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("Checkout scanning test requires Play mode");
+                return;
+            }
+            
+            Debug.Log("=== PRODUCT CHECKOUT SCANNING TEST ===");
+            Debug.Log($"Product: {product?.ProductData?.ProductName ?? name}");
+            Debug.Log($"Is On Shelf: {product?.IsOnShelf ?? false}");
+            Debug.Log($"Is Purchased: {product?.IsPurchased ?? false}");
+            Debug.Log($"Is Scanned: {product?.IsScannedAtCheckout ?? false}");
+            Debug.Log($"Is At Checkout: {IsAtCheckout()}");
+            Debug.Log($"Can Interact: {CanInteract}");
+            Debug.Log($"Interaction Text: {InteractionText}");
+            Debug.Log($"Parent: {transform.parent?.name ?? "None"}");
+            Debug.Log($"Position: {transform.position}");
+            
+            // Test finding checkout counter
+            CheckoutCounter checkoutCounter = FindAssociatedCheckoutCounter();
+            if (checkoutCounter != null)
+            {
+                Debug.Log($"Associated Checkout Counter: {checkoutCounter.name}");
+            }
+            else
+            {
+                Debug.LogWarning("No associated checkout counter found");
             }
         }
         

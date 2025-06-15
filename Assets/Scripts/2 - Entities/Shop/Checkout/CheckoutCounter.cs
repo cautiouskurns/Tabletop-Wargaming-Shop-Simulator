@@ -466,6 +466,7 @@ namespace TabletopShop
         
         /// <summary>
         /// Handle player interaction with checkout counter
+        /// Now only handles payment processing - scanning is done by interacting with individual products
         /// </summary>
         /// <param name="player">The player GameObject</param>
         public void Interact(GameObject player)
@@ -488,12 +489,9 @@ namespace TabletopShop
             }
             else
             {
-                // Try to scan the next unscanned product
-                Product nextProduct = productsAtCheckout.FirstOrDefault(p => !p.IsScannedAtCheckout);
-                if (nextProduct != null)
-                {
-                    ScanProduct(nextProduct);
-                }
+                // Inform player they need to scan individual products
+                int scannedCount = productsAtCheckout.Count(p => p.IsScannedAtCheckout);
+                Debug.Log($"Please scan individual products by looking at them. Scanned: {scannedCount}/{productsAtCheckout.Count}");
             }
         }
         
@@ -535,7 +533,7 @@ namespace TabletopShop
             }
             
             int scannedCount = productsAtCheckout.Count(p => p.IsScannedAtCheckout);
-            return $"Scan Products ({scannedCount}/{productsAtCheckout.Count})";
+            return $"Scan Individual Products ({scannedCount}/{productsAtCheckout.Count})";
         }
         
         #endregion
@@ -781,6 +779,44 @@ namespace TabletopShop
             if (product != null)
             {
                 product.transform.position = targetPosition;
+            }
+        }
+        
+        #endregion
+
+        #region Product Scanning Test
+
+        /// <summary>
+        /// Test the new product scanning system
+        /// </summary>
+        [ContextMenu("Test Product Scanning")]
+        public void TestProductScanning()
+        {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("Product scanning test requires Play mode");
+                return;
+            }
+            
+            Debug.Log("=== PRODUCT SCANNING TEST ===");
+            Debug.Log($"Products at checkout: {productsAtCheckout.Count}");
+            
+            foreach (Product product in productsAtCheckout)
+            {
+                if (product != null)
+                {
+                    bool isScanned = product.IsScannedAtCheckout;
+                    string productName = product.ProductData?.ProductName ?? product.name;
+                    string interactionText = product.InteractionText;
+                    bool canInteract = product.CanInteract;
+                    
+                    Debug.Log($"Product: {productName}");
+                    Debug.Log($"  - Scanned: {isScanned}");
+                    Debug.Log($"  - Can Interact: {canInteract}");
+                    Debug.Log($"  - Interaction Text: {interactionText}");
+                    Debug.Log($"  - Position: {product.transform.position}");
+                    Debug.Log($"  - Parent: {product.transform.parent?.name ?? "None"}");
+                }
             }
         }
         
