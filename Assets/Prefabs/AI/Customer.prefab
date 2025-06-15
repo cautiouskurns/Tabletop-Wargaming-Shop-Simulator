@@ -125,11 +125,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c300fe31183b4aaa98f97ad54f86a2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.Customer
-  currentState: 0
-  shoppingTime: 1
-  targetShelf: {fileID: 0}
-  movementSpeed: 1.5
-  stoppingDistance: 1
+  customerMovement: {fileID: 3706478564367830450}
+  customerBehavior: {fileID: 2883096600107730558}
+  customerVisuals: {fileID: 1743512066011946273}
 --- !u!114 &3706478564367830450
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -142,7 +140,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c98f439d8b77f4ba18e8c3fef23bc07e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.CustomerMovement
-  movementSpeed: 1.5
+  movementSpeed: 10
   stoppingDistance: 1
   stuckDetectionTime: 5
   stuckDistanceThreshold: 0.5
@@ -161,6 +159,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8298f83ad56a480fac7f1df9a9e833e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.CustomerBehavior
+  currentState: 0
   shoppingTime: 0
   targetShelf: {fileID: 0}
   baseSpendingPower: 100

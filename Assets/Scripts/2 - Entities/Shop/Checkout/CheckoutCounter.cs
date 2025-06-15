@@ -43,31 +43,28 @@ namespace TabletopShop
                 checkoutArea = transform;
             }
             
-            // Create and setup checkout UI
-            Canvas canvas = FindFirstObjectByType<Canvas>();
-            if (canvas != null)
+            // Find existing CheckoutUI in the scene
+            checkoutUI = FindFirstObjectByType<CheckoutUI>();
+            
+            if (checkoutUI != null)
             {
-                checkoutUI = CheckoutUI.CreateBasicCheckoutUI(canvas);
-                if (checkoutUI != null)
-                {
-                    checkoutUI.TrackCheckoutCounter(this);
-                    
-                    // Show UI for testing if enabled
-                    if (showUIOnStart)
-                    {
-                        checkoutUI.Show();
-                        checkoutUI.UpdateCustomer("Test Customer");
-                        checkoutUI.UpdateTotal(0f);
-                        Debug.Log("CheckoutUI: Showing for testing");
-                    }
-                }
+                checkoutUI.TrackCheckoutCounter(this);
+                Debug.Log($"CheckoutCounter: Found and connected to CheckoutUI");
+                
+                // Only show on start if testing
+                // if (showUIOnStart)
+                // {
+                //     checkoutUI.Show();
+                //     checkoutUI.UpdateCustomer("Test Customer");
+                //     checkoutUI.UpdateTotal(0f);
+                // }
             }
             else
             {
-                Debug.LogWarning("CheckoutCounter: No Canvas found - cannot create UI");
+                Debug.LogWarning("CheckoutCounter: No CheckoutUI found in scene - UI will not work");
             }
         }
-        
+            
         #endregion
         
         #region Product Management
@@ -103,6 +100,11 @@ namespace TabletopShop
             {
                 checkoutUI.AddProduct(product);
                 checkoutUI.Show(); // Make sure UI is visible when products are added
+                Debug.Log("CheckoutCounter: Showing UI because product was placed");
+            }
+            else
+            {
+                Debug.LogWarning("CheckoutCounter: No CheckoutUI found - cannot update UI");
             }
             
             Debug.Log($"Placed {product.ProductData?.ProductName ?? product.name} at checkout (${product.CurrentPrice})");
@@ -282,6 +284,11 @@ namespace TabletopShop
             {
                 checkoutUI.UpdateCustomer(customer.name);
                 checkoutUI.Show();
+                Debug.Log("CheckoutCounter: Showing UI because customer arrived");
+            }
+            else
+            {
+                Debug.LogWarning("CheckoutCounter: No CheckoutUI found - cannot update UI");
             }
             
             Debug.Log($"Customer {customer.name} arrived at checkout");

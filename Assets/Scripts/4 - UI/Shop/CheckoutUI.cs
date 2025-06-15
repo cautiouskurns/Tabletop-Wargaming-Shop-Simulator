@@ -91,6 +91,7 @@ namespace TabletopShop
         {
             isVisible = true;
             targetAlpha = 1f;
+            Debug.Log("CheckoutUI: Show() called - UI should now fade in");
         }
         
         /// <summary>
@@ -100,6 +101,7 @@ namespace TabletopShop
         {
             isVisible = false;
             targetAlpha = 0f;
+            Debug.Log("CheckoutUI: Hide() called - UI should now fade out");
         }
         
         /// <summary>
