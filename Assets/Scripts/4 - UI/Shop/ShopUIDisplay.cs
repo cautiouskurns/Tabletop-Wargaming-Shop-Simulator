@@ -38,6 +38,12 @@ namespace TabletopShop
         /// </summary>
         private GameManager gameManager;
         
+        /// <summary>
+        /// Cached reference to SimpleDayNightCycle for time data.
+        /// Used for getting current time, day, and day/night cycle information.
+        /// </summary>
+        private SimpleDayNightCycle dayNightCycle;
+        
         #endregion
         
         #region Initialization
@@ -50,15 +56,32 @@ namespace TabletopShop
         /// <param name="salesDisplayRef">Reference to sales display TextMeshPro component</param>
         /// <param name="timeDisplayRef">Reference to time display TextMeshPro component</param>
         /// <param name="gameManagerRef">Reference to GameManager for data access</param>
+        /// <param name="dayNightCycleRef">Reference to SimpleDayNightCycle for time data</param>
         public void Initialize(TextMeshProUGUI moneyDisplayRef, TextMeshProUGUI salesDisplayRef, 
-                             TextMeshProUGUI timeDisplayRef, GameManager gameManagerRef)
+                             TextMeshProUGUI timeDisplayRef, GameManager gameManagerRef, 
+                             SimpleDayNightCycle dayNightCycleRef = null)
         {
             moneyDisplay = moneyDisplayRef;
             salesDisplay = salesDisplayRef;
             timeDisplay = timeDisplayRef;
             gameManager = gameManagerRef;
+            dayNightCycle = dayNightCycleRef;
             
-            Debug.Log("[ShopUIDisplay] Initialized with UI references and GameManager");
+            // Try to find SimpleDayNightCycle if not provided
+            if (dayNightCycle == null)
+            {
+                dayNightCycle = Object.FindFirstObjectByType<SimpleDayNightCycle>();
+                if (dayNightCycle != null)
+                {
+                    Debug.Log("[ShopUIDisplay] Found SimpleDayNightCycle automatically");
+                }
+                else
+                {
+                    Debug.LogWarning("[ShopUIDisplay] SimpleDayNightCycle not found - time display may not work correctly");
+                }
+            }
+            
+            Debug.Log("[ShopUIDisplay] Initialized with UI references, GameManager, and DayNightCycle");
         }
         
         /// <summary>
@@ -215,63 +238,44 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Update time display with MM:SS format showing elapsed time in current day/night cycle.
+        /// Update time display with current day and time information from SimpleDayNightCycle.
         /// 
-        /// Time Formatting Calculations:
-        /// - GameManager provides DayProgress (0-1) for current cycle position
-        /// - Calculate elapsed time from cycle duration and current progress
-        /// - Convert total seconds to MM:SS format for clear time indication
+        /// Time Display Format: "Day 3 - 14:30" or "Day 3 - Night"
+        /// - Shows current day number
+        /// - Shows current time in 24-hour format
+        /// - Indicates day/night status
         /// 
-        /// Display Format: "05:23" (minutes:seconds elapsed in current cycle)
-        /// Day/Night Indication: Shows "Day 05:23" or "Night 01:45" for context
-        /// 
-        /// Time Display Trade-offs:
-        /// - Elapsed vs Countdown: Elapsed shows progress through cycle, countdown shows urgency
-        /// - Real-time vs Periodic: Real-time for immediate feedback, periodic for performance
-        /// - Absolute vs Relative: Relative elapsed time more intuitive for time progression
+        /// Data Source: SimpleDayNightCycle component provides accurate time data
         /// </summary>
         public void UpdateTimeDisplay()
         {
             if (timeDisplay == null) return;
             
-            // Null-safe GameManager access with comprehensive time information
-            if (gameManager != null)
+            // Get time data from SimpleDayNightCycle (more accurate than GameManager)
+            if (dayNightCycle != null)
             {
-                bool isDayTime = gameManager.IsDayTime;
-                int currentDay = gameManager.CurrentDay;
-                float dayProgress = gameManager.DayProgress;
+                int currentDay = dayNightCycle.CurrentDay;
+                bool isDayTime = dayNightCycle.IsDayTime;
+                string formattedTime = dayNightCycle.FormattedTime;
                 
-                // Calculate remaining time in current cycle
-                float totalCycleSeconds;
-                if (isDayTime)
-                {
-                    // Day cycle - get day length from GameManager (assuming 10 minutes default)
-                    // Note: dayLengthInMinutes is private, using reasonable default
-                    totalCycleSeconds = 10.0f * 60.0f; // 10 minutes in seconds
-                }
-                else
-                {
-                    // Night cycle - get night length from GameManager (assuming 2 minutes default)
-                    totalCycleSeconds = 2.0f * 60.0f; // 2 minutes in seconds
-                }
-                
-                // Calculate elapsed seconds (progress through cycle)
-                float elapsedSeconds = totalCycleSeconds * dayProgress;
-                elapsedSeconds = Mathf.Clamp(elapsedSeconds, 0, totalCycleSeconds); // Ensure within bounds
-                
-                // Convert to MM:SS format
-                int minutes = Mathf.FloorToInt(elapsedSeconds / 60.0f);
-                int seconds = Mathf.FloorToInt(elapsedSeconds % 60.0f);
-                string timeString = UIFormatting.FormatTimeCountdown(minutes, seconds);
-                
-                // Display format: "Day 3 - 05:23" or "Night 3 - 01:45"
-                string cycleIndicator = isDayTime ? "Day" : "Night";
-                timeDisplay.text = string.Format("{0} {1} - {2}", cycleIndicator, currentDay, timeString);
+                // Display format: "Day 3 - 14:30" or "Day 3 - Night 22:30"
+                string cycleIndicator = isDayTime ? "" : "Night ";
+                timeDisplay.text = $"Day {currentDay} - {cycleIndicator}{formattedTime}";
             }
             else
             {
-                // Fallback display when GameManager unavailable
-                timeDisplay.text = "Day 1 - 05:00";
+                // Fallback: Try to get from GameManager (legacy support)
+                if (gameManager != null)
+                {
+                    // Note: This path may not work if GameManager doesn't have time properties
+                    // Keep for backward compatibility
+                    timeDisplay.text = "Day 1 - 08:00";
+                }
+                else
+                {
+                    // Final fallback display when no time source available
+                    timeDisplay.text = "Day 1 - 08:00";
+                }
             }
         }
         

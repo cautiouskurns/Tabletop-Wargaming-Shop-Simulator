@@ -142,7 +142,7 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Handle keyboard input for UI interactions.
+        /// Handle keyboard input for UI interactions and update time display.
         /// Replaced polling-based UI updates with event-driven architecture.
         /// 
         /// Performance Improvements:
@@ -153,6 +153,7 @@ namespace TabletopShop
         /// 
         /// Remaining Update() functionality:
         /// - Keyboard input handling for price setting panel
+        /// - Time display updates (since time changes continuously)
         /// - Other real-time input processing as needed
         /// </summary>
         private void Update()
@@ -168,6 +169,12 @@ namespace TabletopShop
                         shopUIControls.TriggerAction(ShopUIAction.CancelPrice);
                     }
                 }
+            }
+            
+            // Update time display continuously since time changes every frame
+            if (shopUIDisplay != null)
+            {
+                shopUIDisplay.UpdateTimeDisplay();
             }
         }
         
@@ -276,7 +283,10 @@ namespace TabletopShop
                 shopUIDisplay = new ShopUIDisplay();
             }
             
-            shopUIDisplay.Initialize(moneyDisplay, salesDisplay, timeDisplay, gameManager);
+            // Find SimpleDayNightCycle for time data
+            SimpleDayNightCycle dayNightCycle = FindFirstObjectByType<SimpleDayNightCycle>();
+            
+            shopUIDisplay.Initialize(moneyDisplay, salesDisplay, timeDisplay, gameManager, dayNightCycle);
             shopUIDisplay.InitializeDisplayTexts();
             
             Debug.Log("[ShopUI] Display component initialized successfully");

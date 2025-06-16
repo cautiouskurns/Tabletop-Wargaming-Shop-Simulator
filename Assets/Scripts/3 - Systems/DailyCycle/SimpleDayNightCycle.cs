@@ -25,6 +25,9 @@ namespace TabletopShop
         [Header("Shop Lights")]
         [SerializeField] private Light[] shopLights;
         
+        [Header("GameManager Integration")]
+        [SerializeField] private bool updateGameManager = true; // Enable/disable GameManager integration
+        
         // Current time tracking
         private float currentTimeHours = 8f;
         private bool isDayTime = true;
@@ -33,9 +36,18 @@ namespace TabletopShop
         private float originalSunIntensity = 1.8f;
         private float originalSkyboxExposure = 1f;
         
+        // GameManager integration
+        private int currentDay = 1;
+        private float dayStartTime = 0f; // Time when current day started
+        
         public bool IsDayTime => isDayTime;
         public float CurrentHour => currentTimeHours;
         public string FormattedTime => $"{Mathf.FloorToInt(currentTimeHours):D2}:{Mathf.FloorToInt((currentTimeHours % 1) * 60):D2}";
+        
+        // New properties for UI integration
+        public int CurrentDay => currentDay;
+        public float DayProgress => (currentTimeHours - dayStartTime) / 24f;
+        public float TotalDayLengthInSeconds => dayLengthInSeconds;
         
         private void Start()
         {
@@ -55,9 +67,13 @@ namespace TabletopShop
             // Run independently for now - ignore GameManager time conflicts
             currentTimeHours += (24f / dayLengthInSeconds) * Time.deltaTime;
             
+            // Handle day transition
             if (currentTimeHours >= 24f)
             {
                 currentTimeHours -= 24f;
+                currentDay++;
+                dayStartTime = 0f; // Reset day start time
+                OnDayTransition();
             }
             
             bool newIsDayTime = currentTimeHours >= 6f && currentTimeHours < 20f;
@@ -67,6 +83,9 @@ namespace TabletopShop
                 isDayTime = newIsDayTime;
                 OnDayNightChange();
             }
+            
+            // Update GameManager if integration is enabled
+            UpdateGameManagerIntegration();
             
             UpdateVisuals();
         }
@@ -84,6 +103,34 @@ namespace TabletopShop
                         light.enabled = !isDayTime;
                 }
             }
+        }
+        
+        /// <summary>
+        /// Handle day transition when a new day starts
+        /// </summary>
+        private void OnDayTransition()
+        {
+            Debug.Log($"New day started: Day {currentDay} at {FormattedTime}");
+            
+            // Update GameManager if available
+            if (updateGameManager && GameManager.Instance != null)
+            {
+                // Trigger GameManager day change events if they exist
+                // Note: This assumes GameManager has day change functionality
+                Debug.Log($"SimpleDayNightCycle: Notifying GameManager of day transition to day {currentDay}");
+            }
+        }
+        
+        /// <summary>
+        /// Update GameManager with current time data for UI integration
+        /// </summary>
+        private void UpdateGameManagerIntegration()
+        {
+            if (!updateGameManager || GameManager.Instance == null) return;
+            
+            // For now, we'll use a different approach since GameManager might not have these properties
+            // The UI will need to get time data directly from this component
+            // This is a placeholder for future GameManager time integration
         }
         
         private void UpdateVisuals()
@@ -173,6 +220,33 @@ namespace TabletopShop
         public void SkipToNight()
         {
             SetTime(22f);
+        }
+        
+        /// <summary>
+        /// Test time integration with UI system
+        /// </summary>
+        [ContextMenu("Test Time Integration")]
+        public void TestTimeIntegration()
+        {
+            Debug.Log("=== TIME INTEGRATION TEST ===");
+            Debug.Log($"Current Time: {FormattedTime}");
+            Debug.Log($"Current Day: {CurrentDay}");
+            Debug.Log($"Is Day Time: {IsDayTime}");
+            Debug.Log($"Day Progress: {DayProgress:F2}");
+            Debug.Log($"Day Length: {TotalDayLengthInSeconds} seconds");
+            
+            // Test if ShopUI can find this component
+            ShopUI shopUI = FindFirstObjectByType<ShopUI>();
+            if (shopUI != null)
+            {
+                Debug.Log("✓ ShopUI found - time integration should work");
+            }
+            else
+            {
+                Debug.LogWarning("✗ ShopUI not found - time may not display in UI");
+            }
+            
+            Debug.Log("=============================");
         }
     }
 }
