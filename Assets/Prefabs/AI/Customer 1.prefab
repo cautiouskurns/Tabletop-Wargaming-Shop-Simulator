@@ -140,7 +140,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c98f439d8b77f4ba18e8c3fef23bc07e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.CustomerMovement
-  movementSpeed: 10
+  movementSpeed: 2
   stoppingDistance: 1
   stuckDetectionTime: 5
   stuckDistanceThreshold: 0.5

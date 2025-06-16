@@ -194,7 +194,25 @@ namespace TabletopShop
             // Phase 1: Entering the shop
             if (currentState == CustomerState.Entering)
             {
+                // Check if store is open before entering
+                if (!IsStoreOpen())
+                {
+                    Debug.Log($"CustomerBehavior {name}: Store is closed - cannot enter, going straight to leaving");
+                    ChangeState(CustomerState.Leaving);
+                    yield return StartCoroutine(HandleLeavingState());
+                    yield break;
+                }
+                
                 yield return StartCoroutine(HandleEnteringState());
+                
+                // Check again after entering - store might have closed while entering
+                if (ShouldLeaveStoreDueToHours())
+                {
+                    ChangeState(CustomerState.Leaving);
+                    yield return StartCoroutine(HandleLeavingState());
+                    yield break;
+                }
+                
                 ChangeState(CustomerState.Shopping);
             }
             
@@ -202,12 +220,22 @@ namespace TabletopShop
             if (currentState == CustomerState.Shopping)
             {
                 yield return StartCoroutine(HandleShoppingState());
+                
+                // Check if store is still open after shopping
+                if (ShouldLeaveStoreDueToHours())
+                {
+                    ChangeState(CustomerState.Leaving);
+                    yield return StartCoroutine(HandleLeavingState());
+                    yield break;
+                }
+                
                 ChangeState(CustomerState.Purchasing);
             }
             
             // Phase 3: Purchasing (move to checkout area and make purchase)
             if (currentState == CustomerState.Purchasing)
             {
+                // Even if store is closing, allow customers to complete their purchase
                 yield return StartCoroutine(HandlePurchasingState());
                 ChangeState(CustomerState.Leaving);
             }
@@ -256,9 +284,26 @@ namespace TabletopShop
             
             float shoppedTime = 0f;
             float lastProductCheckTime = 0f;
+            float originalShoppingTime = shoppingTime;
             
             while (shoppedTime < shoppingTime)
             {
+                // Check if store is closing and customer should leave
+                if (ShouldLeaveStoreDueToHours())
+                {
+                    Debug.Log($"CustomerBehavior {name} cutting shopping short - store is closing");
+                    break;
+                }
+                
+                // Check if customer should hurry up due to store closing soon
+                if (ShouldHurryUpShopping())
+                {
+                    // Reduce remaining shopping time by half when store is closing soon
+                    float remainingTime = shoppingTime - shoppedTime;
+                    shoppingTime = shoppedTime + (remainingTime * 0.5f);
+                    Debug.Log($"CustomerBehavior {name} hurrying up shopping - store closing soon (reduced time from {originalShoppingTime:F1}s to {shoppingTime:F1}s)");
+                }
+                
                 // Occasionally move to different shelves while shopping
                 if (UnityEngine.Random.value < 0.3f) // 30% chance every check
                 {
@@ -972,6 +1017,68 @@ namespace TabletopShop
             
             // Customer can now place items on the counter
             StartCoroutine(PlaceItemsOnCounter(checkoutCounter));
+        }
+        
+        #endregion
+        #region Store Hours Integration
+        
+        /// <summary>
+        /// Check if the store is currently open for customers
+        /// </summary>
+        private bool IsStoreOpen()
+        {
+            StoreHours storeHours = FindFirstObjectByType<StoreHours>();
+            if (storeHours != null)
+            {
+                return storeHours.IsStoreOpen;
+            }
+            
+            // Fallback: assume store is open if no StoreHours system found
+            return true;
+        }
+        
+        /// <summary>
+        /// Check if customer should continue shopping or leave due to store closing
+        /// </summary>
+        private bool ShouldLeaveStoreDueToHours()
+        {
+            StoreHours storeHours = FindFirstObjectByType<StoreHours>();
+            if (storeHours != null)
+            {
+                // If store is closed, customer should leave
+                if (!storeHours.IsStoreOpen)
+                {
+                    Debug.Log($"CustomerBehavior {name}: Store is closed - customer should leave");
+                    return true;
+                }
+                
+                // If store is closing soon (less than 30 minutes), finish current shopping
+                float timeUntilClose = storeHours.GetTimeUntilClose();
+                if (timeUntilClose <= 0.5f && timeUntilClose > 0f) // Less than 30 minutes
+                {
+                    Debug.Log($"CustomerBehavior {name}: Store closing soon ({timeUntilClose:F1}h) - finishing up shopping");
+                    // Don't force leave immediately, but hurry up shopping
+                    return false;
+                }
+            }
+            
+            return false;
+        }
+        
+        /// <summary>
+        /// Check if customer should hurry up their shopping due to store closing soon
+        /// </summary>
+        private bool ShouldHurryUpShopping()
+        {
+            StoreHours storeHours = FindFirstObjectByType<StoreHours>();
+            if (storeHours != null)
+            {
+                float timeUntilClose = storeHours.GetTimeUntilClose();
+                // If less than 30 minutes until close, hurry up
+                return timeUntilClose <= 0.5f && timeUntilClose > 0f;
+            }
+            
+            return false;
         }
         
         #endregion
