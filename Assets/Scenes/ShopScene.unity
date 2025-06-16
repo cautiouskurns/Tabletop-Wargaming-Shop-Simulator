@@ -2984,6 +2984,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 390525097}
   m_CullTransparentMesh: 1
+--- !u!114 &395698168 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8961356127473045384, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
+  m_PrefabInstance: {fileID: 1174955266}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!1 &406691837
 GameObject:
   m_ObjectHideFlags: 0
@@ -8075,6 +8086,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3117467832579932385, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
+      propertyPath: shopUIDisplay.moneyDisplay
+      value: 
+      objectReference: {fileID: 1420559369}
+    - target: {fileID: 3117467832579932385, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
+      propertyPath: shopUIDisplay.salesDisplay
+      value: 
+      objectReference: {fileID: 395698168}
     - target: {fileID: 3381127430719640499, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -9715,6 +9734,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3387087582015911511, guid: 5cd710874f1cb4d0cb7e4278a5ec073d, type: 3}
   m_PrefabInstance: {fileID: 6893552252209953649}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1420559369 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3517857426393133456, guid: 8457b7dce7d3b4e109656619ec62070a, type: 3}
+  m_PrefabInstance: {fileID: 1174955266}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!1 &1421985055
 GameObject:
   m_ObjectHideFlags: 0
@@ -9799,7 +9829,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76ab0d0b2d6da4894923cbe41894d466, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TabletopShop::TabletopShop.SimpleDayNightCycle
-  dayLengthInSeconds: 30
+  dayLengthInSeconds: 60
   startTime: 8
   sunTransform: {fileID: 1195909372}
   sunLight: {fileID: 1934702166}
@@ -9807,6 +9837,10 @@ MonoBehaviour:
   dayAmbientColor: {r: 1, g: 1, b: 1, a: 1}
   nightAmbientColor: {r: 0.2, g: 0.2, b: 0.4, a: 1}
   shopLights: []
+  updateGameManager: 1
+  daySkybox: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  nightSkybox: {fileID: 2100000, guid: 493bfb50af5d9424da505ba945c86600, type: 2}
+  skyboxTransitionTime: 10
 --- !u!1001 &1458603659
 PrefabInstance:
   m_ObjectHideFlags: 0

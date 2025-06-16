@@ -28,6 +28,11 @@ namespace TabletopShop
         [Header("GameManager Integration")]
         [SerializeField] private bool updateGameManager = true; // Enable/disable GameManager integration
         
+        [Header("Skybox Materials")]
+        [SerializeField] private Material daySkybox;
+        [SerializeField] private Material nightSkybox;
+        [SerializeField] private float skyboxTransitionTime = 30f; // Time in seconds for skybox transition
+        
         // Current time tracking
         private float currentTimeHours = 8f;
         private bool isDayTime = true;
@@ -39,6 +44,10 @@ namespace TabletopShop
         // GameManager integration
         private int currentDay = 1;
         private float dayStartTime = 0f; // Time when current day started
+        
+        // Skybox transition state
+        private bool isTransitioningSkybox = false;
+        private float skyboxTransitionProgress = 0f;
         
         public bool IsDayTime => isDayTime;
         public float CurrentHour => currentTimeHours;
@@ -58,6 +67,9 @@ namespace TabletopShop
                 originalSunIntensity = sunLight.intensity;
             if (skyboxMaterial != null)
                 originalSkyboxExposure = skyboxMaterial.GetFloat("_Exposure");
+            
+            // Set up skybox materials if not assigned
+            SetupSkyboxMaterials();
             
             UpdateVisuals();
         }
@@ -103,6 +115,9 @@ namespace TabletopShop
                         light.enabled = !isDayTime;
                 }
             }
+            
+            // Trigger skybox transition
+            StartSkyboxTransition();
         }
         
         /// <summary>
@@ -247,6 +262,116 @@ namespace TabletopShop
             }
             
             Debug.Log("=============================");
+        }
+        
+        /// <summary>
+        /// Set up skybox materials for day/night transitions
+        /// </summary>
+        private void SetupSkyboxMaterials()
+        {
+            // If no day skybox is assigned, use the current skybox as the day skybox
+            if (daySkybox == null)
+            {
+                daySkybox = RenderSettings.skybox;
+                if (daySkybox != null)
+                {
+                    Debug.Log($"SimpleDayNightCycle: Using current skybox as day skybox: {daySkybox.name}");
+                }
+                else
+                {
+                    Debug.LogWarning("SimpleDayNightCycle: No skybox material found in RenderSettings");
+                }
+            }
+            
+            // Validate skybox assignments
+            if (daySkybox != null && nightSkybox != null)
+            {
+                Debug.Log($"SimpleDayNightCycle: Day/Night skybox switching enabled");
+                Debug.Log($"  Day Skybox: {daySkybox.name}");
+                Debug.Log($"  Night Skybox: {nightSkybox.name}");
+            }
+            else if (daySkybox != null)
+            {
+                Debug.Log($"SimpleDayNightCycle: Only day skybox assigned - no skybox switching");
+            }
+            else
+            {
+                Debug.LogWarning("SimpleDayNightCycle: No skybox materials available");
+            }
+        }
+        
+        /// <summary>
+        /// Start a skybox transition when day/night changes
+        /// </summary>
+        private void StartSkyboxTransition()
+        {
+            // Only start transition if we have both day and night skyboxes
+            if (daySkybox == null || nightSkybox == null)
+            {
+                Debug.Log("SimpleDayNightCycle: Skybox transition skipped - missing day or night skybox material");
+                return;
+            }
+            
+            if (isTransitioningSkybox)
+            {
+                Debug.Log("SimpleDayNightCycle: Skybox transition already in progress");
+                return;
+            }
+            
+            isTransitioningSkybox = true;
+            skyboxTransitionProgress = 0f;
+            
+            string transitionType = isDayTime ? "Night → Day" : "Day → Night";
+            Debug.Log($"SimpleDayNightCycle: Starting skybox transition: {transitionType}");
+            
+            // Start the transition coroutine
+            StartCoroutine(SkyboxTransitionCoroutine());
+        }
+        
+        /// <summary>
+        /// Coroutine to handle smooth skybox transitions
+        /// </summary>
+        private System.Collections.IEnumerator SkyboxTransitionCoroutine()
+        {
+            Material fromSkybox = isDayTime ? nightSkybox : daySkybox;
+            Material toSkybox = isDayTime ? daySkybox : nightSkybox;
+            
+            // Immediately switch to the target skybox
+            RenderSettings.skybox = toSkybox;
+            
+            // Handle exposure blending if the skybox supports it
+            if (toSkybox.HasProperty("_Exposure"))
+            {
+                float startExposure = isDayTime ? 0.3f : originalSkyboxExposure;
+                float targetExposure = isDayTime ? originalSkyboxExposure : 0.3f;
+                
+                while (skyboxTransitionProgress < 1f)
+                {
+                    skyboxTransitionProgress += Time.deltaTime / skyboxTransitionTime;
+                    skyboxTransitionProgress = Mathf.Clamp01(skyboxTransitionProgress);
+                    
+                    // Smooth transition curve
+                    float easedProgress = Mathf.SmoothStep(0f, 1f, skyboxTransitionProgress);
+                    
+                    // Interpolate exposure
+                    float currentExposure = Mathf.Lerp(startExposure, targetExposure, easedProgress);
+                    toSkybox.SetFloat("_Exposure", currentExposure);
+                    
+                    yield return null;
+                }
+                
+                // Ensure final values are set
+                toSkybox.SetFloat("_Exposure", targetExposure);
+            }
+            else
+            {
+                // If no exposure property, just wait for the transition time
+                yield return new WaitForSeconds(skyboxTransitionTime);
+            }
+            
+            isTransitioningSkybox = false;
+            string transitionType = isDayTime ? "Day" : "Night";
+            Debug.Log($"SimpleDayNightCycle: Skybox transition to {transitionType} completed");
         }
     }
 }
