@@ -65,7 +65,9 @@ namespace TabletopShop
             // Store original values
             if (sunLight != null)
                 originalSunIntensity = sunLight.intensity;
-            if (skyboxMaterial != null)
+            
+            // Safely get original skybox exposure if the property exists
+            if (skyboxMaterial != null && skyboxMaterial.HasProperty("_Exposure"))
                 originalSkyboxExposure = skyboxMaterial.GetFloat("_Exposure");
             
             // Set up skybox materials if not assigned
@@ -200,13 +202,20 @@ namespace TabletopShop
         {
             if (skyboxMaterial == null) return;
             
-            float targetExposure = isDayTime ? originalSkyboxExposure : 0.3f;
-            float currentExposure = skyboxMaterial.GetFloat("_Exposure");
-            skyboxMaterial.SetFloat("_Exposure", Mathf.Lerp(currentExposure, targetExposure, Time.deltaTime * 2f));
+            // Safely handle exposure property if it exists
+            if (skyboxMaterial.HasProperty("_Exposure"))
+            {
+                float targetExposure = isDayTime ? originalSkyboxExposure : 0.3f;
+                float currentExposure = skyboxMaterial.GetFloat("_Exposure");
+                skyboxMaterial.SetFloat("_Exposure", Mathf.Lerp(currentExposure, targetExposure, Time.deltaTime * 2f));
+            }
             
-            // Slowly rotate skybox
-            float currentRotation = skyboxMaterial.GetFloat("_Rotation");
-            skyboxMaterial.SetFloat("_Rotation", currentRotation + 0.1f * Time.deltaTime);
+            // Safely handle rotation property if it exists (some skyboxes don't have this)
+            if (skyboxMaterial.HasProperty("_Rotation"))
+            {
+                float currentRotation = skyboxMaterial.GetFloat("_Rotation");
+                skyboxMaterial.SetFloat("_Rotation", currentRotation + 0.1f * Time.deltaTime);
+            }
         }
         
         /// <summary>

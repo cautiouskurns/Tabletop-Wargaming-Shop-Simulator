@@ -7113,6 +7113,7 @@ Transform:
   - {fileID: 962909633}
   - {fileID: 227574063}
   - {fileID: 1450922132}
+  - {fileID: 1475282672}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &972957565
@@ -9796,7 +9797,7 @@ GameObject:
   - component: {fileID: 1450922132}
   - component: {fileID: 1450922133}
   m_Layer: 0
-  m_Name: DayNightCycle
+  m_Name: DayNightCycleManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10057,6 +10058,56 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 182ff0849276b4ee1832d2ad3678cb50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfSlotInteraction
+--- !u!1 &1475282671
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1475282672}
+  - component: {fileID: 1475282673}
+  m_Layer: 0
+  m_Name: StoreHoursManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1475282672
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1475282671}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 970041456}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1475282673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1475282671}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b686ef2daf81c4914aca46dd9ef63a56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.StoreHours
+  openHour: 8
+  closeHour: 18
+  dayNightCycle: {fileID: 1450922133}
+  customerSpawner: {fileID: 274469689}
+  closedSigns: []
+  storeLights: []
 --- !u!114 &1484433496
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14633,6 +14684,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1962747757}
     m_Modifications:
+    - target: {fileID: 1172829532319259575, guid: 5cd710874f1cb4d0cb7e4278a5ec073d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.813
+      objectReference: {fileID: 0}
     - target: {fileID: 3387087582015911511, guid: 5cd710874f1cb4d0cb7e4278a5ec073d, type: 3}
       propertyPath: m_LocalPosition.x
       value: -8.92
