@@ -7,6 +7,9 @@ TagManager:
   - Customer
   - Exit
   - Checkout
+  - Item
+  - Point
+  - Shop
   layers:
   - Default
   - TransparentFX
