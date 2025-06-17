@@ -1577,7 +1577,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: TabletopShop::TabletopShop.ShelfVisuals
   shelfMaterial: {fileID: 0}
-  shelfDimensions: {x: 35, y: 35, z: 35}
+  shelfDimensions: {x: 0.1, y: 0.1, z: 0.1}
   showShelfGizmos: 1
 --- !u!65 &8817021599748378588
 BoxCollider:

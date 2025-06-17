@@ -336,7 +336,7 @@ namespace TabletopShop
         /// <summary>
         /// Handle purchasing state behavior
         /// Customer brings selected products to checkout counter and waits for completion
-        /// Uses the new checkout counter workflow instead of direct purchase processing
+        /// Uses proper queue system - customers must wait their turn before placing items
         /// </summary>
         private IEnumerator HandlePurchasingState()
         {
@@ -367,12 +367,64 @@ namespace TabletopShop
                     yield return new WaitForSeconds(0.5f);
                 }
                 
-                Debug.Log($"CustomerBehavior {name} has reached the checkout counter");
+                Debug.Log($"CustomerBehavior {name} has arrived at the checkout counter");
                 
-                // Notify the checkout counter that customer has arrived (this handles queue management)
+                // Set waiting flag BEFORE notifying checkout counter to avoid race conditions
+                waitingForCheckoutTurn = true;
+                
+                // Notify the checkout counter that customer has arrived
+                // This will either put them in queue OR immediately call OnCheckoutReady if counter is free
                 targetCheckoutCounter.OnCustomerArrival(GetComponent<Customer>());
                 
-                // Wait for checkout completion (customer will wait in queue if needed)
+                // Check if the checkout counter immediately gave us permission (backwards compatibility)
+                // If OnCheckoutReady was called synchronously, waitingForCheckoutTurn would be false
+                yield return new WaitForSeconds(0.1f); // Small delay to allow synchronous callbacks
+                
+                if (!waitingForCheckoutTurn)
+                {
+                    Debug.Log($"CustomerBehavior {name} got immediate checkout permission");
+                }
+                else
+                {
+                    Debug.Log($"CustomerBehavior {name} waiting for checkout turn... (waitingForCheckoutTurn = {waitingForCheckoutTurn})");
+                }
+                
+                float waitTime = 0f;
+                while (waitingForCheckoutTurn)
+                {
+                    yield return new WaitForSeconds(0.5f);
+                    waitTime += 0.5f;
+                    
+                    // Debug logging every 5 seconds to track waiting
+                    if (waitTime % 5f < 0.6f)
+                    {
+                        Debug.Log($"CustomerBehavior {name} still waiting for checkout turn... ({waitTime:F1}s elapsed)");
+                    }
+                    
+                    // Safety check - if checkout counter becomes null or inactive, stop waiting
+                    if (targetCheckoutCounter == null || !targetCheckoutCounter.gameObject.activeInHierarchy)
+                    {
+                        Debug.LogWarning($"CustomerBehavior {name} checkout counter became invalid, stopping wait");
+                        waitingForCheckoutTurn = false;
+                        break;
+                    }
+                    
+                    // Safety timeout - if waiting too long, assume counter doesn't support proper queue management
+                    if (waitTime > 10f)
+                    {
+                        Debug.LogWarning($"CustomerBehavior {name} has been waiting for {waitTime:F1}s - CheckoutCounter may not support queue callbacks. Proceeding anyway.");
+                        waitingForCheckoutTurn = false;
+                        isInQueue = false;
+                        break;
+                    }
+                }
+                
+                Debug.Log($"CustomerBehavior {name} got checkout turn - proceeding to place items");
+                
+                // Now it's our turn - place items on counter
+                yield return StartCoroutine(PlaceItemsOnCounter(targetCheckoutCounter));
+                
+                // Wait for checkout completion (payment processing)
                 yield return StartCoroutine(WaitForCheckoutCompletion(targetCheckoutCounter));
                 
                 // Collect items and complete transaction
@@ -798,10 +850,24 @@ namespace TabletopShop
         
         /// <summary>
         /// Coroutine to place selected items on the checkout counter
+        /// Only proceeds if customer is authorized to use the counter
         /// </summary>
         /// <param name="checkoutCounter">The checkout counter to place items on</param>
         private IEnumerator PlaceItemsOnCounter(CheckoutCounter checkoutCounter)
         {
+            // Safety check: Only place items if we're not waiting for our turn and not in queue
+            if (waitingForCheckoutTurn)
+            {
+                Debug.LogWarning($"CustomerBehavior {name} attempted to place items while waiting for checkout turn - blocking!");
+                yield break;
+            }
+            
+            if (isInQueue)
+            {
+                Debug.LogWarning($"CustomerBehavior {name} attempted to place items while still in queue - blocking!");
+                yield break;
+            }
+            
             Debug.Log($"CustomerBehavior {name} placing {selectedProducts.Count} items on checkout counter");
             
             // Get customer component for validation
@@ -982,6 +1048,58 @@ namespace TabletopShop
             }
         }
         
+        /// <summary>
+        /// Emergency fallback - if customer has been waiting too long without queue callbacks,
+        /// assume they can proceed (for backwards compatibility with CheckoutCounter implementations)
+        /// </summary>
+        [ContextMenu("Force Proceed to Checkout")]
+        public void ForceProceedToCheckout()
+        {
+            if (waitingForCheckoutTurn)
+            {
+                Debug.LogWarning($"CustomerBehavior {name} forced to proceed to checkout - queue system may not be working properly");
+                waitingForCheckoutTurn = false;
+                isInQueue = false;
+                queuePosition = -1;
+            }
+        }
+        
+        /// <summary>
+        /// Check if customer is stuck waiting and provide diagnostics
+        /// </summary>
+        [ContextMenu("Diagnose Checkout Issue")]
+        public void DiagnoseCheckoutIssue()
+        {
+            Debug.Log($"=== Checkout Diagnosis for {name} ===");
+            Debug.Log($"Current State: {currentState}");
+            Debug.Log($"Waiting for checkout turn: {waitingForCheckoutTurn}");
+            Debug.Log($"Is in queue: {isInQueue}");
+            Debug.Log($"Queue position: {queuePosition}");
+            Debug.Log($"Queued checkout: {(queuedCheckout != null ? queuedCheckout.name : "None")}");
+            Debug.Log($"Waiting for checkout: {isWaitingForCheckout}");
+            
+            // Check if there are any checkout counters in the scene
+            CheckoutCounter[] counters = FindObjectsByType<CheckoutCounter>(FindObjectsSortMode.None);
+            Debug.Log($"Checkout counters in scene: {counters.Length}");
+            
+            foreach (CheckoutCounter counter in counters)
+            {
+                if (counter != null)
+                {
+                    Debug.Log($"  - Counter: {counter.name} (Active: {counter.gameObject.activeInHierarchy})");
+                }
+            }
+            
+            // Suggest fixes
+            if (waitingForCheckoutTurn && !isInQueue)
+            {
+                Debug.LogWarning("Customer is waiting for checkout turn but not in queue - CheckoutCounter may not be calling queue methods properly!");
+                Debug.LogWarning("Try using 'Force Proceed to Checkout' context menu to fix this customer.");
+            }
+            
+            Debug.Log("=====================================");
+        }
+        
         #endregion        
         #region Queue Management
         
@@ -994,8 +1112,13 @@ namespace TabletopShop
         {
             Debug.Log($"CustomerBehavior {name} joined queue at position {position + 1} for checkout {checkoutCounter.name}");
             
-            // Customer should wait patiently in queue
-            isWaitingForCheckout = true;
+            // Store queue information
+            isInQueue = true;
+            queuePosition = position;
+            queuedCheckout = checkoutCounter;
+            
+            // Customer is still waiting for their turn
+            waitingForCheckoutTurn = true;
         }
         
         /// <summary>
@@ -1005,6 +1128,7 @@ namespace TabletopShop
         public void OnQueuePositionChanged(int newPosition)
         {
             Debug.Log($"CustomerBehavior {name} moved to queue position {newPosition + 1}");
+            queuePosition = newPosition;
         }
         
         /// <summary>
@@ -1015,8 +1139,15 @@ namespace TabletopShop
         {
             Debug.Log($"CustomerBehavior {name} can now proceed to checkout counter {checkoutCounter.name}");
             
-            // Customer can now place items on the counter
-            StartCoroutine(PlaceItemsOnCounter(checkoutCounter));
+            // Clear queue flags
+            isInQueue = false;
+            queuePosition = -1;
+            queuedCheckout = null;
+            
+            // Signal that it's our turn (this will allow HandlePurchasingState to continue)
+            waitingForCheckoutTurn = false;
+            
+            // Note: Item placement will happen in HandlePurchasingState after waitingForCheckoutTurn becomes false
         }
         
         #endregion
@@ -1079,6 +1210,66 @@ namespace TabletopShop
             }
             
             return false;
+        }
+        
+        #endregion
+        #region Queue System Debug Methods
+        
+        /// <summary>
+        /// Debug method to check current queue status
+        /// </summary>
+        [ContextMenu("Check Queue Status")]
+        public void CheckQueueStatus()
+        {
+            Debug.Log($"=== Queue Status for {name} ===");
+            Debug.Log($"Is in queue: {isInQueue}");
+            Debug.Log($"Queue position: {queuePosition}");
+            Debug.Log($"Queued checkout: {(queuedCheckout != null ? queuedCheckout.name : "None")}");
+            Debug.Log($"Waiting for checkout turn: {waitingForCheckoutTurn}");
+            Debug.Log($"Waiting for checkout: {isWaitingForCheckout}");
+            Debug.Log($"Current state: {currentState}");
+            Debug.Log($"Selected products: {selectedProducts.Count}");
+            Debug.Log($"Placed products: {placedOnCounterProducts.Count}");
+            Debug.Log("===============================");
+        }
+        
+        /// <summary>
+        /// Force customer to leave queue (for testing)
+        /// </summary>
+        [ContextMenu("Force Leave Queue")]
+        public void ForceLeaveQueue()
+        {
+            if (isInQueue && queuedCheckout != null)
+            {
+                Debug.Log($"CustomerBehavior {name} forcibly leaving queue");
+                
+                // Notify checkout counter that we're leaving the queue
+                // (Assuming CheckoutCounter has a method for this)
+                // queuedCheckout.RemoveCustomerFromQueue(GetComponent<Customer>());
+                
+                // Clear queue state
+                isInQueue = false;
+                queuePosition = -1;
+                queuedCheckout = null;
+                waitingForCheckoutTurn = false;
+                
+                // Force customer to leave
+                ChangeState(CustomerState.Leaving);
+            }
+            else
+            {
+                Debug.Log($"CustomerBehavior {name} is not in a queue");
+            }
+        }
+        
+        /// <summary>
+        /// Get formatted debug info about customer's current state
+        /// </summary>
+        public string GetDebugInfo()
+        {
+            return $"Customer {name}: State={currentState}, InQueue={isInQueue}, QueuePos={queuePosition}, " +
+                   $"WaitingTurn={waitingForCheckoutTurn}, WaitingCheckout={isWaitingForCheckout}, " +
+                   $"Products={selectedProducts.Count}, Placed={placedOnCounterProducts.Count}";
         }
         
         #endregion
