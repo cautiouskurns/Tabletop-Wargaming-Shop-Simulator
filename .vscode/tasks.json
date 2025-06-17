@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build Shop Simulator",
+			"type": "shell",
+			"command": "cd '/Users/diarmuidcurran/Unity Projects/Tabletop-Wargaming-Shop-Simulator' && /Applications/Unity/Hub/Editor/2022.3.53f1/Unity.app/Contents/MacOS/Unity -projectPath . -batchmode -buildTarget StandaloneOSX -quit",
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}

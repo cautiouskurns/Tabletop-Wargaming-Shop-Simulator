@@ -50,9 +50,7 @@ namespace TabletopShop
                 SetupCamera();
             }
             
-            // Lock cursor
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            // Cursor control is handled by CursorManager - no direct control here
         }
         
         private void Update()
@@ -143,11 +141,14 @@ namespace TabletopShop
         /// </summary>
         private void HandleInput()
         {
+            // Cursor handling is now managed by CursorManager
+            // Remove direct cursor control to prevent conflicts
+            
             // Toggle cursor lock with Escape
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                ToggleCursorLock();
-            }
+            // if (Input.GetKeyDown(KeyCode.Escape))
+            // {
+            //     ToggleCursorLock();
+            // }
         }
         
         /// <summary>
