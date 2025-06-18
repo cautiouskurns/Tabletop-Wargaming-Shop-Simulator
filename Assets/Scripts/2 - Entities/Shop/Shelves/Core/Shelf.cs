@@ -80,6 +80,7 @@ namespace TabletopShop
             // In edit mode, defer slot creation to avoid SendMessage errors during Awake
             else if (autoCreateSlots && !hasExistingSlots && !Application.isPlaying)
             {
+#if UNITY_EDITOR
                 Debug.Log($"Deferring slot creation for {name} in edit mode");
                 UnityEditor.EditorApplication.delayCall += () => {
                     if (this != null) // Check if object still exists
@@ -88,6 +89,7 @@ namespace TabletopShop
                         CreateSlots();
                     }
                 };
+#endif
             }
             #endif
             

@@ -1,7 +1,9 @@
 using UnityEngine;
 using UnityEditor;
 
-public class CreateCustomerAnimations : EditorWindow
+namespace TabletopShop.Editor
+{
+    public class CreateCustomerAnimations : EditorWindow
 {
     [MenuItem("Tools/Create Customer Animations")]
     public static void CreateAnimations()
@@ -69,4 +71,5 @@ public class CreateCustomerAnimations : EditorWindow
         
         Debug.Log("Customer animations and animator controller created successfully!");
     }
+}
 }

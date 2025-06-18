@@ -131,3 +131,5 @@ MonoBehaviour:
   currentState: 0
   isOnShelf: 0
   isPurchased: 0
+  isScannedAtCheckout: 0
+  scannedMaterial: {fileID: 0}

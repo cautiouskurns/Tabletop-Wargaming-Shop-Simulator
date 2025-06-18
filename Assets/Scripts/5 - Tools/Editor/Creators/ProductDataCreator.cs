@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace TabletopShop
+namespace TabletopShop.Editor
 {
     public class ProductDataCreator
     {

@@ -16,9 +16,9 @@ namespace TabletopShop
         [SerializeField] private float queueSpacing = 2f;
         
         [Header("Product Layout")]
-        [SerializeField] private int maxProductsPerRow = 3;
+        [SerializeField] private int maxProductsPerRow = 2;
         [SerializeField] private float rowSpacing = 0.4f;
-        [SerializeField] private Vector3 checkoutAreaSize = new Vector3(1.5f, 0.1f, 1.0f); // Width, Height, Depth of checkout area
+        [SerializeField] private Vector3 checkoutAreaSize = new Vector3(1.0f, 0.05f, 0.7f); // Width, Height, Depth of checkout area
         [SerializeField] private bool arrangeInGrid = true;
         
         [Header("UI Settings")]
@@ -126,15 +126,15 @@ namespace TabletopShop
             product.transform.SetParent(checkoutArea);
             
             // Add slight random rotation for more natural look
-            if (arrangeInGrid)
-            {
-                Vector3 randomRotation = new Vector3(
-                    0f,
-                    UnityEngine.Random.Range(-15f, 15f), // Small random Y rotation
-                    0f
-                );
-                product.transform.rotation = checkoutArea.rotation * Quaternion.Euler(randomRotation);
-            }
+            // if (arrangeInGrid)
+            // {
+            //     Vector3 randomRotation = new Vector3(
+            //         0f,
+            //         UnityEngine.Random.Range(-15f, 15f), // Small random Y rotation
+            //         0f
+            //     );
+            //     product.transform.rotation = checkoutArea.rotation * Quaternion.Euler(randomRotation);
+            // }
             
             // Ensure the product stays stationary by disabling movement components
             EnsureProductStationary(product);

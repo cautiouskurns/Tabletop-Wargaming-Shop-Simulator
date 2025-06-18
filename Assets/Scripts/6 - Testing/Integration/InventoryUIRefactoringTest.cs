@@ -311,10 +311,10 @@ namespace TabletopShop
         {
             Log("Testing legacy compatibility...");
             
+#if UNITY_EDITOR
             // Test that serialized fields are still accessible (for migration)
             var serializedObject = new UnityEditor.SerializedObject(inventoryUI);
             
-            #if UNITY_EDITOR
             var fadeInProperty = serializedObject.FindProperty("fadeInDuration");
             var fadeOutProperty = serializedObject.FindProperty("fadeOutDuration");
             var selectedColorProperty = serializedObject.FindProperty("selectedButtonColor");
@@ -330,7 +330,9 @@ namespace TabletopShop
                 LogError("Some legacy serialized fields missing");
                 testsPassed = false;
             }
-            #endif
+#else
+            Log("Legacy compatibility test skipped - requires Unity Editor");
+#endif
             
             yield return null;
         }

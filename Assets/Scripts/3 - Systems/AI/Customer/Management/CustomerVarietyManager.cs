@@ -193,6 +193,7 @@ namespace TabletopShop
         [ContextMenu("Auto-Populate Character Lists")]
         public void AutoPopulateCharacterLists()
         {
+#if UNITY_EDITOR
             maleCharacterPrefabs.Clear();
             femaleCharacterPrefabs.Clear();
             
@@ -214,6 +215,9 @@ namespace TabletopShop
             }
             
             Debug.Log($"Auto-populated: {maleCharacterPrefabs.Count} male prefabs, {femaleCharacterPrefabs.Count} female prefabs");
+#else
+            Debug.LogWarning("AutoPopulateCharacterLists can only be used in the Unity Editor.");
+#endif
         }
         
         /// <summary>

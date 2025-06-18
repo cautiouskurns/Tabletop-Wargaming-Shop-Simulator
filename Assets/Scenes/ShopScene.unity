@@ -5114,8 +5114,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 2.14, y: 0.84, z: 1}
+  m_Center: {x: 0.77, y: -0.01, z: 0.6}
 --- !u!33 &624411024
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -5157,9 +5157,9 @@ MonoBehaviour:
   productSpacing: 0.5
   queueStartPoint: {fileID: 744932269}
   queueSpacing: 2
-  maxProductsPerRow: 3
+  maxProductsPerRow: 2
   rowSpacing: 0.4
-  checkoutAreaSize: {x: 1.5, y: 0.1, z: 1}
+  checkoutAreaSize: {x: 1, y: 0.05, z: 0.7}
   arrangeInGrid: 1
   showUIOnStart: 1
   productsAtCheckout: []
@@ -11967,8 +11967,8 @@ Transform:
   m_GameObject: {fileID: 1591413243}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.70710576, z: -0, w: 0.70710784}
-  m_LocalPosition: {x: 0.694, y: 0.6264759, z: 0.063}
-  m_LocalScale: {x: 1, y: 1.1129631, z: 0.5}
+  m_LocalPosition: {x: 1.216, y: 0.498, z: 0.486}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 624411025}
