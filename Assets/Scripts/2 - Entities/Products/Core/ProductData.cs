@@ -17,17 +17,17 @@ namespace TabletopShop
         
         [Header("Visual Assets")]
         [SerializeField] private Sprite icon;
+        [SerializeField] private Sprite ipLogo; // NEW: IP/Brand logo
         [SerializeField] private GameObject prefab;
         
         // Public properties for accessing the data
         public string ProductName => productName;
         public float BasePrice => basePrice;
-
         public float CostPrice => costPrice;
-
         public ProductType Type => type;
         public string Description => description;
         public Sprite Icon => icon;
+        public Sprite IPLogo => ipLogo; // NEW: IP Logo property
         public GameObject Prefab => prefab;
         
         // Method to get formatted price string

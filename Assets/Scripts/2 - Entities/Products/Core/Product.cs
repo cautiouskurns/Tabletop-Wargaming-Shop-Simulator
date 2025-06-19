@@ -24,6 +24,7 @@ namespace TabletopShop
         private ProductEconomics productEconomics;
         private ProductVisuals productVisuals;
         private ProductInteraction productInteraction;
+        private DynamicProduct dynamicProduct;
         
         // Core component references (still needed for basic functionality)
         private MeshRenderer meshRenderer;
@@ -78,6 +79,7 @@ namespace TabletopShop
             productEconomics = GetComponent<ProductEconomics>();
             productVisuals = GetComponent<ProductVisuals>();
             productInteraction = GetComponent<ProductInteraction>();
+            dynamicProduct = GetComponent<DynamicProduct>();
             
             // Add components if missing (for backward compatibility)
             if (productEconomics == null)
@@ -163,11 +165,11 @@ namespace TabletopShop
         {
             Debug.Log($"Player interaction handled for {productData?.ProductName ?? name}");
         }
-        
+
         #endregion
-        
+
         #region Public Methods - State Management
-        
+
         /// <summary>
         /// Initialize the product with data from a ProductData ScriptableObject
         /// </summary>
@@ -179,16 +181,22 @@ namespace TabletopShop
                 Debug.LogError($"Cannot initialize Product {name} with null ProductData!", this);
                 return;
             }
-            
+
             productData = data;
             currentPrice = data.BasePrice;
-            
+
             // Update the GameObject name to match the product
             gameObject.name = $"Product_{data.ProductName.Replace(" ", "_")}";
-            
+
             Debug.Log($"Initialized product: {data.ProductName} with price ${currentPrice}");
+
+            if (dynamicProduct != null)
+            {
+                dynamicProduct.UpdateFromProductData();
+            }
+
         }
-        
+
         /// <summary>
         /// Set a new price for this product instance
         /// Delegates to economics component for validation
@@ -205,6 +213,11 @@ namespace TabletopShop
                 // Fallback if economics component not available
                 currentPrice = Mathf.Max(0, newPrice);
                 Debug.Log($"Set price directly to ${currentPrice} (Economics component not available)");
+            }
+            
+            if (dynamicProduct != null)
+            {
+                dynamicProduct.SetCustomText("price", $"${currentPrice:F2}");
             }
         }
         

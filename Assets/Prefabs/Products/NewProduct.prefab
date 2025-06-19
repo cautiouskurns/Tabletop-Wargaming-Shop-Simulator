@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 7309413115954338301}
   - component: {fileID: 7333204720448938268}
   - component: {fileID: 8971336134635334962}
+  - component: {fileID: 8970332968922378911}
   m_Layer: 8
   m_Name: NewProduct
   m_TagString: Untagged
@@ -91,7 +92,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9a1065198aa93419dbe0a3295e076afe, type: 2}
+  - {fileID: 2100000, guid: 5c488e5b9a72e40a989c260657b9d4aa, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -133,6 +134,24 @@ MonoBehaviour:
   isPurchased: 0
   isScannedAtCheckout: 0
   scannedMaterial: {fileID: 0}
+--- !u!114 &8970332968922378911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 451296204315812389}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31d8a978aeafa4a7384b1db67b587641, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.DynamicProduct
+  productNameText: {fileID: 8948120217762653510}
+  priceText: {fileID: 0}
+  descriptionText: {fileID: 0}
+  mainProductImage: {fileID: 5549177646563766628}
+  brandLogo: {fileID: 8148474312229137108}
+  imageMaterialTemplate: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
 --- !u!1 &819153843021251548
 GameObject:
   m_ObjectHideFlags: 0
@@ -345,7 +364,7 @@ GameObject:
   - component: {fileID: 5549177646563766628}
   - component: {fileID: 6605703978385213689}
   m_Layer: 8
-  m_Name: BrandLogo (1)
+  m_Name: MainProductImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -540,7 +559,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  - {fileID: 8767573520612016670, guid: 1fd1804cf3a3d44d98d0f8e3678160ae, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -585,15 +604,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: Sample text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 1fd1804cf3a3d44d98d0f8e3678160ae, type: 2}
+  m_sharedMaterial: {fileID: 8767573520612016670, guid: 1fd1804cf3a3d44d98d0f8e3678160ae, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
