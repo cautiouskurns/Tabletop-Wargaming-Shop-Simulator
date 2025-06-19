@@ -52,7 +52,7 @@ namespace TabletopShop
                 mainImageMaterial = new Material(imageMaterialTemplate);
                 mainProductImage.material = mainImageMaterial;
             }
-            
+
             if (brandLogo != null && imageMaterialTemplate != null)
             {
                 logoMaterial = new Material(imageMaterialTemplate);
@@ -60,9 +60,6 @@ namespace TabletopShop
             }
         }
 
-        /// <summary>
-        /// Update all zones from the parent Product's ProductData
-        /// </summary>
         public void UpdateFromProductData()
         {
             if (parentProduct?.ProductData == null) return;
@@ -79,16 +76,24 @@ namespace TabletopShop
             if (descriptionText != null)
                 descriptionText.text = data.Description;
 
-            // Update image zones
-            // Main product image
+            // Update image zones with proper fitting
             if (mainImageMaterial != null && data.Icon != null)
+            {
                 mainImageMaterial.mainTexture = data.Icon.texture;
+                // Option 1: Scale quad to fit (max 0.8 x 0.8 units)
+                FitTextureInQuad(mainProductImage, data.Icon.texture, 0.6f, 0.6f);
+                
+                // OR Option 2: Keep quad size, scale texture
+                // FitTextureInMaterial(mainImageMaterial, data.Icon.texture, 1f, 1f);
+            }
 
-            // NEW: IP/Brand logo
             if (logoMaterial != null && data.IPLogo != null)
+            {
                 logoMaterial.mainTexture = data.IPLogo.texture;
+                // Smaller max size for logos
+                FitTextureInQuad(brandLogo, data.IPLogo.texture, 0.5f, 0.5f);
+            }
         }
-
         /// <summary>
         /// Override specific zones with custom content
         /// </summary>
@@ -128,6 +133,41 @@ namespace TabletopShop
         {
             if (logoMaterial != null && ipLogo != null)
                 logoMaterial.mainTexture = ipLogo.texture;
+        }
+        
+        /// <summary>
+        /// Scale the quad to fit the texture while preserving aspect ratio and staying within bounds
+        /// </summary>
+        /// <param name="meshRenderer">The quad's MeshRenderer</param>
+        /// <param name="texture">The texture being applied</param>
+        /// <param name="maxWidth">Maximum width the quad can be</param>
+        /// <param name="maxHeight">Maximum height the quad can be</param>
+        private void FitTextureInQuad(MeshRenderer meshRenderer, Texture texture, float maxWidth = 1f, float maxHeight = 1f)
+        {
+            if (meshRenderer == null || texture == null) return;
+            
+            // Get texture aspect ratio
+            float textureAspect = (float)texture.width / texture.height;
+            float quadAspect = maxWidth / maxHeight;
+            
+            float newWidth, newHeight;
+            
+            // Scale to fit within the maximum bounds
+            if (textureAspect > quadAspect) // Image is wider relative to container
+            {
+                // Fit to width, scale height down
+                newWidth = maxWidth;
+                newHeight = maxWidth / textureAspect;
+            }
+            else // Image is taller relative to container
+            {
+                // Fit to height, scale width down
+                newHeight = maxHeight;
+                newWidth = maxHeight * textureAspect;
+            }
+            
+            // Apply the scale
+            meshRenderer.transform.localScale = new Vector3(newWidth, newHeight, 1f);
         }
     }
 }
