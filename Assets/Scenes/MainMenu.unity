@@ -1112,6 +1112,78 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1416479203}
   m_CullTransparentMesh: 1
+--- !u!1 &1437513614
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1437513616}
+  - component: {fileID: 1437513615}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1437513615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1437513614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae315dd7f32614ac483e39585c684bbe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.AudioManager
+  masterVolume: 1
+  sfxVolume: 1
+  uiVolume: 1
+  ambientVolume: 0.6
+  purchaseSuccessClip: {fileID: 8300000, guid: 7dda0538d2f6143dabb041d696522296, type: 3}
+  uiClickClip: {fileID: 8300000, guid: 218c3513a4464462a8b1181382917aed, type: 3}
+  shopAtmosphereClip: {fileID: 8300000, guid: 818d5b418d4ce4f47a79db456b39ef6b, type: 3}
+  productScanBeepClip: {fileID: 8300000, guid: 1e5bcce5a7525402ab3b37d085a46597, type: 3}
+  backgroundMusicTracks:
+  - {fileID: 8300000, guid: 4d851c8db3c324691a3a709a4c61f24b, type: 3}
+  - {fileID: 8300000, guid: 307182718f152444c9d3ea17af1e9af3, type: 3}
+  - {fileID: 8300000, guid: c8a24624e1f4740ed9a720bd67cb1f34, type: 3}
+  shuffleMusic: 1
+  crossfadeMusic: 1
+  crossfadeDuration: 2
+  musicVolume: 0.7
+  ambientSource: {fileID: 0}
+  uiSource: {fileID: 0}
+  musicSourceA: {fileID: 0}
+  musicSourceB: {fileID: 0}
+  sfxPoolSize: 10
+  autoStartAmbient: 1
+  restartAmbientOnSceneLoad: 1
+  ambientStartDelay: 0
+  useRandomAmbientTriggers: 1
+  minTimeBetweenAmbient: 3
+  maxTimeBetweenAmbient: 10
+  ambientPlayDuration: 3
+--- !u!4 &1437513616
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1437513614}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 3.62826, y: 0, z: 8.631531}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1444763773
 GameObject:
   m_ObjectHideFlags: 0
@@ -1779,3 +1851,4 @@ SceneRoots:
   - {fileID: 1448727201}
   - {fileID: 1444763776}
   - {fileID: 1145253352}
+  - {fileID: 1437513616}

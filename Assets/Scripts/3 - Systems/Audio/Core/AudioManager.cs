@@ -154,11 +154,11 @@ namespace TabletopShop
                 SaveAudioSettings();
             } 
         }
-        
+
         #endregion
-        
+
         #region Unity Lifecycle
-        
+
         private void Awake()
         {
             // Ensure singleton instance
@@ -173,6 +173,11 @@ namespace TabletopShop
                 Destroy(gameObject);
                 return;
             }
+            if (_instance == this && isMusicPlaying && !IsMusicPlaying())
+            {
+                Debug.Log("AudioManager: Restarting music after scene transition");
+                StartBackgroundMusic(true);
+            }
         }
         
         private void Start()
@@ -180,6 +185,20 @@ namespace TabletopShop
             // Subscribe to game events for automatic audio triggering
             SubscribeToGameEvents();
             
+            if (backgroundMusicTracks == null)
+            {
+                Debug.LogWarning("AudioManager: backgroundMusicTracks array is null!");
+            }
+            else if (backgroundMusicTracks.Length == 0)
+            {
+                Debug.LogWarning("AudioManager: No background music tracks assigned!");
+            }
+            else
+            {
+                Debug.Log($"AudioManager: Found {backgroundMusicTracks.Length} music tracks, starting background music...");
+                StartBackgroundMusic(true);
+            }
+
             // Start background music if tracks are available
             if (backgroundMusicTracks != null && backgroundMusicTracks.Length > 0)
             {
