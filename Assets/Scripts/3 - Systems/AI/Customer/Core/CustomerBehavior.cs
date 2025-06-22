@@ -870,33 +870,37 @@ namespace TabletopShop
             
             Debug.Log($"CustomerBehavior {name} placing {selectedProducts.Count} items on checkout counter");
             
-            // Get customer component for validation
-            Customer customerComponent = GetComponent<Customer>();
-            
-            foreach (Product product in selectedProducts)
+            for (int i = 0; i < selectedProducts.Count; i++)
             {
+                Product product = selectedProducts[i];
                 if (product != null)
                 {
-                    // Add to placed products list FIRST to stop the attachment coroutine
+                    Debug.Log($"CustomerBehavior {name} placing product {i + 1}/{selectedProducts.Count}: {product.ProductData?.ProductName ?? product.name}");
+                    
+                    // Place the product at checkout with customer association
+                    checkoutCounter.PlaceProduct(product, mainCustomer);
+                    
+                    // Ensure product retains its IInteractable interface
+                    ProductInteraction productInteraction = product.GetComponent<ProductInteraction>();
+                    if (productInteraction != null)
+                    {
+                        productInteraction.UpdateInteractionState();
+                        Debug.Log($"Updated interaction state for {product.ProductData?.ProductName ?? product.name} - CanInteract: {product.CanInteract}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"ProductInteraction component missing on {product.ProductData?.ProductName ?? product.name}");
+                    }
+                    
+                    // Add to placed products list for tracking
                     placedOnCounterProducts.Add(product);
                     
-                    // Place the existing product on the checkout counter with customer validation
-                    checkoutCounter.PlaceProduct(product, customerComponent);
-                    
-                    // Disable any movement components to ensure the product stays put
-                    DisableProductMovement(product);
-                    
-                    Debug.Log($"CustomerBehavior {name} placed {product.ProductData?.ProductName ?? product.name} on checkout counter and disabled movement");
-                    
-                    // Small delay between placing each item
-                    yield return new WaitForSeconds(UnityEngine.Random.Range(0.5f, 1.0f));
+                    // Small delay between placements for natural look
+                    yield return new WaitForSeconds(0.5f);
                 }
             }
             
-            Debug.Log($"CustomerBehavior {name} finished placing all items on checkout counter");
-            
-            // Reorganize products on the counter for better layout after all items are placed
-            checkoutCounter.ReorganizeProducts();
+            Debug.Log($"CustomerBehavior {name} finished placing {placedOnCounterProducts.Count} items on counter");
             
             // Force UI refresh to ensure all products are visible
             checkoutCounter.RefreshUI();
@@ -1016,88 +1020,79 @@ namespace TabletopShop
         [ContextMenu("Test Product Placement Fix")]
         public void TestProductPlacementFix()
         {
-            Debug.Log($"=== Testing Product Placement Fix for {name} ===");
-            Debug.Log($"Selected products: {selectedProducts.Count}");
-            Debug.Log($"Placed on counter products: {placedOnCounterProducts.Count}");
-            
-            foreach (Product product in selectedProducts)
+            if (!Application.isPlaying)
             {
+                Debug.LogWarning("Product placement test requires Play mode");
+                return;
+            }
+            
+            Debug.Log("=== PRODUCT PLACEMENT FIX TEST ===");
+            Debug.Log($"Customer: {name}");
+            Debug.Log($"Current State: {currentState}");
+            Debug.Log($"Is In Queue: {isInQueue}");
+            Debug.Log($"Queue Position: {queuePosition}");
+            Debug.Log($"Waiting For Checkout Turn: {waitingForCheckoutTurn}");
+            Debug.Log($"Selected Products: {selectedProducts.Count}");
+            Debug.Log($"Placed On Counter: {placedOnCounterProducts.Count}");
+            
+            // Check each selected product's interaction state
+            for (int i = 0; i < selectedProducts.Count; i++)
+            {
+                Product product = selectedProducts[i];
                 if (product != null)
                 {
-                    bool isPlaced = placedOnCounterProducts.Contains(product);
-                    Debug.Log($"Product: {product.ProductData?.ProductName ?? product.name} - Placed: {isPlaced}");
+                    Debug.Log($"Product {i + 1}: {product.ProductData?.ProductName ?? product.name}");
+                    Debug.Log($"  - Placed By: {(product.PlacedByCustomer != null ? product.PlacedByCustomer.name : "None")}");
+                    Debug.Log($"  - Can Interact: {product.CanInteract}");
+                    Debug.Log($"  - Interaction Text: {product.InteractionText}");
+                    Debug.Log($"  - Is Scanned: {product.IsScannedAtCheckout}");
+                    
+                    ProductInteraction productInteraction = product.GetComponent<ProductInteraction>();
+                    if (productInteraction != null)
+                    {
+                        Debug.Log($"  - Interaction Component: Active");
+                        Debug.Log($"  - Interaction Status: {productInteraction.GetInteractionStatus()}");
+                    }
+                    else
+                    {
+                        Debug.LogError($"  - Interaction Component: MISSING!");
+                    }
                 }
             }
+            
+            Debug.Log("===================================");
         }
         
         /// <summary>
-        /// Force place all selected products on checkout counter for testing
+        /// Debug method to verify customer queue and permissions
         /// </summary>
-        [ContextMenu("Force Place Products on Counter")]
-        public void ForceePlaceProductsOnCounter()
+        [ContextMenu("Debug Customer Queue State")]
+        public void DebugCustomerQueueState()
         {
-            CheckoutCounter counter = FindNearestCheckoutCounter();
-            if (counter != null && selectedProducts.Count > 0)
+            if (!Application.isPlaying)
             {
-                Debug.Log($"Force placing {selectedProducts.Count} products on counter for testing");
-                StartCoroutine(PlaceItemsOnCounter(counter));
+                Debug.LogWarning("Customer queue debug requires Play mode");
+                return;
             }
-            else
-            {
-                Debug.LogWarning("Cannot force place products - no counter found or no selected products");
-            }
-        }
-        
-        /// <summary>
-        /// Emergency fallback - if customer has been waiting too long without queue callbacks,
-        /// assume they can proceed (for backwards compatibility with CheckoutCounter implementations)
-        /// </summary>
-        [ContextMenu("Force Proceed to Checkout")]
-        public void ForceProceedToCheckout()
-        {
-            if (waitingForCheckoutTurn)
-            {
-                Debug.LogWarning($"CustomerBehavior {name} forced to proceed to checkout - queue system may not be working properly");
-                waitingForCheckoutTurn = false;
-                isInQueue = false;
-                queuePosition = -1;
-            }
-        }
-        
-        /// <summary>
-        /// Check if customer is stuck waiting and provide diagnostics
-        /// </summary>
-        [ContextMenu("Diagnose Checkout Issue")]
-        public void DiagnoseCheckoutIssue()
-        {
-            Debug.Log($"=== Checkout Diagnosis for {name} ===");
+            
+            Debug.Log("=== CUSTOMER QUEUE STATE DEBUG ===");
+            Debug.Log($"Customer: {name}");
             Debug.Log($"Current State: {currentState}");
-            Debug.Log($"Waiting for checkout turn: {waitingForCheckoutTurn}");
-            Debug.Log($"Is in queue: {isInQueue}");
-            Debug.Log($"Queue position: {queuePosition}");
-            Debug.Log($"Queued checkout: {(queuedCheckout != null ? queuedCheckout.name : "None")}");
-            Debug.Log($"Waiting for checkout: {isWaitingForCheckout}");
+            Debug.Log($"Is In Queue: {isInQueue}");
+            Debug.Log($"Queue Position: {queuePosition}");
+            Debug.Log($"Queued Checkout: {(queuedCheckout != null ? queuedCheckout.name : "None")}");
+            Debug.Log($"Waiting For Checkout Turn: {waitingForCheckoutTurn}");
             
-            // Check if there are any checkout counters in the scene
-            CheckoutCounter[] counters = FindObjectsByType<CheckoutCounter>(FindObjectsSortMode.None);
-            Debug.Log($"Checkout counters in scene: {counters.Length}");
-            
-            foreach (CheckoutCounter counter in counters)
+            if (queuedCheckout != null)
             {
-                if (counter != null)
-                {
-                    Debug.Log($"  - Counter: {counter.name} (Active: {counter.gameObject.activeInHierarchy})");
-                }
+                Debug.Log($"Checkout Counter Status:");
+                Debug.Log($"  - Has Customer: {queuedCheckout.HasCustomer}");
+                Debug.Log($"  - Queue Length: {queuedCheckout.QueueLength}");
+                Debug.Log($"  - Is Occupied: {queuedCheckout.IsOccupied}");
+                Debug.Log($"  - Can Place Items: {queuedCheckout.CanCustomerPlaceItems(mainCustomer)}");
             }
             
-            // Suggest fixes
-            if (waitingForCheckoutTurn && !isInQueue)
-            {
-                Debug.LogWarning("Customer is waiting for checkout turn but not in queue - CheckoutCounter may not be calling queue methods properly!");
-                Debug.LogWarning("Try using 'Force Proceed to Checkout' context menu to fix this customer.");
-            }
-            
-            Debug.Log("=====================================");
+            Debug.Log("===================================");
         }
         
         #endregion        

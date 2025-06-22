@@ -183,9 +183,18 @@ namespace TabletopShop
             CheckoutCounter checkoutCounter = FindAssociatedCheckoutCounter();
             if (checkoutCounter != null)
             {
-                // Use the checkout counter's scan method to handle the scan
-                checkoutCounter.ScanProduct(product);
-                Debug.Log($"Scanned {product.ProductData?.ProductName ?? name} at checkout!");
+                // Get current customer to validate scanning permissions
+                Customer currentCustomer = null;
+                if (checkoutCounter.HasCustomer)
+                {
+                    // Find the current customer through reflection or direct access if available
+                    // For now, we'll rely on the product's customer association
+                    currentCustomer = product.PlacedByCustomer;
+                }
+                
+                // Use the checkout counter's enhanced scan method with customer validation
+                checkoutCounter.ScanProduct(product, currentCustomer);
+                Debug.Log($"Attempted to scan {product.ProductData?.ProductName ?? name} at checkout with customer validation!");
             }
             else
             {
@@ -556,16 +565,73 @@ namespace TabletopShop
             Debug.Log($"Parent: {transform.parent?.name ?? "None"}");
             Debug.Log($"Position: {transform.position}");
             
+            // Test customer associations
+            if (product != null)
+            {
+                Debug.Log($"Placed By Customer: {(product.PlacedByCustomer != null ? product.PlacedByCustomer.name : "None")}");
+                
+                // Test scanning permissions with different customers if available
+                Customer[] allCustomers = FindObjectsByType<Customer>(FindObjectsSortMode.None);
+                foreach (Customer customer in allCustomers)
+                {
+                    if (customer != null)
+                    {
+                        bool canScan = product.CanCustomerScan(customer);
+                        Debug.Log($"Customer {customer.name} can scan: {canScan}");
+                    }
+                }
+            }
+            
             // Test finding checkout counter
             CheckoutCounter checkoutCounter = FindAssociatedCheckoutCounter();
             if (checkoutCounter != null)
             {
                 Debug.Log($"Associated Checkout Counter: {checkoutCounter.name}");
+                Debug.Log($"Checkout has customer: {checkoutCounter.HasCustomer}");
+                Debug.Log($"Checkout queue length: {checkoutCounter.QueueLength}");
             }
             else
             {
                 Debug.LogWarning("No associated checkout counter found");
             }
+            
+            Debug.Log("=======================================");
+        }
+        
+        /// <summary>
+        /// Debug method to test product interaction state preservation
+        /// </summary>
+        [ContextMenu("Debug Interaction State")]
+        public void DebugInteractionState()
+        {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("Interaction state debug requires Play mode");
+                return;
+            }
+            
+            Debug.Log("=== PRODUCT INTERACTION STATE DEBUG ===");
+            Debug.Log($"Product: {product?.ProductData?.ProductName ?? name}");
+            Debug.Log($"Component Active: {enabled}");
+            Debug.Log($"GameObject Active: {gameObject.activeInHierarchy}");
+            Debug.Log($"Can Interact: {CanInteract}");
+            Debug.Log($"Interaction Text: {InteractionText}");
+            
+            // Check all required components
+            Debug.Log($"Product Component: {(product != null ? "Present" : "MISSING")}");
+            Debug.Log($"ProductVisuals Component: {(productVisuals != null ? "Present" : "MISSING")}");
+            Debug.Log($"ProductEconomics Component: {(productEconomics != null ? "Present" : "MISSING")}");
+            
+            if (product != null)
+            {
+                Debug.Log($"Product State: {product.CurrentState}");
+                Debug.Log($"Is On Shelf: {product.IsOnShelf}");
+                Debug.Log($"Is Purchased: {product.IsPurchased}");
+                Debug.Log($"Is Scanned At Checkout: {product.IsScannedAtCheckout}");
+                Debug.Log($"Customer Association: {(product.PlacedByCustomer != null ? product.PlacedByCustomer.name : "None")}");
+            }
+            
+            Debug.Log("========================================");
         }
         
         #endregion

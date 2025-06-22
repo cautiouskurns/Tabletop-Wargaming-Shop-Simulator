@@ -20,6 +20,9 @@ namespace TabletopShop
         [SerializeField] private bool isScannedAtCheckout = false;
         [SerializeField] private Material scannedMaterial; // Optional visual feedback
         
+        [Header("Customer Association")]
+        [SerializeField] private Customer placedByCustomer; // Track which customer placed this product
+        
         // Component references for composition pattern
         private ProductEconomics productEconomics;
         private ProductVisuals productVisuals;
@@ -43,6 +46,9 @@ namespace TabletopShop
         
         // Checkout scanning properties
         public bool IsScannedAtCheckout => isScannedAtCheckout;
+        
+        // Customer association properties
+        public Customer PlacedByCustomer => placedByCustomer;
         
         // IInteractable Properties - delegate to interaction component
         public string InteractionText => productInteraction?.InteractionText ?? "Product";
@@ -364,7 +370,54 @@ namespace TabletopShop
             isScannedAtCheckout = false;
             Debug.Log($"Reset scan state for {productData?.ProductName ?? name}");
         }
-
+        
+        /// <summary>
+        /// Set which customer placed this product at checkout
+        /// </summary>
+        /// <param name="customer">The customer who placed the product</param>
+        public void SetPlacedByCustomer(Customer customer)
+        {
+            placedByCustomer = customer;
+            Debug.Log($"Product {productData?.ProductName ?? name} placed by customer: {customer?.name ?? "None"}");
+        }
+        
+        /// <summary>
+        /// Clear the customer association (when customer leaves or checkout is reset)
+        /// </summary>
+        public void ClearCustomerAssociation()
+        {
+            Customer previousCustomer = placedByCustomer;
+            placedByCustomer = null;
+            Debug.Log($"Cleared customer association for {productData?.ProductName ?? name} (was: {previousCustomer?.name ?? "None"})");
+        }
+        
+        /// <summary>
+        /// Check if a specific customer can scan this product
+        /// </summary>
+        /// <param name="customer">The customer trying to scan</param>
+        /// <returns>True if the customer can scan this product</returns>
+        public bool CanCustomerScan(Customer customer)
+        {
+            // If no customer placed it, anyone can scan
+            if (placedByCustomer == null)
+            {
+                Debug.Log($"Product {productData?.ProductName ?? name} has no customer association - allowing scan");
+                return true;
+            }
+            
+            // Only the customer who placed it can scan
+            bool canScan = placedByCustomer == customer;
+            if (!canScan)
+            {
+                Debug.LogWarning($"Customer {customer?.name ?? "Unknown"} cannot scan {productData?.ProductName ?? name} - placed by {placedByCustomer.name}");
+            }
+            else
+            {
+                Debug.Log($"Customer {customer?.name ?? "Unknown"} can scan {productData?.ProductName ?? name} - they placed it");
+            }
+            return canScan;
+        }
+        
         #endregion
         
         #region IInteractable Implementation - Delegate to Interaction Component

@@ -120,6 +120,13 @@ namespace TabletopShop
             // Add to checkout list
             productsAtCheckout.Add(product);
             
+            // Set customer association for queue validation
+            if (customer != null)
+            {
+                product.SetPlacedByCustomer(customer);
+                Debug.Log($"Associated product {product.ProductData?.ProductName ?? product.name} with customer {customer.name}");
+            }
+            
             // Move product to checkout position
             Vector3 newPosition = GetNextProductPosition();
             product.transform.position = newPosition;
@@ -150,6 +157,9 @@ namespace TabletopShop
             {
                 Debug.LogWarning("CheckoutCounter: No CheckoutUI found - cannot update UI");
             }
+            
+            // Force UI refresh to ensure all products are visible and associations are updated
+            RefreshUI();
             
             Debug.Log($"Placed {product.ProductData?.ProductName ?? product.name} at checkout (${product.CurrentPrice}) and made stationary");
         }
@@ -197,7 +207,8 @@ namespace TabletopShop
         /// Scan a product at checkout
         /// </summary>
         /// <param name="product">The product to scan</param>
-        public void ScanProduct(Product product)
+        /// <param name="customerAttemptingToScan">The customer trying to scan (optional, for validation)</param>
+        public void ScanProduct(Product product, Customer customerAttemptingToScan = null)
         {
             if (product == null)
             {
@@ -215,6 +226,23 @@ namespace TabletopShop
             {
                 Debug.LogWarning($"Product {product.ProductData?.ProductName ?? product.name} is already scanned");
                 return;
+            }
+            
+            // Validate customer permissions if customer is specified
+            if (customerAttemptingToScan != null && !product.CanCustomerScan(customerAttemptingToScan))
+            {
+                Debug.LogWarning($"Customer {customerAttemptingToScan.name} cannot scan {product.ProductData?.ProductName ?? product.name} - not authorized");
+                return;
+            }
+            
+            // If no specific customer provided, validate against current customer
+            if (customerAttemptingToScan == null && currentCustomer != null)
+            {
+                if (!product.CanCustomerScan(currentCustomer))
+                {
+                    Debug.LogWarning($"Current customer {currentCustomer.name} cannot scan {product.ProductData?.ProductName ?? product.name} - not authorized");
+                    return;
+                }
             }
             
             // Scan the product
@@ -493,6 +521,13 @@ namespace TabletopShop
         /// <param name="customer">Customer to set as current</param>
         private void SetCurrentCustomer(Customer customer)
         {
+            // Clear any existing customer associations first
+            if (currentCustomer != null && currentCustomer != customer)
+            {
+                Debug.Log($"Switching from customer {currentCustomer.name} to {customer.name} - clearing old associations");
+                ClearAllCustomerAssociations();
+            }
+            
             currentCustomer = customer;
             isProcessingCustomer = true;
             
@@ -512,6 +547,9 @@ namespace TabletopShop
             {
                 customerBehavior.OnCheckoutReady(this);
             }
+            
+            // Force UI refresh to ensure correct state display
+            RefreshUI();
         }
         
         /// <summary>
@@ -1012,38 +1050,49 @@ namespace TabletopShop
         /// </summary>
         public void OnCustomerDeparture()
         {
-            if (!HasCustomer)
+            if (currentCustomer == null)
             {
-                Debug.LogWarning("No customer to handle departure");
+                Debug.LogWarning("OnCustomerDeparture called but no current customer");
                 return;
             }
             
-            Debug.Log($"Customer {currentCustomer.name} departed from checkout");
-            Customer departingCustomer = currentCustomer;
-            currentCustomer = null;
+            Debug.Log($"Customer {currentCustomer.name} departing from checkout");
             
-            // Clear any remaining products if customer leaves
-            if (HasProducts)
+            // Clear customer associations from all products at checkout
+            ClearAllCustomerAssociations();
+            
+            // Clear current customer and processing state
+            currentCustomer = null;
+            isProcessingCustomer = false;
+            
+            // Hide UI when no customer
+            if (checkoutUI != null)
             {
-                ClearCheckout();
+                checkoutUI.Hide();
+                Debug.Log("CheckoutCounter: Hiding UI because customer departed");
             }
             
             // Process next customer in queue
             ProcessNextCustomerInQueue();
+        }
+        
+        /// <summary>
+        /// Clear customer associations from all products at checkout
+        /// </summary>
+        private void ClearAllCustomerAssociations()
+        {
+            Debug.Log($"Clearing customer associations for {productsAtCheckout.Count} products at checkout");
             
-            // Update UI only if no new customer was processed
-            if (!HasCustomer && checkoutUI != null)
+            foreach (Product product in productsAtCheckout)
             {
-                checkoutUI.UpdateCustomer("");
-                checkoutUI.ClearProducts();
-                checkoutUI.UpdateTotal(0f);
-                
-                // Hide UI when no activity
-                if (!showUIOnStart)
+                if (product != null)
                 {
-                    checkoutUI.Hide();
+                    product.ClearCustomerAssociation();
                 }
             }
+            
+            // Force UI refresh after clearing associations
+            RefreshUI();
         }
         
         /// <summary>
@@ -1077,6 +1126,101 @@ namespace TabletopShop
             }
             
             Debug.Log("================================");
+        }
+        
+        /// <summary>
+        /// Debug method to test product interaction state when multiple customers are queueing
+        /// </summary>
+        [ContextMenu("Debug Product Interaction State")]
+        public void DebugProductInteractionState()
+        {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("Product interaction debug requires Play mode");
+                return;
+            }
+            
+            Debug.Log("=== PRODUCT INTERACTION DEBUG ===");
+            Debug.Log($"Current Customer: {(currentCustomer != null ? currentCustomer.name : "None")}");
+            Debug.Log($"Queue Length: {customerQueue.Count}");
+            Debug.Log($"Products at Checkout: {productsAtCheckout.Count}");
+            
+            foreach (Product product in productsAtCheckout)
+            {
+                if (product != null)
+                {
+                    Debug.Log($"Product: {product.ProductData?.ProductName ?? product.name}");
+                    Debug.Log($"  - Placed by: {(product.PlacedByCustomer != null ? product.PlacedByCustomer.name : "None")}");
+                    Debug.Log($"  - Is Scanned: {product.IsScannedAtCheckout}");
+                    Debug.Log($"  - Can Interact: {product.CanInteract}");
+                    Debug.Log($"  - Interaction Text: {product.InteractionText}");
+                    Debug.Log($"  - Parent: {product.transform.parent?.name ?? "None"}");
+                    
+                    ProductInteraction productInteraction = product.GetComponent<ProductInteraction>();
+                    if (productInteraction != null)
+                    {
+                        Debug.Log($"  - ProductInteraction Status: {productInteraction.GetInteractionStatus()}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"  - ProductInteraction component MISSING!");
+                    }
+                    
+                    // Test customer scanning permissions
+                    if (currentCustomer != null)
+                    {
+                        bool canScan = product.CanCustomerScan(currentCustomer);
+                        Debug.Log($"  - Current customer can scan: {canScan}");
+                    }
+                }
+            }
+            
+            Debug.Log("==================================");
+        }
+        
+        /// <summary>
+        /// Debug method to test customer associations and permissions
+        /// </summary>
+        [ContextMenu("Debug Customer Associations")]
+        public void DebugCustomerAssociations()
+        {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("Customer associations debug requires Play mode");
+                return;
+            }
+            
+            Debug.Log("=== CUSTOMER ASSOCIATIONS DEBUG ===");
+            Debug.Log($"Current Customer: {(currentCustomer != null ? currentCustomer.name : "None")}");
+            
+            if (customerQueue.Count > 0)
+            {
+                Debug.Log("Customers in queue:");
+                var queueArray = customerQueue.ToArray();
+                for (int i = 0; i < queueArray.Length; i++)
+                {
+                    Customer customer = queueArray[i];
+                    Debug.Log($"  Queue Position {i + 1}: {(customer != null ? customer.name : "NULL")}");
+                }
+            }
+            
+            Debug.Log($"Products with customer associations:");
+            int associatedCount = 0;
+            foreach (Product product in productsAtCheckout)
+            {
+                if (product != null && product.PlacedByCustomer != null)
+                {
+                    associatedCount++;
+                    Debug.Log($"  {product.ProductData?.ProductName ?? product.name} -> {product.PlacedByCustomer.name}");
+                }
+            }
+            
+            if (associatedCount == 0)
+            {
+                Debug.Log("  No products have customer associations");
+            }
+            
+            Debug.Log("====================================");
         }
     }
 }
