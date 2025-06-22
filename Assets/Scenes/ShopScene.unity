@@ -2849,6 +2849,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1890304983553820186, guid: 0593062b114b44607ae40cba7dbf6170, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 329221629}
     - targetCorrespondingSourceObject: {fileID: 1399179004937458492, guid: 0593062b114b44607ae40cba7dbf6170, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2093232810}
@@ -2861,6 +2864,27 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1441451721574377981, guid: 0593062b114b44607ae40cba7dbf6170, type: 3}
   m_PrefabInstance: {fileID: 329221626}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &329221628 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1890304983553820186, guid: 0593062b114b44607ae40cba7dbf6170, type: 3}
+  m_PrefabInstance: {fileID: 329221626}
+  m_PrefabAsset: {fileID: 0}
+--- !u!208 &329221629
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 329221628}
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.665, y: 1.12, z: 0.28}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1 &338406087
 GameObject:
   m_ObjectHideFlags: 0
@@ -8380,7 +8404,8 @@ GameObject:
   - component: {fileID: 993084169}
   - component: {fileID: 993084168}
   - component: {fileID: 993084171}
-  m_Layer: 0
+  - component: {fileID: 993084172}
+  m_Layer: 8
   m_Name: ShopWindowSign
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8502,6 +8527,30 @@ MonoBehaviour:
   openBackgroundMaterial: {fileID: 0}
   closedBackgroundMaterial: {fileID: 0}
   autoFindStoreHours: 1
+  allowPlayerControl: 1
+  manualOverrideActive: 0
+  interactionPrompt: Toggle Shop
+--- !u!65 &993084172
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 993084166}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.99999994, y: 0.99999994, z: 6.1232336e-17}
+  m_Center: {x: -0.0000009536743, y: 0, z: 0}
 --- !u!4 &1003360360 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 0880d9ac631f24f409114af2781b3480, type: 3}
@@ -14732,7 +14781,7 @@ GameObject:
   - component: {fileID: 1772314037}
   - component: {fileID: 1772314039}
   - component: {fileID: 1772314038}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14747,7 +14796,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1772314036}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0.03}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14755,7 +14804,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -0, y: 0}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1772314038
@@ -14778,7 +14827,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: CLOSED
+  m_text: OPEN
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -14787,8 +14836,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190335
-  m_fontColor: {r: 1, g: 0, b: 0, a: 1}
+    rgba: 4278255360
+  m_fontColor: {r: 0, g: 1, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
