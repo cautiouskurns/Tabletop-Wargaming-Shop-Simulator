@@ -47,9 +47,16 @@ namespace TabletopShop
         
         private void Awake()
         {
+            Debug.Log($"CheckoutUI Awake: showByDefault = {showByDefault}");
+            
             // Get components if not assigned
             if (canvasGroup == null)
                 canvasGroup = GetComponent<CanvasGroup>();
+            
+            // Force UI to start hidden regardless of showByDefault setting
+            // This ensures consistent behavior and prevents accidental visibility at startup
+            isVisible = false;
+            targetAlpha = 0f;
             
             // Set initial state
             if (canvasGroup != null)
@@ -57,11 +64,25 @@ namespace TabletopShop
                 canvasGroup.alpha = 0f;
                 canvasGroup.interactable = false;
                 canvasGroup.blocksRaycasts = false;
+                Debug.Log("CheckoutUI Awake: Forced alpha to 0, interactable and blocksRaycasts to false");
             }
             
-            // Hide initially unless specified
-            isVisible = showByDefault;
-            targetAlpha = showByDefault ? 1f : 0f;
+            Debug.Log($"CheckoutUI Awake: Forced hidden state - isVisible = {isVisible}, targetAlpha = {targetAlpha}");
+        }
+        
+        private void Start()
+        {
+            // Double-check that UI remains hidden at Start
+            Debug.Log($"CheckoutUI Start: Current state - isVisible = {isVisible}, targetAlpha = {targetAlpha}, alpha = {(canvasGroup?.alpha ?? -1)}");
+            
+            // Ensure we're still hidden
+            if (canvasGroup != null && targetAlpha == 0f)
+            {
+                canvasGroup.alpha = 0f;
+                canvasGroup.interactable = false;
+                canvasGroup.blocksRaycasts = false;
+                Debug.Log("CheckoutUI Start: Confirmed hidden state");
+            }
         }
         
         private void Update()
@@ -112,8 +133,8 @@ namespace TabletopShop
         {
             if (isVisible)
                 Hide();
-            else
-                Show();
+            // else
+            //     Show();
         }
         
         /// <summary>

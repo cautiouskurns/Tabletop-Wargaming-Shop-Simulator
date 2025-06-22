@@ -213,11 +213,23 @@ namespace TabletopShop
         {
             if (salesDisplay == null) return;
             
-            // Null-safe GameManager access with comprehensive sales information
-            if (gameManager != null)
+            // Use GameManager.Instance directly to avoid potential reference issues
+            // and add debugging to check for reference mismatches
+            GameManager actualGameManager = GameManager.Instance;
+            
+            if (gameManager != actualGameManager)
             {
-                int customersServed = gameManager.CustomersServedToday;
-                float dailyRevenue = gameManager.DailyRevenue;
+                Debug.LogWarning($"[ShopUIDisplay] GameManager reference mismatch! cached={gameManager?.name ?? "null"}, actual={actualGameManager?.name ?? "null"}");
+                // Update our reference to the correct instance
+                gameManager = actualGameManager;
+            }
+            
+            if (actualGameManager != null)
+            {
+                int customersServed = actualGameManager.CustomersServedToday;
+                float dailyRevenue = actualGameManager.DailyRevenue;
+                
+                Debug.Log($"[ShopUIDisplay] UpdateSalesDisplay: customersServed={customersServed}, dailyRevenue=${dailyRevenue:F2}");
                 
                 // Format: "X sales - $Y,YYY" for clear performance indication
                 if (customersServed > 0)
@@ -229,11 +241,14 @@ namespace TabletopShop
                     // No sales yet today
                     salesDisplay.text = "No sales today";
                 }
+                
+                Debug.Log($"[ShopUIDisplay] Sales display updated to: '{salesDisplay.text}'");
             }
             else
             {
                 // Fallback display when GameManager unavailable
                 salesDisplay.text = "0 sales";
+                Debug.LogWarning("[ShopUIDisplay] GameManager.Instance is null in UpdateSalesDisplay");
             }
         }
         
@@ -294,6 +309,7 @@ namespace TabletopShop
         /// </summary>
         public void OnMoneyChanged()
         {
+            Debug.Log("[ShopUIDisplay] OnMoneyChanged called - updating money and sales displays");
             UpdateMoneyDisplay();
             
             // Also update sales display as it includes revenue information

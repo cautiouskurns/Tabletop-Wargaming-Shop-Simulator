@@ -342,8 +342,8 @@ namespace TabletopShop
         /// <param name="customerSatisfaction">Customer satisfaction level (0-1)</param>
         public void ProcessCustomerPurchase(float purchaseAmount, float customerSatisfaction = 0.8f)
         {
-            Debug.Log($"ProcessCustomerPurchase CALLED: amount=${purchaseAmount:F2}, satisfaction={customerSatisfaction:F2}");
-            Debug.Log($"BEFORE: customersServedToday={customersServedToday}, currentMoney=${currentMoney:F2}, dailyRevenue=${dailyRevenue:F2}");
+            Debug.LogError($"[SALES DEBUG] ProcessCustomerPurchase CALLED: amount=${purchaseAmount:F2}, satisfaction={customerSatisfaction:F2}");
+            Debug.LogError($"[SALES DEBUG] BEFORE: customersServedToday={customersServedToday}, currentMoney=${currentMoney:F2}, dailyRevenue=${dailyRevenue:F2}");
             
             if (purchaseAmount <= 0)
             {
@@ -351,21 +351,29 @@ namespace TabletopShop
                 return;
             }
             
-            // Add money from purchase
-            AddMoney(purchaseAmount, "Customer Purchase");
+            // Update customer metrics and revenue simultaneously to avoid timing issues
+            customersServedToday++;
+            Debug.LogError($"[SALES DEBUG] INCREMENTED customersServedToday to: {customersServedToday}");
+            
+            // Update money and revenue directly without triggering events yet
+            currentMoney += purchaseAmount;
+            if (isDayTime)
+            {
+                dailyRevenue += purchaseAmount;
+            }
+            
+            // Now trigger the UI update event with all values properly set
+            onMoneyChanged?.Invoke();
+            Debug.LogError($"[SALES DEBUG] Money updated directly: ${currentMoney:F2}, Revenue: ${dailyRevenue:F2}, Event triggered!");
             
             // Play purchase success audio
             AudioManager.Instance.PlayPurchaseSuccess();
-            
-            // Update customer metrics
-            customersServedToday++;
-            Debug.Log($"INCREMENTED customersServedToday to: {customersServedToday}");
             
             // Update reputation based on customer satisfaction
             float reputationChange = (customerSatisfaction - 0.5f) * 2.0f; // -1 to +1 scale
             ModifyReputation(reputationChange);
             
-            Debug.Log($"AFTER: customersServedToday={customersServedToday}, currentMoney=${currentMoney:F2}, dailyRevenue=${dailyRevenue:F2}");
+            Debug.LogError($"[SALES DEBUG] AFTER: customersServedToday={customersServedToday}, currentMoney=${currentMoney:F2}, dailyRevenue=${dailyRevenue:F2}");
             Debug.Log($"Customer purchase processed: ${purchaseAmount:F2}, Satisfaction: {customerSatisfaction:F2}");
         }
         

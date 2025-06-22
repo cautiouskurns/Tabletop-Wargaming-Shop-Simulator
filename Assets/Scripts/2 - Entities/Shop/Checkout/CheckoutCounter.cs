@@ -22,7 +22,7 @@ namespace TabletopShop
         [SerializeField] private bool arrangeInGrid = true;
         
         [Header("UI Settings")]
-        [SerializeField] private bool showUIOnStart = true; // For testing
+        [SerializeField] private bool showUIOnStart = false; // Set to true only for testing
         
         [Header("Checkout State")]
         [SerializeField] private List<Product> productsAtCheckout = new List<Product>();
@@ -74,11 +74,19 @@ namespace TabletopShop
                 checkoutUI.TrackCheckoutCounter(this);
                 Debug.Log($"CheckoutCounter: Found and connected to CheckoutUI");
                 
+                // Only show UI on start if explicitly requested for testing
                 if (showUIOnStart)
                 {
-                    checkoutUI.Show();
+                    //checkoutUI.Show();
                     checkoutUI.UpdateCustomer("Test Customer");
                     checkoutUI.UpdateTotal(0f);
+                    Debug.Log("CheckoutCounter: Showing UI for testing (showUIOnStart = true)");
+                }
+                else
+                {
+                    // Ensure UI starts hidden in normal operation
+                    checkoutUI.Hide();
+                    Debug.Log("CheckoutCounter: UI starts hidden (showUIOnStart = false)");
                 }
             }
             else
@@ -150,8 +158,16 @@ namespace TabletopShop
             if (checkoutUI != null)
             {
                 checkoutUI.AddProduct(product);
-                checkoutUI.Show(); // Make sure UI is visible when products are added
-                Debug.Log("CheckoutCounter: Showing UI because product was placed");
+                // Only show UI if we have an active customer
+                if (HasCustomer)
+                {
+                    checkoutUI.Show();
+                    Debug.Log("CheckoutCounter: Showing UI because product was placed and customer is present");
+                }
+                else
+                {
+                    Debug.Log("CheckoutCounter: Product added to UI but not showing - no customer present");
+                }
             }
             else
             {
@@ -737,8 +753,13 @@ namespace TabletopShop
             
             if (checkoutUI != null)
             {
-                checkoutUI.Show();
-                Debug.Log("Forced CheckoutUI to show");
+                Debug.Log($"CheckoutUI Present: True, Visible: {checkoutUI.isActiveAndEnabled}");
+                // Only show UI for testing if showUIOnStart is enabled
+                if (showUIOnStart)
+                {
+                    checkoutUI.Show();
+                    Debug.Log("Forced CheckoutUI to show (testing mode)");
+                }
             }
         }
         
