@@ -23,6 +23,7 @@ namespace TabletopShop
     /// - Coordinates high-level actions that involve multiple components
     /// - NO delegation methods - use direct component access instead
     /// - Implements ICustomer interface for enhanced interface segregation
+    /// - Uses Unity's NavMeshAgent for movement
     /// </summary>
 
     [RequireComponent(typeof(NavMeshAgent))]
