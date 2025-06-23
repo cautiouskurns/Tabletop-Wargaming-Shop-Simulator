@@ -17,6 +17,7 @@ namespace TabletopShop
         void StartStateMachine(CustomerState initialState = CustomerState.Entering);
         void StopStateMachine();
         void CleanupStateMachine();
+        void Update(); // Update state machine (called from MonoBehaviour Update)
         
         // State registration
         void RegisterAllStates();

@@ -9,6 +9,7 @@ namespace TabletopShop
     /// Handles customer AI behavior, lifecycle state machine, and shopping patterns.
     /// Manages the complete customer experience from entering to leaving the shop.
     /// Implements ICustomerBehavior composite interface for enhanced interface segregation.
+    /// Uses the new State Machine Pattern for robust and testable behavior management.
     /// </summary>
     public class CustomerBehavior : MonoBehaviour, ICustomerBehavior
     {
@@ -27,7 +28,12 @@ namespace TabletopShop
     private CustomerMovement customerMovement;
     private Customer mainCustomer; // Reference to main customer for state changes
     
-    // State tracking
+    // State Machine Components (NEW)
+    private ICustomerStateMachineManager stateMachineManager;
+    private CustomerStateContext stateContext;
+    private bool useStateMachine = true; // Feature flag for testing
+    
+    // Legacy state tracking (for backwards compatibility)
     private Coroutine lifecycleCoroutine;
     
     // Purchase tracking
@@ -70,6 +76,24 @@ namespace TabletopShop
             InitializeShoppingTime();
         }
         
+        private void Update()
+        {
+            // Update state machine if active
+            if (useStateMachine && stateMachineManager != null && stateMachineManager.IsStateMachineActive)
+            {
+                stateMachineManager.Update();
+            }
+        }
+        
+        private void OnDestroy()
+        {
+            // Cleanup state machine
+            if (stateMachineManager != null)
+            {
+                stateMachineManager.CleanupStateMachine();
+            }
+        }
+        
         /// <summary>
         /// Initialize with component references
         /// </summary>
@@ -77,6 +101,44 @@ namespace TabletopShop
         {
             customerMovement = movement;
             mainCustomer = customer;
+            
+            // Initialize state machine components
+            InitializeStateMachine();
+        }
+        
+        /// <summary>
+        /// Initialize the state machine system
+        /// </summary>
+        private void InitializeStateMachine()
+        {
+            try
+            {
+                // Create state context with all required components
+                stateContext = new CustomerStateContext(
+                    mainCustomer,
+                    customerMovement,
+                    this,
+                    GetComponent<CustomerVisuals>()
+                );
+                
+                // Create and initialize the state machine manager
+                stateMachineManager = new CustomerStateMachineManager(
+                    mainCustomer,
+                    customerMovement,
+                    this,
+                    GetComponent<CustomerVisuals>()
+                );
+                
+                // Initialize the state machine using the manager's method
+                stateMachineManager.InitializeStateMachine();
+                
+                Debug.Log($"CustomerBehavior {name}: State machine initialized successfully");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"CustomerBehavior {name}: Failed to initialize state machine - {e.Message}. Falling back to legacy coroutines.");
+                useStateMachine = false;
+            }
         }
         
         /// <summary>
@@ -116,6 +178,13 @@ namespace TabletopShop
             
             Debug.Log($"CustomerBehavior {name} state changed: {previousState} -> {currentState}");
             
+            // Update state machine if active
+            if (useStateMachine && stateMachineManager != null && stateMachineManager.IsStateMachineActive)
+            {
+                // Let the state machine handle the transition
+                stateMachineManager.ChangeState(newState, $"Requested by CustomerBehavior");
+            }
+            
             // Notify listeners of state change
             OnStateChangeRequested?.Invoke(previousState, currentState);
         }
@@ -144,9 +213,9 @@ namespace TabletopShop
         #region Customer Lifecycle State Machine
         
         /// <summary>
-        /// Start the complete customer lifecycle automatically
+        /// Start the complete customer lifecycle using the new state machine system.
+        /// Falls back to legacy coroutines if state machine is not available.
         /// Progresses through: Entering → Shopping → Purchasing → Leaving
-        /// ✅ MINIMAL VERSION TO TEST CRASH FIX
         /// </summary>
         public void StartCustomerLifecycle(CustomerState startingState)
         {
@@ -159,30 +228,63 @@ namespace TabletopShop
                 return;
             }
             
-            // ✅ JUST SET STATE - DON'T START COROUTINES YET TO TEST CRASH FIX
-            ChangeState(startingState);
-            
-            Debug.Log($"CustomerBehavior {name}: State set successfully to {currentState}");
-            
-            // ✅ TEMPORARY: Start with minimal lifecycle to test crash fix
-            if (lifecycleCoroutine != null)
+            // Use new state machine system if available
+            if (useStateMachine && stateMachineManager != null && stateMachineManager.IsStateMachineActive)
             {
-                StopCoroutine(lifecycleCoroutine);
+                Debug.Log($"CustomerBehavior {name}: Using new state machine system");
+                
+                // Stop any running legacy coroutines
+                if (lifecycleCoroutine != null)
+                {
+                    StopCoroutine(lifecycleCoroutine);
+                    lifecycleCoroutine = null;
+                }
+                
+                // Set initial state and start state machine
+                ChangeState(startingState);
+                stateMachineManager.StartStateMachine(startingState);
+                
+                Debug.Log($"CustomerBehavior {name}: State machine started successfully");
             }
-            
-            // Start the lifecycle coroutine
-            lifecycleCoroutine = StartCoroutine(CustomerLifecycleCoroutine(startingState));
-            
-            Debug.Log($"CustomerBehavior {name}: Lifecycle coroutine started successfully");
+            else
+            {
+                // Fall back to legacy coroutine system
+                Debug.Log($"CustomerBehavior {name}: Using legacy coroutine system");
+                
+                // ✅ JUST SET STATE - DON'T START COROUTINES YET TO TEST CRASH FIX
+                ChangeState(startingState);
+                
+                Debug.Log($"CustomerBehavior {name}: State set successfully to {currentState}");
+                
+                // ✅ TEMPORARY: Start with minimal lifecycle to test crash fix
+                if (lifecycleCoroutine != null)
+                {
+                    StopCoroutine(lifecycleCoroutine);
+                }
+                
+                // Start the lifecycle coroutine
+                lifecycleCoroutine = StartCoroutine(CustomerLifecycleCoroutine(startingState));
+                
+                Debug.Log($"CustomerBehavior {name}: Lifecycle coroutine started successfully");
+            }
         }
         
         /// <summary>
-        /// Stop the customer lifecycle
+        /// Stop the customer lifecycle (both state machine and legacy coroutines)
         /// </summary>
         public void StopCustomerLifecycle()
         {
+            // Stop state machine if active
+            if (useStateMachine && stateMachineManager != null && stateMachineManager.IsStateMachineActive)
+            {
+                Debug.Log($"CustomerBehavior {name}: Stopping state machine");
+                stateMachineManager.StopStateMachine();
+            }
+            
+            // Stop legacy coroutines if running
             if (lifecycleCoroutine != null)
             {
+                Debug.Log($"CustomerBehavior {name}: Stopping legacy coroutine");
                 StopCoroutine(lifecycleCoroutine);
                 lifecycleCoroutine = null;
             }
