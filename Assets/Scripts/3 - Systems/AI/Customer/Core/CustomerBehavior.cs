@@ -185,6 +185,12 @@ namespace TabletopShop
                 stateMachineManager.ChangeState(newState, $"Requested by CustomerBehavior");
             }
             
+            // Update visual state indicator
+            if (mainCustomer != null && mainCustomer.Visuals != null)
+            {
+                mainCustomer.Visuals.UpdateStateDisplay(newState);
+            }
+            
             // Notify listeners of state change
             OnStateChangeRequested?.Invoke(previousState, currentState);
         }

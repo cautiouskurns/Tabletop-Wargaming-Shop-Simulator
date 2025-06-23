@@ -185,6 +185,17 @@ MonoBehaviour:
   colorTransitionSpeed: 2
   useEmissiveGlow: 1
   emissiveIntensity: 0.3
+  enableStateIndicator: 1
+  indicatorHeight: 2.5
+  indicatorOffset: {x: 0, y: 0, z: 0}
+  showStateText: 1
+  showStateIcon: 0
+  indicatorScale: 0.05
+  textFontSize: 12
+  enteringIcon: {fileID: 0}
+  shoppingIcon: {fileID: 0}
+  purchasingIcon: {fileID: 0}
+  leavingIcon: {fileID: 0}
 --- !u!114 &8953261834566950972
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -23,6 +23,21 @@ namespace TabletopShop
         [SerializeField] private bool useEmissiveGlow = true;
         [SerializeField] private float emissiveIntensity = 0.3f;
         
+        [Header("State Indicator System")]
+        [SerializeField] private bool enableStateIndicator = true;
+        [SerializeField] private float indicatorHeight = 2.5f; // Height above customer
+        [SerializeField] private Vector3 indicatorOffset = Vector3.zero;
+        [SerializeField] private bool showStateText = true;
+        [SerializeField] private bool showStateIcon = false;
+        [SerializeField] private float indicatorScale = 0.01f; // Much smaller scale for UI
+        [SerializeField] private int textFontSize = 12; // Configurable font size
+        
+        [Header("State Icons (Optional)")]
+        [SerializeField] private Sprite enteringIcon;
+        [SerializeField] private Sprite shoppingIcon;
+        [SerializeField] private Sprite purchasingIcon;
+        [SerializeField] private Sprite leavingIcon;
+        
         // Component references
         private CustomerMovement customerMovement;
         private Customer mainCustomer;
@@ -34,6 +49,13 @@ namespace TabletopShop
         private Material[] customerMaterials;
         private Color currentTargetColor;
         private Color currentColor;
+        
+        // State indicator components
+        private GameObject stateIndicatorObject;
+        private Canvas stateCanvas;
+        private UnityEngine.UI.Text stateText;
+        private UnityEngine.UI.Image stateIcon;
+        private CustomerState lastDisplayedState;
         
         // Properties
         public bool ShowDebugGizmos 
@@ -67,6 +89,12 @@ namespace TabletopShop
                 // Update initial color based on current state
                 UpdateColorForState(mainCustomer.Behavior.CurrentState);
             }
+            
+            // Initialize state indicator system
+            if (enableStateIndicator)
+            {
+                SetupStateIndicator();
+            }
         }
         
         private void Start()
@@ -85,6 +113,12 @@ namespace TabletopShop
             {
                 SetupColorSystem();
             }
+            
+            // Initialize state indicator
+            if (enableStateIndicator)
+            {
+                SetupStateIndicator();
+            }
         }
         
         private void Update()
@@ -95,12 +129,24 @@ namespace TabletopShop
                 currentColor = Color.Lerp(currentColor, currentTargetColor, colorTransitionSpeed * Time.deltaTime);
                 ApplyColorToRenderers(currentColor);
             }
+            
+            // Update state indicator
+            if (enableStateIndicator && stateIndicatorObject != null)
+            {
+                UpdateStateIndicator();
+            }
         }
         
         private void OnDestroy()
         {
             // Clean up created materials
             CleanupMaterials();
+            
+            // Clean up state indicator
+            if (stateIndicatorObject != null)
+            {
+                DestroyImmediate(stateIndicatorObject);
+            }
         }
         
         /// <summary>
@@ -245,6 +291,166 @@ namespace TabletopShop
                         }
                     }
                 }
+            }
+        }
+        
+        /// <summary>
+        /// Setup the state indicator UI system
+        /// </summary>
+        private void SetupStateIndicator()
+        {
+            if (!enableStateIndicator) return;
+            
+            // Clean up any existing indicator first
+            if (stateIndicatorObject != null)
+            {
+                if (Application.isPlaying)
+                    Destroy(stateIndicatorObject);
+                else
+                    DestroyImmediate(stateIndicatorObject);
+            }
+            
+            // Create the state indicator GameObject
+            stateIndicatorObject = new GameObject($"{name}_StateIndicator");
+            stateIndicatorObject.transform.SetParent(transform);
+            
+            // Add Canvas component for World Space UI
+            stateCanvas = stateIndicatorObject.AddComponent<Canvas>();
+            stateCanvas.renderMode = RenderMode.WorldSpace;
+            stateCanvas.worldCamera = Camera.main;
+            
+            // Scale the canvas to make it much smaller
+            stateIndicatorObject.transform.localScale = Vector3.one * indicatorScale;
+            
+            // Add CanvasScaler for consistent sizing
+            var canvasScaler = stateIndicatorObject.AddComponent<UnityEngine.UI.CanvasScaler>();
+            canvasScaler.scaleFactor = 1f;
+            canvasScaler.dynamicPixelsPerUnit = 100f; // Higher value for sharper text at small scale
+            
+            // Add GraphicRaycaster (required for UI)
+            stateIndicatorObject.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+            
+            // Set initial position
+            stateIndicatorObject.transform.position = transform.position + Vector3.up * indicatorHeight + indicatorOffset;
+            
+            // Add Text component for state name
+            if (showStateText)
+            {
+                var textObject = new GameObject("StateText");
+                textObject.transform.SetParent(stateIndicatorObject.transform, false);
+                
+                stateText = textObject.AddComponent<UnityEngine.UI.Text>();
+                stateText.text = GetStateDisplayName(CustomerState.Entering);
+                stateText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                stateText.fontSize = textFontSize;
+                stateText.color = Color.white;
+                stateText.alignment = TextAnchor.MiddleCenter;
+                
+                // Set RectTransform for proper sizing - larger canvas space but smaller scale
+                var rectTransform = stateText.GetComponent<RectTransform>();
+                rectTransform.sizeDelta = new Vector2(200, 50); // Larger canvas size
+                rectTransform.anchoredPosition = Vector2.zero;
+            }
+            
+            // Add Image component for state icon
+            if (showStateIcon)
+            {
+                var iconObject = new GameObject("StateIcon");
+                iconObject.transform.SetParent(stateIndicatorObject.transform, false);
+                
+                stateIcon = iconObject.AddComponent<UnityEngine.UI.Image>();
+                stateIcon.color = Color.white;
+                
+                // Position icon above or below text
+                var rectTransform = stateIcon.GetComponent<RectTransform>();
+                rectTransform.sizeDelta = new Vector2(48, 48); // Larger for better visibility at small scale
+                rectTransform.anchoredPosition = showStateText ? new Vector2(0, 40) : Vector2.zero;
+            }
+            
+            // Initial update
+            UpdateStateIndicator();
+            
+            Debug.Log($"CustomerVisuals {name}: State indicator initialized with scale {indicatorScale}");
+        }
+        
+        /// <summary>
+        /// Get display name for a customer state
+        /// </summary>
+        private string GetStateDisplayName(CustomerState state)
+        {
+            switch (state)
+            {
+                case CustomerState.Entering:
+                    return "Entering";
+                case CustomerState.Shopping:
+                    return "Shopping";
+                case CustomerState.Purchasing:
+                    return "Checkout";
+                case CustomerState.Leaving:
+                    return "Leaving";
+                default:
+                    return state.ToString();
+            }
+        }
+        
+        /// <summary>
+        /// Update the state indicator UI based on the current state
+        /// </summary>
+        private void UpdateStateIndicator()
+        {
+            if (!enableStateIndicator || stateIndicatorObject == null || mainCustomer == null) 
+                return;
+            
+            // Ensure the indicator exists and is properly initialized
+            if (stateText == null && showStateText || stateIcon == null && showStateIcon)
+            {
+                // Reinitialize if components are missing
+                SetupStateIndicator();
+                return;
+            }
+            
+            // Update position to follow the customer
+            stateIndicatorObject.transform.position = transform.position + Vector3.up * indicatorHeight + indicatorOffset;
+            
+            // Update state text with clean transition
+            if (stateText != null && showStateText)
+            {
+                string newStateText = GetStateDisplayName(mainCustomer.Behavior.CurrentState);
+                if (stateText.text != newStateText)
+                {
+                    stateText.text = newStateText;
+                    Debug.Log($"CustomerVisuals {name}: State text updated to '{newStateText}'");
+                }
+            }
+            
+            // Update state icon
+            if (stateIcon != null && showStateIcon)
+            {
+                Sprite newSprite = GetIconForState(mainCustomer.Behavior.CurrentState);
+                stateIcon.sprite = newSprite;
+                stateIcon.enabled = newSprite != null;
+            }
+            
+            lastDisplayedState = mainCustomer.Behavior.CurrentState;
+        }
+        
+        /// <summary>
+        /// Get the icon sprite for a given customer state
+        /// </summary>
+        private Sprite GetIconForState(CustomerState state)
+        {
+            switch (state)
+            {
+                case CustomerState.Entering:
+                    return enteringIcon;
+                case CustomerState.Shopping:
+                    return shoppingIcon;
+                case CustomerState.Purchasing:
+                    return purchasingIcon;
+                case CustomerState.Leaving:
+                    return leavingIcon;
+                default:
+                    return null;
             }
         }
         
@@ -495,5 +701,52 @@ namespace TabletopShop
         }
         
         #endregion
+
+        /// <summary>
+        /// Update the state indicator when state changes (call this from CustomerBehavior)
+        /// </summary>
+        /// <param name="newState">The new customer state</param>
+        public void UpdateStateDisplay(CustomerState newState)
+        {
+            if (enableStateIndicator && stateIndicatorObject != null)
+            {
+                lastDisplayedState = newState;
+                UpdateStateIndicator();
+                
+                // Update color system as well
+                if (enableColorSystem)
+                {
+                    UpdateColorForState(newState);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reinitialize the state indicator system with current settings
+        /// Call this if you change indicator settings at runtime
+        /// </summary>
+        public void ReinitializeStateIndicator()
+        {
+            if (enableStateIndicator)
+            {
+                SetupStateIndicator();
+            }
+            else
+            {
+                // Clean up existing indicator
+                if (stateIndicatorObject != null)
+                {
+                    if (Application.isPlaying)
+                        Destroy(stateIndicatorObject);
+                    else
+                        DestroyImmediate(stateIndicatorObject);
+                    
+                    stateIndicatorObject = null;
+                    stateCanvas = null;
+                    stateText = null;
+                    stateIcon = null;
+                }
+            }
+        }
     }
 }
