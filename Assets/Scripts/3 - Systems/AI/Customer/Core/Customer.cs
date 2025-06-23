@@ -22,10 +22,11 @@ namespace TabletopShop
     /// - Provides direct access to specialized components
     /// - Coordinates high-level actions that involve multiple components
     /// - NO delegation methods - use direct component access instead
-    /// 
+    /// - Implements ICustomer interface for enhanced interface segregation
+    /// </summary>
 
     [RequireComponent(typeof(NavMeshAgent))]
-    public class Customer : MonoBehaviour
+    public class Customer : MonoBehaviour, ICustomer
     {
         [Header("Required Components")]
         [SerializeField] private CustomerMovement customerMovement;
@@ -36,6 +37,19 @@ namespace TabletopShop
         public CustomerMovement Movement => customerMovement;
         public CustomerBehavior Behavior => customerBehavior;
         public CustomerVisuals Visuals => customerVisuals;
+        
+        // Interface implementations for ICustomer
+        ICustomerMovement ICustomer.Movement => customerMovement;
+        ICustomerBehavior ICustomer.Behavior => customerBehavior;
+        ICustomerVisuals ICustomer.Visuals => customerVisuals;
+        
+        // Convenience properties (delegated from components) for ICustomer interface
+        public CustomerState CurrentState => customerBehavior?.CurrentState ?? CustomerState.Entering;
+        public float ShoppingTime => customerBehavior?.ShoppingTime ?? 15f;
+        public ShelfSlot TargetShelf => customerBehavior?.TargetShelf;
+        public bool IsMoving => customerMovement?.IsMoving ?? false;
+        public Vector3 CurrentDestination => customerMovement?.CurrentDestination ?? Vector3.zero;
+        public bool HasDestination => customerMovement?.HasDestination ?? false;
         
         // Note: Legacy properties removed - use direct component access instead:
         // customer.Behavior.CurrentState, customer.Movement.IsMoving, etc.
@@ -194,6 +208,50 @@ namespace TabletopShop
         
         #endregion
         
+        #region ICustomer Interface Implementation
+        
+        /// <summary>
+        /// Change customer state (interface delegation)
+        /// </summary>
+        public void ChangeState(CustomerState newState)
+        {
+            customerBehavior?.ChangeState(newState);
+        }
+        
+        /// <summary>
+        /// Check if customer is in specific state (interface delegation)
+        /// </summary>
+        public bool IsInState(CustomerState state)
+        {
+            return customerBehavior?.IsInState(state) ?? false;
+        }
+        
+        /// <summary>
+        /// Set target shelf (interface delegation)
+        /// </summary>
+        public void SetTargetShelf(ShelfSlot shelf)
+        {
+            customerBehavior?.SetTargetShelf(shelf);
+        }
+        
+        /// <summary>
+        /// Clear target shelf (interface delegation)
+        /// </summary>
+        public void ClearTargetShelf()
+        {
+            customerBehavior?.ClearTargetShelf();
+        }
+        
+        /// <summary>
+        /// Get debug information (interface delegation)
+        /// </summary>
+        public string GetDebugInfo()
+        {
+            return customerBehavior?.GetDebugInfo() ?? $"Customer {name}: No behavior component";
+        }
+        
+        #endregion
+
         #region Unity Editor Support
         
         private void OnValidate()

@@ -7,8 +7,9 @@ namespace TabletopShop
     /// <summary>
     /// Handles customer movement, pathfinding, and navigation using NavMeshAgent.
     /// Manages destination setting, stuck detection, and movement validation.
+    /// Implements ICustomerMovement interface for enhanced interface segregation.
     /// </summary>
-    public class CustomerMovement : MonoBehaviour
+    public class CustomerMovement : MonoBehaviour, ICustomerMovement
     {
         [Header("Movement Settings")]
         [SerializeField] private float movementSpeed = 1.5f;

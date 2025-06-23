@@ -8,8 +8,9 @@ namespace TabletopShop
     /// <summary>
     /// Handles customer AI behavior, lifecycle state machine, and shopping patterns.
     /// Manages the complete customer experience from entering to leaving the shop.
+    /// Implements ICustomerBehavior composite interface for enhanced interface segregation.
     /// </summary>
-    public class CustomerBehavior : MonoBehaviour
+    public class CustomerBehavior : MonoBehaviour, ICustomerBehavior
     {
     [Header("State Management")]
     [SerializeField] private CustomerState currentState = CustomerState.Entering;
@@ -54,6 +55,13 @@ namespace TabletopShop
         public List<Product> SelectedProducts => selectedProducts;
         public float TotalPurchaseAmount => totalPurchaseAmount;
         public float BaseSpendingPower => baseSpendingPower;
+        
+        // ICustomerCheckoutBehavior properties
+        public bool IsInQueue => isInQueue;
+        public int QueuePosition => queuePosition;
+        public CheckoutCounter QueuedCheckout => queuedCheckout;
+        public bool WaitingForCheckoutTurn => waitingForCheckoutTurn;
+        public bool IsWaitingForCheckout => isWaitingForCheckout;
         
         #region Initialization
         
@@ -252,7 +260,7 @@ namespace TabletopShop
         /// <summary>
         /// Handle entering state behavior
         /// </summary>
-        private IEnumerator HandleEnteringState()
+        public IEnumerator HandleEnteringState()
         {
             Debug.Log($"CustomerBehavior {name} entering shop - looking for shelves");
             
@@ -278,7 +286,7 @@ namespace TabletopShop
         /// <summary>
         /// Handle shopping state behavior
         /// </summary>
-        private IEnumerator HandleShoppingState()
+        public IEnumerator HandleShoppingState()
         {
             Debug.Log($"CustomerBehavior {name} browsing products for {shoppingTime:F1} seconds");
             
@@ -338,7 +346,7 @@ namespace TabletopShop
         /// Customer brings selected products to checkout counter and waits for completion
         /// Uses proper queue system - customers must wait their turn before placing items
         /// </summary>
-        private IEnumerator HandlePurchasingState()
+        public IEnumerator HandlePurchasingState()
         {
             Debug.Log($"CustomerBehavior {name} proceeding to checkout with {selectedProducts.Count} products");
             
@@ -441,7 +449,7 @@ namespace TabletopShop
         /// <summary>
         /// Handle leaving state behavior
         /// </summary>
-        private IEnumerator HandleLeavingState()
+        public IEnumerator HandleLeavingState()
         {
             Debug.Log($"CustomerBehavior {name} leaving the shop");
             
@@ -559,6 +567,27 @@ namespace TabletopShop
                 // - Picking up items
                 // - Putting items back
                 // - Making decisions based on preferences
+            }
+        }
+        
+        /// <summary>
+        /// Try to select products at a specific shelf (interface implementation)
+        /// </summary>
+        /// <param name="shelf">The shelf to select products from</param>
+        public void TrySelectProductsAtShelf(ShelfSlot shelf)
+        {
+            if (shelf != null)
+            {
+                // Set the shelf as target and try to select products
+                ShelfSlot originalTarget = targetShelf;
+                SetTargetShelf(shelf);
+                TrySelectProductsAtCurrentShelf();
+                
+                // Restore original target if no products were selected
+                if (targetShelf == shelf && selectedProducts.Count == 0)
+                {
+                    targetShelf = originalTarget;
+                }
             }
         }
         
@@ -853,7 +882,7 @@ namespace TabletopShop
         /// Only proceeds if customer is authorized to use the counter
         /// </summary>
         /// <param name="checkoutCounter">The checkout counter to place items on</param>
-        private IEnumerator PlaceItemsOnCounter(CheckoutCounter checkoutCounter)
+        public IEnumerator PlaceItemsOnCounter(CheckoutCounter checkoutCounter)
         {
             // Safety check: Only place items if we're not waiting for our turn and not in queue
             if (waitingForCheckoutTurn)
@@ -949,7 +978,7 @@ namespace TabletopShop
         /// Customer waits patiently while items are scanned and payment is processed
         /// </summary>
         /// <param name="checkoutCounter">The checkout counter being used</param>
-        private IEnumerator WaitForCheckoutCompletion(CheckoutCounter checkoutCounter)
+        public IEnumerator WaitForCheckoutCompletion(CheckoutCounter checkoutCounter)
         {
             Debug.Log($"CustomerBehavior {name} waiting for checkout completion");
             
@@ -977,7 +1006,7 @@ namespace TabletopShop
         /// Coroutine to collect items after purchase and prepare to leave
         /// </summary>
         /// <param name="checkoutCounter">The checkout counter to collect from</param>
-        private IEnumerator CollectItemsAndLeave(CheckoutCounter checkoutCounter)
+        public IEnumerator CollectItemsAndLeave(CheckoutCounter checkoutCounter)
         {
             Debug.Log($"CustomerBehavior {name} collecting items after purchase");
             
@@ -1151,7 +1180,7 @@ namespace TabletopShop
         /// <summary>
         /// Check if the store is currently open for customers
         /// </summary>
-        private bool IsStoreOpen()
+        public bool IsStoreOpen()
         {
             StoreHours storeHours = FindFirstObjectByType<StoreHours>();
             if (storeHours != null)
@@ -1166,7 +1195,7 @@ namespace TabletopShop
         /// <summary>
         /// Check if customer should continue shopping or leave due to store closing
         /// </summary>
-        private bool ShouldLeaveStoreDueToHours()
+        public bool ShouldLeaveStoreDueToHours()
         {
             StoreHours storeHours = FindFirstObjectByType<StoreHours>();
             if (storeHours != null)
@@ -1194,7 +1223,7 @@ namespace TabletopShop
         /// <summary>
         /// Check if customer should hurry up their shopping due to store closing soon
         /// </summary>
-        private bool ShouldHurryUpShopping()
+        public bool ShouldHurryUpShopping()
         {
             StoreHours storeHours = FindFirstObjectByType<StoreHours>();
             if (storeHours != null)

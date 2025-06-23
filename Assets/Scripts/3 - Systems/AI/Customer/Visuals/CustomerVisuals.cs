@@ -6,8 +6,9 @@ namespace TabletopShop
     /// Handles customer visual feedback, debug information, and gizmo drawing.
     /// Manages visual representation and debugging tools for customer AI.
     /// Includes dynamic color system that changes customer appearance based on behavior phase.
+    /// Implements ICustomerVisuals interface for enhanced interface segregation.
     /// </summary>
-    public class CustomerVisuals : MonoBehaviour
+    public class CustomerVisuals : MonoBehaviour, ICustomerVisuals
     {
         [Header("State-Based Color System")]
         [SerializeField] private Color enteringColor = new Color(0.3f, 0.7f, 1f, 1f);    // Light blue
