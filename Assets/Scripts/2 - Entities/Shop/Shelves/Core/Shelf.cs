@@ -69,7 +69,7 @@ namespace TabletopShop
             int childCount = GetComponentsInChildren<ShelfSlot>().Length;
             bool hasExistingSlots = listCount > 0 || childCount > 0;
             
-            Debug.Log($"Shelf {name} Awake: listCount={listCount}, childCount={childCount}, hasExistingSlots={hasExistingSlots}, autoCreateSlots={autoCreateSlots}");
+//            Debug.Log($"Shelf {name} Awake: listCount={listCount}, childCount={childCount}, hasExistingSlots={hasExistingSlots}, autoCreateSlots={autoCreateSlots}");
             
             if (autoCreateSlots && !hasExistingSlots && Application.isPlaying)
             {
@@ -98,7 +98,7 @@ namespace TabletopShop
         
         private void Start()
         {
-            Debug.Log($"Shelf '{name}' initialized with {TotalSlots} slots");
+//            Debug.Log($"Shelf '{name}' initialized with {TotalSlots} slots");
         }
         
         #endregion

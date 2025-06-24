@@ -41,14 +41,14 @@ namespace TabletopShop
         
         private void Awake()
         {
-            Debug.Log("InventoryUI Awake() called");
+//            Debug.Log("InventoryUI Awake() called");
             
             // Ensure component initialization
             EnsureComponents();
             
             // Try to get InventoryManager instance early
             inventoryManager = InventoryManager.Instance;
-            Debug.Log($"InventoryUI: InventoryManager instance in Awake: {inventoryManager != null}");
+//            Debug.Log($"InventoryUI: InventoryManager instance in Awake: {inventoryManager != null}");
             
             // Validate required components
             if (inventoryCanvasGroup == null)
@@ -72,7 +72,7 @@ namespace TabletopShop
         
         private void Start()
         {
-            Debug.Log("InventoryUI Start() called");
+//            Debug.Log("InventoryUI Start() called");
             
             // Ensure we have the InventoryManager instance
             if (inventoryManager == null)
@@ -88,7 +88,7 @@ namespace TabletopShop
                 uiInteraction.OnDisplayUpdateRequested += UpdateDisplay;
             }
             
-            Debug.Log($"InventoryUI: productButtons array length: {productButtons?.Length ?? 0}");
+//            Debug.Log($"InventoryUI: productButtons array length: {productButtons?.Length ?? 0}");
             
             // Delay initial display update to ensure InventoryManager is fully initialized
             StartCoroutine(DelayedInitialization());
@@ -163,7 +163,7 @@ namespace TabletopShop
                 if (uiVisuals == null)
                 {
                     uiVisuals = gameObject.AddComponent<InventoryUIVisuals>();
-                    Debug.Log("InventoryUI: Added InventoryUIVisuals component");
+//                    Debug.Log("InventoryUI: Added InventoryUIVisuals component");
                 }
             }
             return uiVisuals != null;
@@ -180,7 +180,7 @@ namespace TabletopShop
                 if (uiInteraction == null)
                 {
                     uiInteraction = gameObject.AddComponent<InventoryUIInteraction>();
-                    Debug.Log("InventoryUI: Added InventoryUIInteraction component");
+//                    Debug.Log("InventoryUI: Added InventoryUIInteraction component");
                 }
             }
             return uiInteraction != null;
@@ -220,7 +220,7 @@ namespace TabletopShop
                 uiVisuals.MigrateLegacyFields(fadeInDuration, fadeOutDuration, selectedButtonColor, defaultButtonColor);
             }
             
-            Debug.Log("InventoryUI: Legacy fields migrated to components");
+//            Debug.Log("InventoryUI: Legacy fields migrated to components");
         }
         
         #endregion
@@ -330,17 +330,17 @@ namespace TabletopShop
         /// </summary>
         public void UpdateDisplay()
         {
-            Debug.Log($"UpdateDisplay called - inventoryManager: {inventoryManager != null}, productButtons: {productButtons?.Length ?? 0}");
+            // Debug.Log($"UpdateDisplay called - inventoryManager: {inventoryManager != null}, productButtons: {productButtons?.Length ?? 0}");
             
             if (inventoryManager == null || productButtons == null) return;
             
             var productTypes = System.Enum.GetValues(typeof(ProductType));
-            Debug.Log($"UpdateDisplay - Found {productTypes.Length} product types");
+            // Debug.Log($"UpdateDisplay - Found {productTypes.Length} product types");
             
             for (int i = 0; i < productButtons.Length && i < productTypes.Length; i++)
             {
                 ProductType productType = (ProductType)productTypes.GetValue(i);
-                Debug.Log($"UpdateDisplay - Processing button {i} for type {productType}");
+//                Debug.Log($"UpdateDisplay - Processing button {i} for type {productType}");
                 UpdateProductButton(i, productType);
             }
             
@@ -355,25 +355,25 @@ namespace TabletopShop
         {
             if (buttonIndex >= productButtons.Length) 
             {
-                Debug.LogWarning($"InventoryUI: Button index {buttonIndex} out of range (array length: {productButtons.Length})");
+                // Debug.LogWarning($"InventoryUI: Button index {buttonIndex} out of range (array length: {productButtons.Length})");
                 return;
             }
             
             Button button = productButtons[buttonIndex];
             if (button == null) 
             {
-                Debug.LogWarning($"InventoryUI: Button at index {buttonIndex} is null");
+                // Debug.LogWarning($"InventoryUI: Button at index {buttonIndex} is null");
                 return;
             }
             
-            Debug.Log($"InventoryUI: Updating button {buttonIndex} for product type {productType}");
+//            Debug.Log($"InventoryUI: Updating button {buttonIndex} for product type {productType}");
             
             // Get total count for this product type (delegate to interaction component if available)
             int totalCount = EnsureInteractionComponent() ? 
                 uiInteraction.GetTotalCountForType(productType) : 
                 GetTotalCountForTypeLegacy(productType);
             
-            Debug.Log($"InventoryUI: Total count for {productType}: {totalCount}");
+            // Debug.Log($"InventoryUI: Total count for {productType}: {totalCount}");
             
             // Update button visual state through visuals component
             if (EnsureVisualsComponent())
@@ -404,17 +404,17 @@ namespace TabletopShop
             if (countText != null)
             {
                 countText.text = totalCount.ToString();
-                Debug.Log($"InventoryUI: Updated count text for button {buttonIndex} to: {totalCount}");
+                // Debug.Log($"InventoryUI: Updated count text for button {buttonIndex} to: {totalCount}");
             }
             else
             {
-                Debug.LogWarning($"InventoryUI: No ProductCount text found for button {buttonIndex}");
+                // Debug.LogWarning($"InventoryUI: No ProductCount text found for button {buttonIndex}");
             }
             
             // Set up button click event
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(() => {
-                Debug.Log($"InventoryUI: Button {buttonIndex} clicked! Calling OnProductButtonClick({buttonIndex})");
+                // Debug.Log($"InventoryUI: Button {buttonIndex} clicked! Calling OnProductButtonClick({buttonIndex})");
                 OnProductButtonClick(buttonIndex);
             });
         }

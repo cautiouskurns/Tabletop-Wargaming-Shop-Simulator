@@ -49,7 +49,7 @@ namespace TabletopShop
             if (onProductCountChanged == null)
                 onProductCountChanged = new UnityEvent<ProductData, int>();
             
-            Debug.Log("UnityInventoryEventPublisher initialized successfully.");
+//            Debug.Log("UnityInventoryEventPublisher initialized successfully.");
         }
         
         #endregion
@@ -63,7 +63,7 @@ namespace TabletopShop
         public void PublishInventoryChanged()
         {
             onInventoryChanged?.Invoke();
-            Debug.Log("Published InventoryChanged event");
+//            Debug.Log("Published InventoryChanged event");
         }
         
         /// <summary>
@@ -86,7 +86,7 @@ namespace TabletopShop
         public void PublishProductCountChanged(ProductData product, int count)
         {
             onProductCountChanged?.Invoke(product, count);
-            Debug.Log($"Published ProductCountChanged event: {product?.ProductName ?? "Unknown"} -> {count}");
+            // Debug.Log($"Published ProductCountChanged event: {product?.ProductName ?? "Unknown"} -> {count}");
         }
         
         #endregion

@@ -58,7 +58,7 @@ namespace TabletopShop
             OnProductPlaced?.Invoke();
             OnVisualStateChanged?.Invoke();
             
-            Debug.Log($"Placed {product.ProductData?.ProductName ?? "Product"} in slot {name}");
+            // Debug.Log($"Placed {product.ProductData?.ProductName ?? "Product"} in slot {name}");
             return true;
         }
         

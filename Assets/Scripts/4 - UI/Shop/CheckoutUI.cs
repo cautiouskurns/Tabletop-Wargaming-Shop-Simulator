@@ -47,7 +47,7 @@ namespace TabletopShop
         
         private void Awake()
         {
-            Debug.Log($"CheckoutUI Awake: showByDefault = {showByDefault}");
+//            Debug.Log($"CheckoutUI Awake: showByDefault = {showByDefault}");
             
             // Get components if not assigned
             if (canvasGroup == null)
@@ -64,16 +64,16 @@ namespace TabletopShop
                 canvasGroup.alpha = 0f;
                 canvasGroup.interactable = false;
                 canvasGroup.blocksRaycasts = false;
-                Debug.Log("CheckoutUI Awake: Forced alpha to 0, interactable and blocksRaycasts to false");
+//                Debug.Log("CheckoutUI Awake: Forced alpha to 0, interactable and blocksRaycasts to false");
             }
             
-            Debug.Log($"CheckoutUI Awake: Forced hidden state - isVisible = {isVisible}, targetAlpha = {targetAlpha}");
+//            Debug.Log($"CheckoutUI Awake: Forced hidden state - isVisible = {isVisible}, targetAlpha = {targetAlpha}");
         }
         
         private void Start()
         {
             // Double-check that UI remains hidden at Start
-            Debug.Log($"CheckoutUI Start: Current state - isVisible = {isVisible}, targetAlpha = {targetAlpha}, alpha = {(canvasGroup?.alpha ?? -1)}");
+//            Debug.Log($"CheckoutUI Start: Current state - isVisible = {isVisible}, targetAlpha = {targetAlpha}, alpha = {(canvasGroup?.alpha ?? -1)}");
             
             // Ensure we're still hidden
             if (canvasGroup != null && targetAlpha == 0f)
@@ -81,7 +81,7 @@ namespace TabletopShop
                 canvasGroup.alpha = 0f;
                 canvasGroup.interactable = false;
                 canvasGroup.blocksRaycasts = false;
-                Debug.Log("CheckoutUI Start: Confirmed hidden state");
+//                Debug.Log("CheckoutUI Start: Confirmed hidden state");
             }
         }
         

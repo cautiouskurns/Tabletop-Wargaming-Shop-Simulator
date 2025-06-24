@@ -128,7 +128,7 @@ namespace TabletopShop
             }
             else
             {
-                Debug.Log("[ShopUIPanels] GameManager connection established");
+//                Debug.Log("[ShopUIPanels] GameManager connection established");
             }
         }
         
@@ -142,7 +142,7 @@ namespace TabletopShop
             SetPanelVisibility(PanelType.DailySummary, false);
             SetPanelVisibility(PanelType.PriceSetting, false);
             
-            Debug.Log("[ShopUIPanels] Panel states initialized - all panels hidden");
+//            Debug.Log("[ShopUIPanels] Panel states initialized - all panels hidden");
         }
         
         #endregion

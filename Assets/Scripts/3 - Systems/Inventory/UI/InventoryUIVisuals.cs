@@ -134,7 +134,7 @@ namespace TabletopShop
             
             var productTypes = System.Enum.GetValues(typeof(ProductType));
             
-            Debug.Log($"InventoryUIVisuals: UpdateSelectionHighlight - Currently selected product is {selectedProduct?.ProductName ?? "None"} of type {selectedProduct?.Type.ToString() ?? "None"}");
+            // Debug.Log($"InventoryUIVisuals: UpdateSelectionHighlight - Currently selected product is {selectedProduct?.ProductName ?? "None"} of type {selectedProduct?.Type.ToString() ?? "None"}");
             
             for (int i = 0; i < productButtons.Length && i < productTypes.Length; i++)
             {
@@ -150,7 +150,7 @@ namespace TabletopShop
                         Color newColor = isSelected ? selectedButtonColor : defaultButtonColor;
                         buttonImage.color = newColor;
                         
-                        Debug.Log($"InventoryUIVisuals: Button {i} ({productType}): Selected={isSelected}, Color={newColor}");
+                        // Debug.Log($"InventoryUIVisuals: Button {i} ({productType}): Selected={isSelected}, Color={newColor}");
                     }
                 }
             }
@@ -188,11 +188,11 @@ namespace TabletopShop
             if (countText != null)
             {
                 countText.text = count.ToString();
-                Debug.Log($"InventoryUIVisuals: Updated count text for button {buttonIndex} to: {count}");
+                // Debug.Log($"InventoryUIVisuals: Updated count text for button {buttonIndex} to: {count}");
             }
             else
             {
-                Debug.LogWarning($"InventoryUIVisuals: No ProductCount text found for button {buttonIndex}");
+                // Debug.LogWarning($"InventoryUIVisuals: No ProductCount text found for button {buttonIndex}");
             }
         }
         
@@ -211,7 +211,7 @@ namespace TabletopShop
             selectedButtonColor = legacySelectedColor;
             defaultButtonColor = legacyDefaultColor;
             
-            Debug.Log("InventoryUIVisuals: Legacy fields migrated successfully");
+//            Debug.Log("InventoryUIVisuals: Legacy fields migrated successfully");
         }
         
         #endregion

@@ -110,9 +110,9 @@ namespace TabletopShop
             }
             
             // Validate UI element references with detailed error logging
-            ValidateUIReferences();
+            //ValidateUIReferences();
             
-            Debug.Log("[ShopUI] Component initialized - UI references validated");
+//            Debug.Log("[ShopUI] Component initialized - UI references validated");
         }
         
         /// <summary>
@@ -138,7 +138,7 @@ namespace TabletopShop
             // Initial data refresh to populate UI
             RefreshUIData();
             
-            Debug.Log("[ShopUI] Start initialization complete - event-driven updates enabled");
+//            Debug.Log("[ShopUI] Start initialization complete - event-driven updates enabled");
         }
         
         /// <summary>
@@ -231,7 +231,7 @@ namespace TabletopShop
             // Panel validation is now handled by ShopUIPanels component
             if (shopUIPanels != null)
             {
-                shopUIPanels.ValidatePanelReferences();
+                //shopUIPanels.ValidatePanelReferences();
             }
             
             if (allReferencesValid)
@@ -289,7 +289,7 @@ namespace TabletopShop
             shopUIDisplay.Initialize(moneyDisplay, salesDisplay, timeDisplay, gameManager, dayNightCycle);
             shopUIDisplay.InitializeDisplayTexts();
             
-            Debug.Log("[ShopUI] Display component initialized successfully");
+//            Debug.Log("[ShopUI] Display component initialized successfully");
         }
         
         /// <summary>
@@ -353,7 +353,7 @@ namespace TabletopShop
                 GameManager.Instance.OnDayNightCycleChanged.AddListener(OnDayNightCycleChanged);
                 GameManager.Instance.OnReputationChanged.AddListener(OnReputationChanged);
                 
-                Debug.Log("[ShopUI] Successfully subscribed to GameManager events");
+//                Debug.Log("[ShopUI] Successfully subscribed to GameManager events");
             }
             else
             {
@@ -367,7 +367,7 @@ namespace TabletopShop
                 shopUIControls.OnHideDailySummary.AddListener(HideDailySummary);
                 shopUIControls.OnHidePriceSetting.AddListener(HidePriceSetting);
                 
-                Debug.Log("[ShopUI] Successfully subscribed to ShopUIControls panel events");
+//                Debug.Log("[ShopUI] Successfully subscribed to ShopUIControls panel events");
             }
             else
             {
@@ -434,7 +434,7 @@ namespace TabletopShop
                     SubscribeToGameManagerEvents();
                 }
                 
-                Debug.Log("[ShopUI] UI data refreshed from GameManager via ShopUIDisplay");
+//                Debug.Log("[ShopUI] UI data refreshed from GameManager via ShopUIDisplay");
             }
             else
             {

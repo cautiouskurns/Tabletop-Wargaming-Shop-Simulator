@@ -104,7 +104,7 @@ namespace TabletopShop
                 // Position and scale the indicator
                 UpdateIndicatorTransform();
                 
-                Debug.Log($"Instantiated prefab indicator for slot {name} with scale {actualIndicatorScale}");
+//                Debug.Log($"Instantiated prefab indicator for slot {name} with scale {actualIndicatorScale}");
             }
             // Create slot indicator if it doesn't exist
             else if (slotIndicator == null)
@@ -119,7 +119,7 @@ namespace TabletopShop
                 // Position and scale the indicator
                 UpdateIndicatorTransform();
                 
-                Debug.Log($"Created default cube indicator for slot {name} with scale {actualIndicatorScale}");
+//                Debug.Log($"Created default cube indicator for slot {name} with scale {actualIndicatorScale}");
                 
                 // Remove collider from indicator (we want slot collider to handle interactions)
                 Collider indicatorCollider = slotIndicator.GetComponent<Collider>();
@@ -162,7 +162,7 @@ namespace TabletopShop
             // Get renderer for material changes
             indicatorRenderer = slotIndicator.GetComponent<MeshRenderer>();
             
-            Debug.Log($"Slot {name} indicator setup complete. Renderer found: {indicatorRenderer != null}");
+//            Debug.Log($"Slot {name} indicator setup complete. Renderer found: {indicatorRenderer != null}");
             
             // Setup materials after renderer is assigned
             SetupMaterials();
@@ -199,7 +199,7 @@ namespace TabletopShop
                 {
                     // Use the prefab's material as the normal material
                     normalMaterial = indicatorRenderer.material;
-                    Debug.Log($"Using prefab material as normal material for slot {name}");
+//                    Debug.Log($"Using prefab material as normal material for slot {name}");
                 }
                 else
                 {
@@ -214,7 +214,7 @@ namespace TabletopShop
             {
                 // Create a highlight version with emission using MaterialUtility
                 highlightMaterial = MaterialUtility.CreateEmissiveMaterial(normalMaterial, highlightColor, 0.3f);
-                Debug.Log($"Created highlight material for slot {name}");
+//                Debug.Log($"Created highlight material for slot {name}");
             }
         }
         

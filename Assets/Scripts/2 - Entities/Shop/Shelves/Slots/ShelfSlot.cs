@@ -63,7 +63,7 @@ namespace TabletopShop
             slotVisuals.InitializeComponent(emptySlotColor, highlightColor, slotIndicator, indicatorScale);
             slotLogic.SetGizmoDrawing(showSlotGizmos);
             
-            Debug.Log($"Initialized components for slot {name}");
+//            Debug.Log($"Initialized components for slot {name}");
         }
         
         #endregion

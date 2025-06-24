@@ -24,7 +24,7 @@ namespace TabletopShop
         [SerializeField] private int maxCustomers = 3;
         
         [Header("Debug Information")]
-        [SerializeField] private bool enableDebugLogging = true;
+        [SerializeField] private bool enableDebugLogging = false;
         
         // Active customer tracking
         private List<Customer> activeCustomers = new List<Customer>();

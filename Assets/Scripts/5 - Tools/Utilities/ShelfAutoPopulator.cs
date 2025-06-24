@@ -410,7 +410,7 @@ namespace TabletopShop
                 
                 if (enableDebugLogging)
                 {
-                    Debug.Log($"ShelfAutoPopulator: Successfully placed {productToPlace.ProductName} on shelf {shelf.name}");
+                    // Debug.Log($"ShelfAutoPopulator: Successfully placed {productToPlace.ProductName} on shelf {shelf.name}");
                 }
                 return true;
             }

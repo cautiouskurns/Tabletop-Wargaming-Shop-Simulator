@@ -168,10 +168,10 @@ namespace TabletopShop
             settingsUI = FindFirstObjectByType<SettingsUI>();
             if (settingsUI == null)
             {
-                Debug.LogWarning("[ShopUIControls] SettingsUI component not found in scene. Settings toggle will be unavailable.");
+//                Debug.LogWarning("[ShopUIControls] SettingsUI component not found in scene. Settings toggle will be unavailable.");
             }
             
-            Debug.Log("[ShopUIControls] Component references initialized");
+//            Debug.Log("[ShopUIControls] Component references initialized");
         }
         
         #endregion
@@ -218,7 +218,7 @@ namespace TabletopShop
             if (button != null)
             {
                 button.onClick.AddListener(() => HandleButtonAction(action));
-                Debug.Log($"[ShopUIControls] {buttonName} button event handler added");
+////                Debug.Log($"[ShopUIControls] {buttonName} button event handler added");
             }
             else
             {

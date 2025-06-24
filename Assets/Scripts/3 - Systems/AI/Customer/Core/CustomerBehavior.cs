@@ -331,7 +331,7 @@ namespace TabletopShop
                 // LEGACY: Use existing coroutines (keep working!)
                 Debug.Log($"CustomerBehavior {name}: Using legacy coroutine system");
                 
-                ChangeState(startingState);
+                // ChangeState(startingState);
                 if (lifecycleCoroutine != null) StopCoroutine(lifecycleCoroutine);
                 lifecycleCoroutine = StartCoroutine(CustomerLifecycleCoroutine(startingState));
             }

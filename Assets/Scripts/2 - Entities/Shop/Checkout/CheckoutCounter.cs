@@ -80,7 +80,7 @@ namespace TabletopShop
                     //checkoutUI.Show();
                     checkoutUI.UpdateCustomer("Test Customer");
                     checkoutUI.UpdateTotal(0f);
-                    Debug.Log("CheckoutCounter: Showing UI for testing (showUIOnStart = true)");
+//                    Debug.Log("CheckoutCounter: Showing UI for testing (showUIOnStart = true)");
                 }
                 else
                 {

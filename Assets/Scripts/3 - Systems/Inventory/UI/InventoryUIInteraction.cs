@@ -22,7 +22,7 @@ namespace TabletopShop
         {
             // Try to get InventoryManager instance early
             inventoryManager = InventoryManager.Instance;
-            Debug.Log($"InventoryUIInteraction: InventoryManager instance in Awake: {inventoryManager != null}");
+//            Debug.Log($"InventoryUIInteraction: InventoryManager instance in Awake: {inventoryManager != null}");
         }
         
         /// <summary>
@@ -83,7 +83,7 @@ namespace TabletopShop
                     OnProductButtonClick(buttonIndex);
                 });
                 
-                Debug.Log($"InventoryUIInteraction: Button {buttonIndex} click event set up");
+//                Debug.Log($"InventoryUIInteraction: Button {buttonIndex} click event set up");
             }
         }
         
@@ -104,13 +104,13 @@ namespace TabletopShop
             
             if (inventoryManager != null)
             {
-                Debug.Log("InventoryUIInteraction: Subscribing to InventoryManager events");
+//                Debug.Log("InventoryUIInteraction: Subscribing to InventoryManager events");
                 
                 // Check if events exist and subscribe
                 if (inventoryManager.OnInventoryChanged != null)
                 {
                     inventoryManager.OnInventoryChanged.AddListener(OnInventoryChanged);
-                    Debug.Log("InventoryUIInteraction: Subscribed to OnInventoryChanged");
+//                    Debug.Log("InventoryUIInteraction: Subscribed to OnInventoryChanged");
                 }
                 else
                 {
@@ -120,7 +120,7 @@ namespace TabletopShop
                 if (inventoryManager.OnProductSelected != null)
                 {
                     inventoryManager.OnProductSelected.AddListener(OnProductSelected);
-                    Debug.Log("InventoryUIInteraction: Subscribed to OnProductSelected");
+//                    Debug.Log("InventoryUIInteraction: Subscribed to OnProductSelected");
                 }
                 else
                 {
@@ -130,7 +130,7 @@ namespace TabletopShop
                 if (inventoryManager.OnProductCountChanged != null)
                 {
                     inventoryManager.OnProductCountChanged.AddListener(OnProductCountChanged);
-                    Debug.Log("InventoryUIInteraction: Subscribed to OnProductCountChanged");
+//                    Debug.Log("InventoryUIInteraction: Subscribed to OnProductCountChanged");
                 }
                 else
                 {
@@ -252,7 +252,6 @@ namespace TabletopShop
         /// </summary>
         private void OnInventoryChanged()
         {
-            Debug.Log("InventoryUIInteraction: OnInventoryChanged event received");
             OnDisplayUpdateRequested?.Invoke();
         }
         
@@ -261,7 +260,7 @@ namespace TabletopShop
         /// </summary>
         private void OnProductSelected(ProductData selectedProduct)
         {
-            Debug.Log($"InventoryUIInteraction: OnProductSelected event received - Product: {selectedProduct?.ProductName ?? "None"}");
+            // Debug.Log($"InventoryUIInteraction: OnProductSelected event received - Product: {selectedProduct?.ProductName ?? "None"}");
             OnDisplayUpdateRequested?.Invoke();
         }
         
@@ -270,7 +269,7 @@ namespace TabletopShop
         /// </summary>
         private void OnProductCountChanged(ProductData product, int newCount)
         {
-            Debug.Log($"InventoryUIInteraction: OnProductCountChanged event received - Product: {product?.ProductName ?? "None"}, New Count: {newCount}");
+            // Debug.Log($"InventoryUIInteraction: OnProductCountChanged event received - Product: {product?.ProductName ?? "None"}, New Count: {newCount}");
             OnDisplayUpdateRequested?.Invoke();
         }
         

@@ -330,7 +330,7 @@ namespace TabletopShop
             if (crosshairUI == null && uiCanvas != null)
             {
                 crosshairUI = CrosshairUI.CreateCrosshairUI(uiCanvas);
-                Debug.Log("Created crosshair UI automatically");
+//                Debug.Log("Created crosshair UI automatically");
             }
         }
         

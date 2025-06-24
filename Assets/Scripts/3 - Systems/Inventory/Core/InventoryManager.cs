@@ -197,7 +197,7 @@ namespace TabletopShop
                 var eventPublisherObject = new GameObject("InventoryEventPublisher");
                 eventPublisherObject.transform.SetParent(transform);
                 eventPublisher = eventPublisherObject.AddComponent<UnityInventoryEventPublisher>();
-                Debug.Log("Created new UnityInventoryEventPublisher");
+//                Debug.Log("Created new UnityInventoryEventPublisher");
             }
             
             // Validate event publisher was created successfully
@@ -207,11 +207,11 @@ namespace TabletopShop
             }
             else
             {
-                Debug.Log("Event publisher initialized successfully");
+//                Debug.Log("Event publisher initialized successfully");
             }
             
             isInitialized = true;
-            Debug.Log("InventoryManager initialized successfully.");
+//            Debug.Log("InventoryManager initialized successfully.");
         }
         
         /// <summary>
@@ -599,7 +599,7 @@ namespace TabletopShop
             eventPublisher?.PublishProductCountChanged(product, GetProductCount(product));
             eventPublisher?.PublishInventoryChanged();
             
-            Debug.Log($"Removed {amount} of {product.ProductName}. Remaining: {GetProductCount(product)}");
+            // Debug.Log($"Removed {amount} of {product.ProductName}. Remaining: {GetProductCount(product)}");
             return true;
         }
         

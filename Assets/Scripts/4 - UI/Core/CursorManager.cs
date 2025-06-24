@@ -155,7 +155,7 @@ namespace TabletopShop
                 }
             }
             
-            Debug.Log($"CursorManager: Cursor {(locked ? "locked" : "unlocked")} for {(locked ? "movement" : "UI interaction")}");
+//            Debug.Log($"CursorManager: Cursor {(locked ? "locked" : "unlocked")} for {(locked ? "movement" : "UI interaction")}");
         }
         
         /// <summary>

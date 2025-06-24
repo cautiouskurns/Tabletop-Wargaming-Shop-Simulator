@@ -184,7 +184,7 @@ namespace TabletopShop
         {
             if (data == null)
             {
-                Debug.LogError($"Cannot initialize Product {name} with null ProductData!", this);
+                // Debug.LogError($"Cannot initialize Product {name} with null ProductData!", this);
                 return;
             }
 
@@ -194,7 +194,7 @@ namespace TabletopShop
             // Update the GameObject name to match the product
             gameObject.name = $"Product_{data.ProductName.Replace(" ", "_")}";
 
-            Debug.Log($"Initialized product: {data.ProductName} with price ${currentPrice}");
+            // Debug.Log($"Initialized product: {data.ProductName} with price ${currentPrice}");
 
             if (dynamicProduct != null)
             {
@@ -329,7 +329,7 @@ namespace TabletopShop
                 productInteraction.OnProductPlacedOnShelf();
             }
             
-            Debug.Log($"Placed {productData?.ProductName ?? name} on shelf with price ${currentPrice}");
+            // Debug.Log($"Placed {productData?.ProductName ?? name} on shelf with price ${currentPrice}");
         }
         
         /// <summary>

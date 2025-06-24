@@ -172,7 +172,7 @@ namespace TabletopShop
             {
                 shelfVisual = existingVisuals[0].gameObject;
                 shelfRenderer = shelfVisual.GetComponent<MeshRenderer>();
-                Debug.Log($"ShelfVisual already exists for shelf {name}, using existing");
+//                Debug.Log($"ShelfVisual already exists for shelf {name}, using existing");
                 return;
             }
             

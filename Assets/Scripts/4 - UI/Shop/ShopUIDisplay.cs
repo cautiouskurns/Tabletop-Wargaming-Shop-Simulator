@@ -152,7 +152,7 @@ namespace TabletopShop
             if (gameManager != null && HasValidReferences())
             {
                 UpdateAllDisplays();
-                Debug.Log("[ShopUIDisplay] All displays refreshed from GameManager");
+//                Debug.Log("[ShopUIDisplay] All displays refreshed from GameManager");
             }
             else
             {

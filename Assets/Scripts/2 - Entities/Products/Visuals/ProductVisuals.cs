@@ -207,7 +207,7 @@ namespace TabletopShop
             
             highlightMaterial = MaterialUtility.CreateEmissiveMaterial(originalMaterial, hoverColor, hoverIntensity);
             
-            Debug.Log($"Materials setup for {product?.ProductData?.ProductName ?? name}");
+            // Debug.Log($"Materials setup for {product?.ProductData?.ProductName ?? name}");
         }
         
         #endregion
