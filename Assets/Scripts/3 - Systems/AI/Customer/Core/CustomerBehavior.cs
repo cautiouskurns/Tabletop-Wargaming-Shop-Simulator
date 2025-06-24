@@ -19,7 +19,7 @@ namespace TabletopShop
         [SerializeField] private CustomerState currentStateDisplay;  // Shows current state in Inspector
         [SerializeField] private float timeInCurrentState;           // Live timer in Inspector
         [SerializeField] private List<string> recentTransitions = new List<string>(); // Last 10 transitions
-        [SerializeField] private bool useStateMachine = false;       // Toggle between systems
+        [SerializeField] private bool useStateMachine = true;       // Toggle between systems
         
         [Header("Shopping Configuration")]
         [SerializeField] private float shoppingTime;
