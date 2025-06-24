@@ -1,0 +1,110 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15572ee3667f44da39a27880bf0ba0c2, type: 3}
+  m_Name: New Lore Knowledge Base
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.LoreKnowledgeBaseSO
+  loreEntries:
+  - factionName: Runeblades
+    entryTitle: The Runeforged Legion
+    category: Characters
+    description: 'Elite warriors who have bonded their souls to ancient runic weapons.
+      Each Runeblade carries a sword, axe, or spear inscribed with mystical runes
+      that grant supernatural abilities. The bonding process is dangerous - many
+      who attempt it are consumed by the weapon''s power, but those who succeed become
+      nearly unstoppable in battle.
+
+
+      Led by Warmaster Thane Ironrune, the
+      Legion serves as both protector and enforcer for the realm''s most sacred sites.'
+    icon: {fileID: 0}
+    isUnlocked: 1
+    readCount: 0
+  - factionName: Runeblades
+    entryTitle: Runic Weapons
+    category: Technology
+    description: 'Ancient weapons forged in the First Age, each inscribed with runes
+      of power. These weapons are not merely tools but living entities that choose
+      their wielders. The runes glow with inner fire during combat, channeling elemental
+      forces through the blade.
+
+
+      Five types of runic weapons exist: Flamestrike
+      (fire), Frostbite (ice), Stormcaller (lightning), Earthshaker (earth), and
+      the legendary Voidrender (dark energy). Each requires different techniques
+      and mental fortitude to master.'
+    icon: {fileID: 0}
+    isUnlocked: 1
+    readCount: 0
+  - factionName: Runeblades
+    entryTitle: The Great Forging
+    category: History
+    description: 'Three thousand years ago, during the War of Shadows, the greatest
+      smiths and mages united to create weapons capable of standing against the Void
+      corruption. Working in the Forge of Eternal Flames, they inscribed the first
+      runic weapons with protective wards and devastating power.
+
+
+      The Great
+      Forging lasted seven years and cost the lives of dozens of craftsmen, but the
+      weapons they created turned the tide of war and established the Runeblade tradition
+      that continues today.'
+    icon: {fileID: 0}
+    isUnlocked: 1
+    readCount: 0
+  - factionName: Voidborn
+    entryTitle: The Corrupted
+    category: Characters
+    description: 'Once-mortal beings who have been transformed by prolonged exposure
+      to Void energy. Their flesh takes on a darkened, crystalline appearance, and
+      their eyes glow with purple fire. The Corrupted retain their intelligence and
+      memories but gain terrible new abilities - phasing through solid matter, draining
+      life force, and manipulating shadows.
+
+
+      Despite their fearsome appearance,
+      many Corrupted struggle with their humanity, caught between their former lives
+      and their new dark nature.'
+    icon: {fileID: 0}
+    isUnlocked: 1
+    readCount: 0
+  - factionName: Voidborn
+    entryTitle: Void Crystals
+    category: Technology
+    description: 'Crystalline formations that grow where the Void''s influence is
+      strongest. These purple-black crystals pulse with malevolent energy and can
+      power dark technologies or corrupt living beings who touch them. Void crystals
+      are highly sought after by necromancers and forbidden researchers.
+
+
+      The
+      crystals seem to have a form of collective intelligence, growing in patterns
+      that suggest purpose. Scholars theorize they may be fragments of a greater
+      Void consciousness trying to manifest in our reality.'
+    icon: {fileID: 0}
+    isUnlocked: 1
+    readCount: 0
+  - factionName: Voidborn
+    entryTitle: The Void Incursion
+    category: History
+    description: 'The catastrophic event that began the War of Shadows. Reality itself
+      was torn open, allowing creatures and energy from the Void dimension to pour
+      into our world. Entire cities were consumed in purple fire, and the survivors
+      were forever changed.
+
+
+      The Incursion lasted only three days, but its
+      effects ripple through history. The tear in reality was sealed by the combined
+      sacrifice of twelve archmages, but smaller rifts still appear randomly, bringing
+      fresh waves of corruption and Voidborn creatures.'
+    icon: {fileID: 0}
+    isUnlocked: 1
+    readCount: 0

@@ -1,0 +1,93 @@
+{
+  "dialogueId": "marcus_collector",
+  "title": "Marcus the Collector - Runeblades Enthusiast",
+  "factionAffinity": "Runeblades",
+  "startNode": "greeting",
+  "nodes": {
+    "greeting": {
+      "speaker": "Marcus",
+      "text": "Welcome to your shop! I've been searching everywhere for quality Runeblades merchandise. You wouldn't happen to know much about their legendary weapons, would you?",
+      "choices": [
+        {
+          "text": "Tell me about the Runeforged Legion",
+          "goto": "lore_question"
+        },
+        {
+          "text": "I'm an expert on runic weapons!",
+          "goto": "expert_response",
+          "condition": "reputation.Runeblades >= 50",
+          "failGoto": "not_expert",
+          "style": "special"
+        },
+        {
+          "text": "Just browsing today, thanks",
+          "goto": "polite_exit"
+        }
+      ]
+    },
+    
+    "lore_question": {
+      "speaker": "Marcus",
+      "text": "Ah, curious about the Legion! They're elite warriors who bond their souls to runic weapons. The bonding process is incredibly dangerous - many who attempt it are consumed by the weapon's power, but those who survive become nearly unstoppable in battle.\n\nWould you like to know more about their weapons?",
+      "effects": [
+        {
+          "type": "reputation",
+          "faction": "Runeblades",
+          "value": 5,
+          "reason": "Showed interest in lore"
+        }
+      ],
+      "choices": [
+        {
+          "text": "Yes, tell me about runic weapons",
+          "goto": "weapon_lore"
+        },
+        {
+          "text": "That's fascinating! Do you have any for sale?",
+          "goto": "sales_inquiry"
+        }
+      ]
+    },
+    
+    "expert_response": {
+      "speaker": "Marcus",
+      "text": "*Marcus's eyes light up with genuine excitement*\n\nAn expert! How wonderful! I've been searching for someone who truly understands the intricacies of runic enchantments. Perhaps we could discuss some rare pieces I've been seeking?",
+      "effects": [
+        {
+          "type": "reputation",
+          "faction": "Runeblades",
+          "value": 15,
+          "reason": "Demonstrated expert knowledge"
+        },
+        {
+          "type": "money",
+          "value": 100,
+          "reason": "Consultation fee"
+        }
+      ],
+      "choices": [
+        {
+          "text": "I'd be happy to help you find rare pieces",
+          "goto": "special_deal"
+        }
+      ]
+    },
+    
+    "not_expert": {
+      "speaker": "Marcus",
+      "text": "Hmm, well, we all start somewhere! Perhaps you could learn more about the Runeblades by reading about their history? Knowledge is the foundation of any good collection.",
+      "choices": [
+        {
+          "text": "You're right, I should study more",
+          "goto": "humble_response"
+        }
+      ]
+    },
+    
+    "polite_exit": {
+      "speaker": "Marcus",
+      "text": "No problem at all! Feel free to look around. If you get any Runeblade items in stock, I'll definitely be interested!",
+      "isEnd": true
+    }
+  }
+}
