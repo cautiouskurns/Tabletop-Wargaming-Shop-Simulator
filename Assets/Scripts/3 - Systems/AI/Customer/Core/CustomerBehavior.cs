@@ -6,43 +6,48 @@ using System;
 namespace TabletopShop
 {
     /// <summary>
-    /// Handles customer AI behavior, lifecycle state machine, and shopping patterns.
-    /// Manages the complete customer experience from entering to leaving the shop.
-    /// Implements ICustomerBehavior composite interface for enhanced interface segregation.
-    /// Uses the new State Machine Pattern for robust and testable behavior management.
+    /// CustomerBehavior with SIMPLE state machine integration.
+    /// Central control & visualization hub - everything lives here!
+    /// Gradually transitioning from coroutines to state machine without breaking existing functionality.
     /// </summary>
     public class CustomerBehavior : MonoBehaviour, ICustomerBehavior
     {
-    [Header("State Management")]
-    [SerializeField] private CustomerState currentState = CustomerState.Entering;
-    
-    [Header("Shopping Configuration")]
-    [SerializeField] private float shoppingTime;
-    [SerializeField] private ShelfSlot targetShelf;
-    
-    [Header("Purchase Configuration")]
-    [SerializeField] private float baseSpendingPower = 100f;
-    [SerializeField] private float purchaseProbability = 0.8f;
-    
-    // Component references
-    private CustomerMovement customerMovement;
-    private Customer mainCustomer; // Reference to main customer for state changes
-    
-    // State Machine Components (NEW)
-    private ICustomerStateMachineManager stateMachineManager;
-    private CustomerStateContext stateContext;
-    private bool useStateMachine = true; // Feature flag for testing
-    
-    // Legacy state tracking (for backwards compatibility)
-    private Coroutine lifecycleCoroutine;
-    
-    // Purchase tracking
-    private List<Product> selectedProducts = new List<Product>();
-    private float totalPurchaseAmount = 0f;
-    
-    // Checkout state tracking
-    private bool isWaitingForCheckout = false;
-    private List<Product> placedOnCounterProducts = new List<Product>();
+        [Header("State Management")]
+        [SerializeField] private CustomerState currentState = CustomerState.Entering;
+        
+        [Header("State Machine Visualization")]
+        [SerializeField] private CustomerState currentStateDisplay;  // Shows current state in Inspector
+        [SerializeField] private float timeInCurrentState;           // Live timer in Inspector
+        [SerializeField] private List<string> recentTransitions = new List<string>(); // Last 10 transitions
+        [SerializeField] private bool useStateMachine = false;       // Toggle between systems
+        
+        [Header("Shopping Configuration")]
+        [SerializeField] private float shoppingTime;
+        [SerializeField] private ShelfSlot targetShelf;
+        
+        [Header("Purchase Configuration")]
+        [SerializeField] private float baseSpendingPower = 100f;
+        [SerializeField] private float purchaseProbability = 0.8f;
+        
+        // Component references
+        private CustomerMovement customerMovement;
+        private Customer mainCustomer; // Reference to main customer for state changes
+        
+        // SIMPLE State Machine - just a dictionary!
+        private Dictionary<CustomerState, BaseCustomerState> states;
+        private BaseCustomerState currentStateObject;
+        private float stateStartTime;
+        
+        // Legacy coroutine system (keep for now)
+        private Coroutine lifecycleCoroutine;
+        
+        // Purchase tracking
+        private List<Product> selectedProducts = new List<Product>();
+        private float totalPurchaseAmount = 0f;
+        
+        // Checkout state tracking
+        private bool isWaitingForCheckout = false;
+        private List<Product> placedOnCounterProducts = new List<Product>();
 
         // Queue state tracking
         private bool isInQueue = false;
@@ -69,30 +74,87 @@ namespace TabletopShop
         public bool WaitingForCheckoutTurn => waitingForCheckoutTurn;
         public bool IsWaitingForCheckout => isWaitingForCheckout;
         
-        #region Initialization
+        #region Unity Lifecycle
         
         private void Awake()
         {
             InitializeShoppingTime();
+            InitializeSimpleStateMachine();
         }
         
         private void Update()
         {
             // Update state machine if active
-            if (useStateMachine && stateMachineManager != null && stateMachineManager.IsStateMachineActive)
+            if (useStateMachine && currentStateObject != null)
             {
-                stateMachineManager.Update();
+                UpdateStateMachineVisualization();
+                currentStateObject.OnUpdate(this);
             }
         }
         
-        private void OnDestroy()
+        #endregion
+        
+        #region Simple State Machine
+        
+        /// <summary>
+        /// Initialize the SIMPLE state machine - just a dictionary!
+        /// </summary>
+        private void InitializeSimpleStateMachine()
         {
-            // Cleanup state machine
-            if (stateMachineManager != null)
+            states = new Dictionary<CustomerState, BaseCustomerState>
             {
-                stateMachineManager.CleanupStateMachine();
-            }
+                { CustomerState.Entering, new EnteringState() },
+                { CustomerState.Shopping, new ShoppingState() },
+                { CustomerState.Purchasing, new PurchasingState() },
+                { CustomerState.Leaving, new LeavingState() }
+            };
+            
+            Debug.Log($"Simple state machine initialized for {name}");
         }
+        
+        /// <summary>
+        /// Update visualization in Inspector (runs every frame)
+        /// </summary>
+        private void UpdateStateMachineVisualization()
+        {
+            currentStateDisplay = currentState;
+            timeInCurrentState = Time.time - stateStartTime;
+        }
+        
+        /// <summary>
+        /// Change state in the simple state machine
+        /// </summary>
+        public void ChangeStateSimple(CustomerState newState, string reason = "")
+        {
+            if (newState == currentState) return;
+            
+            CustomerState oldState = currentState;
+            
+            // Exit old state
+            currentStateObject?.OnExit(this);
+            
+            // Change state
+            currentState = newState;
+            currentStateObject = states[newState];
+            stateStartTime = Time.time;
+            
+            // Enter new state
+            currentStateObject.OnEnter(this);
+            
+            // Log transition
+            string transitionLog = $"{Time.time:F1}s: {oldState} → {newState} ({reason})";
+            recentTransitions.Add(transitionLog);
+            if (recentTransitions.Count > 10) recentTransitions.RemoveAt(0);
+            
+            Debug.Log($"[{name}] State transition: {transitionLog}");
+            
+            // Notify listeners
+            OnStateChangeRequested?.Invoke(oldState, newState);
+        }
+        
+        #endregion
+        
+        #region Initialization
         
         /// <summary>
         /// Initialize with component references
@@ -101,44 +163,6 @@ namespace TabletopShop
         {
             customerMovement = movement;
             mainCustomer = customer;
-            
-            // Initialize state machine components
-            InitializeStateMachine();
-        }
-        
-        /// <summary>
-        /// Initialize the state machine system
-        /// </summary>
-        private void InitializeStateMachine()
-        {
-            try
-            {
-                // Create state context with all required components
-                stateContext = new CustomerStateContext(
-                    mainCustomer,
-                    customerMovement,
-                    this,
-                    GetComponent<CustomerVisuals>()
-                );
-                
-                // Create and initialize the state machine manager
-                stateMachineManager = new CustomerStateMachineManager(
-                    mainCustomer,
-                    customerMovement,
-                    this,
-                    GetComponent<CustomerVisuals>()
-                );
-                
-                // Initialize the state machine using the manager's method
-                stateMachineManager.InitializeStateMachine();
-                
-                Debug.Log($"CustomerBehavior {name}: State machine initialized successfully");
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError($"CustomerBehavior {name}: Failed to initialize state machine - {e.Message}. Falling back to legacy coroutines.");
-                useStateMachine = false;
-            }
         }
         
         /// <summary>
@@ -168,7 +192,7 @@ namespace TabletopShop
         #region State Management
         
         /// <summary>
-        /// Change the customer state and notify listeners
+        /// Change the customer state and notify listeners (LEGACY METHOD)
         /// </summary>
         /// <param name="newState">The new state to transition to</param>
         public void ChangeState(CustomerState newState)
@@ -177,13 +201,6 @@ namespace TabletopShop
             currentState = newState;
             
             Debug.Log($"CustomerBehavior {name} state changed: {previousState} -> {currentState}");
-            
-            // Update state machine if active
-            if (useStateMachine && stateMachineManager != null && stateMachineManager.IsStateMachineActive)
-            {
-                // Let the state machine handle the transition
-                stateMachineManager.ChangeState(newState, $"Requested by CustomerBehavior");
-            }
             
             // Update visual state indicator
             if (mainCustomer != null && mainCustomer.Visuals != null)
@@ -216,16 +233,14 @@ namespace TabletopShop
         
         #endregion
         
-        #region Customer Lifecycle State Machine
+        #region Customer Lifecycle Control
         
         /// <summary>
-        /// Start the complete customer lifecycle using the new state machine system.
-        /// Falls back to legacy coroutines if state machine is not available.
-        /// Progresses through: Entering → Shopping → Purchasing → Leaving
+        /// Start customer lifecycle - DUAL MODE: coroutines OR state machine
         /// </summary>
         public void StartCustomerLifecycle(CustomerState startingState)
         {
-            Debug.Log($"CustomerBehavior {name}: Starting lifecycle in state {startingState}");
+            Debug.Log($"Starting lifecycle for {name} in {startingState} mode (useStateMachine: {useStateMachine})");
             
             // ✅ VALIDATE DEPENDENCIES FIRST
             if (customerMovement == null)
@@ -234,9 +249,9 @@ namespace TabletopShop
                 return;
             }
             
-            // Use new state machine system if available
-            if (useStateMachine && stateMachineManager != null && stateMachineManager.IsStateMachineActive)
+            if (useStateMachine)
             {
+                // NEW: Use simple state machine
                 Debug.Log($"CustomerBehavior {name}: Using new state machine system");
                 
                 // Stop any running legacy coroutines
@@ -246,32 +261,17 @@ namespace TabletopShop
                     lifecycleCoroutine = null;
                 }
                 
-                // Set initial state and start state machine
-                ChangeState(startingState);
-                stateMachineManager.StartStateMachine(startingState);
-                
-                Debug.Log($"CustomerBehavior {name}: State machine started successfully");
+                // Start state machine
+                ChangeStateSimple(startingState, "Lifecycle start");
             }
             else
             {
-                // Fall back to legacy coroutine system
+                // LEGACY: Use existing coroutines (keep working!)
                 Debug.Log($"CustomerBehavior {name}: Using legacy coroutine system");
                 
-                // ✅ JUST SET STATE - DON'T START COROUTINES YET TO TEST CRASH FIX
                 ChangeState(startingState);
-                
-                Debug.Log($"CustomerBehavior {name}: State set successfully to {currentState}");
-                
-                // ✅ TEMPORARY: Start with minimal lifecycle to test crash fix
-                if (lifecycleCoroutine != null)
-                {
-                    StopCoroutine(lifecycleCoroutine);
-                }
-                
-                // Start the lifecycle coroutine
+                if (lifecycleCoroutine != null) StopCoroutine(lifecycleCoroutine);
                 lifecycleCoroutine = StartCoroutine(CustomerLifecycleCoroutine(startingState));
-                
-                Debug.Log($"CustomerBehavior {name}: Lifecycle coroutine started successfully");
             }
         }
         
@@ -281,10 +281,11 @@ namespace TabletopShop
         public void StopCustomerLifecycle()
         {
             // Stop state machine if active
-            if (useStateMachine && stateMachineManager != null && stateMachineManager.IsStateMachineActive)
+            if (useStateMachine)
             {
                 Debug.Log($"CustomerBehavior {name}: Stopping state machine");
-                stateMachineManager.StopStateMachine();
+                currentStateObject?.OnExit(this);
+                currentStateObject = null;
             }
             
             // Stop legacy coroutines if running
@@ -295,6 +296,10 @@ namespace TabletopShop
                 lifecycleCoroutine = null;
             }
         }
+        
+        #endregion
+        
+        #region Legacy Coroutine System (KEEP ALL EXISTING METHODS)
         
         /// <summary>
         /// Coroutine to handle the complete customer lifecycle automatically
@@ -376,7 +381,6 @@ namespace TabletopShop
             bool foundShelf = SetRandomShelfDestination();
             if (foundShelf)
             {
-                // ✅ ADD NULL CHECK HERE
                 while (customerMovement != null && !customerMovement.HasReachedDestination())
                 {
                     yield return new WaitForSeconds(0.5f);
@@ -428,7 +432,6 @@ namespace TabletopShop
                     // Wait a bit for movement
                     yield return new WaitForSeconds(2f);
                     
-                    // ✅ ADD NULL CHECK HERE
                     while (customerMovement != null && !customerMovement.HasReachedDestination())
                     {
                         yield return new WaitForSeconds(0.5f);
@@ -561,7 +564,6 @@ namespace TabletopShop
         {
             Debug.Log($"CustomerBehavior {name} leaving the shop");
             
-            // ✅ ADD NULL CHECK HERE
             bool foundExit = false;
             if (customerMovement != null)
             {
@@ -575,7 +577,6 @@ namespace TabletopShop
             
             if (foundExit)
             {
-                // ✅ ADD NULL CHECK HERE
                 while (customerMovement != null && !customerMovement.HasReachedDestination())
                 {
                     yield return new WaitForSeconds(0.5f);
@@ -646,7 +647,6 @@ namespace TabletopShop
             ShelfSlot randomShelf = availableShelves[UnityEngine.Random.Range(0, availableShelves.Length)];
             SetTargetShelf(randomShelf);
             
-            // ✅ ADD NULL CHECK HERE
             if (customerMovement != null)
             {
                 return customerMovement.MoveToShelfPosition(randomShelf);
@@ -670,11 +670,6 @@ namespace TabletopShop
             if (targetShelf != null)
             {
                 Debug.Log($"CustomerBehavior {name} interacting with shelf: {targetShelf.name}");
-                // Here you could add specific shopping behaviors like:
-                // - Examining products
-                // - Picking up items
-                // - Putting items back
-                // - Making decisions based on preferences
             }
         }
         
@@ -795,32 +790,6 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Calculate customer satisfaction based on their shopping experience
-        /// </summary>
-        /// <returns>Satisfaction value between 0 and 1</returns>
-        private float CalculateCustomerSatisfaction()
-        {
-            float baseSatisfaction = 0.7f; // Default satisfaction
-            
-            // Boost satisfaction if customer found products they wanted
-            if (selectedProducts.Count > 0)
-            {
-                baseSatisfaction += 0.2f;
-            }
-            
-            // Boost satisfaction if they didn't overspend
-            if (totalPurchaseAmount <= baseSpendingPower * 0.8f)
-            {
-                baseSatisfaction += 0.1f;
-            }
-            
-            // Add some randomness for personality variation
-            baseSatisfaction += UnityEngine.Random.Range(-0.1f, 0.1f);
-            
-            return Mathf.Clamp01(baseSatisfaction);
-        }
-        
-        /// <summary>
         /// Attach a selected product to the customer (visually showing that they are carrying it)
         /// </summary>
         /// <param name="product">The product to attach</param>
@@ -871,84 +840,70 @@ namespace TabletopShop
         
         #endregion
         
-        #region Delayed Initialization
+        #region Store Hours Integration
         
         /// <summary>
-        /// Delayed initialization to ensure all components are ready
+        /// Check if the store is currently open for customers
         /// </summary>
-        public IEnumerator DelayedInitialization()
+        public bool IsStoreOpen()
         {
-            yield return null; // Wait one frame
-            
-            if (customerMovement == null)
+            StoreHours storeHours = FindFirstObjectByType<StoreHours>();
+            if (storeHours != null)
             {
-                customerMovement = GetComponent<CustomerMovement>();
+                return storeHours.IsStoreOpen;
             }
             
-            Debug.Log($"CustomerBehavior {name} delayed initialization completed");
+            // Fallback: assume store is open if no StoreHours system found
+            return true;
+        }
+        
+        /// <summary>
+        /// Check if customer should continue shopping or leave due to store closing
+        /// </summary>
+        public bool ShouldLeaveStoreDueToHours()
+        {
+            StoreHours storeHours = FindFirstObjectByType<StoreHours>();
+            if (storeHours != null)
+            {
+                // If store is closed, customer should leave
+                if (!storeHours.IsStoreOpen)
+                {
+                    Debug.Log($"CustomerBehavior {name}: Store is closed - customer should leave");
+                    return true;
+                }
+                
+                // If store is closing soon (less than 30 minutes), finish current shopping
+                float timeUntilClose = storeHours.GetTimeUntilClose();
+                if (timeUntilClose <= 0.5f && timeUntilClose > 0f) // Less than 30 minutes
+                {
+                    Debug.Log($"CustomerBehavior {name}: Store closing soon ({timeUntilClose:F1}h) - finishing up shopping");
+                    // Don't force leave immediately, but hurry up shopping
+                    return false;
+                }
+            }
+            
+            return false;
+        }
+        
+        /// <summary>
+        /// Check if customer should hurry up their shopping due to store closing soon
+        /// </summary>
+        public bool ShouldHurryUpShopping()
+        {
+            StoreHours storeHours = FindFirstObjectByType<StoreHours>();
+            if (storeHours != null)
+            {
+                float timeUntilClose = storeHours.GetTimeUntilClose();
+                // If less than 30 minutes until close, hurry up
+                return timeUntilClose <= 0.5f && timeUntilClose > 0f;
+            }
+            
+            return false;
         }
         
         #endregion
         
-        #region Legacy Field Migration
-        
-        /// <summary>
-        /// Migrate legacy fields from main Customer component
-        /// </summary>
-        public void MigrateLegacyFields(float legacyShoppingTime, ShelfSlot legacyTargetShelf)
-        {
-            shoppingTime = legacyShoppingTime;
-            targetShelf = legacyTargetShelf;
-            
-            Debug.Log("CustomerBehavior: Legacy fields migrated successfully");
-        }
-        
-        #endregion
-
-        /// <summary>
-        /// Destroy all products that the customer has selected but not purchased
-        /// Called when the customer leaves the shop
-        /// </summary>
-        private void DestroyCustomerProducts()
-        {
-            // Count unpurchased products
-            int unpurchasedCount = 0;
-            foreach (Product product in selectedProducts)
-            {
-                if (product != null && !product.IsPurchased)
-                {
-                    unpurchasedCount++;
-                }
-            }
-            
-            // Log how many products the customer is taking with them
-            if (unpurchasedCount > 0)
-            {
-                Debug.Log($"CustomerBehavior {name} is leaving with {unpurchasedCount} unpurchased products - cleaning up");
-            
-                // Create a new list to avoid modification during iteration
-                List<Product> productsToDestroy = new List<Product>();
-                
-                foreach (Product product in selectedProducts)
-                {
-                    if (product != null && !product.IsPurchased)
-                    {
-                        productsToDestroy.Add(product);
-                    }
-                }
-                
-                // Destroy each product GameObject that hasn't been purchased
-                foreach (Product product in productsToDestroy)
-                {
-                    Debug.Log($"Destroying unpurchased product: {product.ProductData?.ProductName ?? "Unknown"}");
-                    Destroy(product.gameObject);
-                }
-            }
-            
-            // Clear all product lists regardless
-            selectedProducts.Clear();
-            placedOnCounterProducts.Clear();
-        }
+        #region Checkout and Queue Management
         
         /// <summary>
         /// Find the nearest checkout counter to this customer
@@ -1044,44 +999,6 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Disable any movement components on a product to ensure it stays stationary after placement
-        /// </summary>
-        /// <param name="product">The product to disable movement for</param>
-        private void DisableProductMovement(Product product)
-        {
-            if (product == null) return;
-            
-            // Disable NavMeshAgent if present
-            UnityEngine.AI.NavMeshAgent navAgent = product.GetComponent<UnityEngine.AI.NavMeshAgent>();
-            if (navAgent != null)
-            {
-                navAgent.enabled = false;
-                Debug.Log($"Disabled NavMeshAgent on {product.name}");
-            }
-            
-            // Disable Rigidbody if present
-            Rigidbody rb = product.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.isKinematic = true;
-                Debug.Log($"Set Rigidbody to kinematic on {product.name}");
-            }
-            
-            // Disable any custom movement scripts that might be attached
-            MonoBehaviour[] customScripts = product.GetComponents<MonoBehaviour>();
-            foreach (MonoBehaviour script in customScripts)
-            {
-                // Check for common movement script patterns
-                string scriptName = script.GetType().Name.ToLower();
-                if (scriptName.Contains("movement") || scriptName.Contains("mover") || scriptName.Contains("follow"))
-                {
-                    script.enabled = false;
-                    Debug.Log($"Disabled movement script {script.GetType().Name} on {product.name}");
-                }
-            }
-        }
-        
-        /// <summary>
         /// Coroutine to wait for checkout completion
         /// Customer waits patiently while items are scanned and payment is processed
         /// </summary>
@@ -1149,11 +1066,185 @@ namespace TabletopShop
             isWaitingForCheckout = false;
         }
         
-        #region Debug and Testing Methods
+        /// <summary>
+        /// Called when customer joins a checkout queue
+        /// </summary>
+        /// <param name="checkoutCounter">The checkout counter they're queuing for</param>
+        /// <param name="position">Their position in the queue (0 = next in line)</param>
+        public void OnJoinedQueue(CheckoutCounter checkoutCounter, int position)
+        {
+            Debug.Log($"CustomerBehavior {name} joined queue at position {position + 1} for checkout {checkoutCounter.name}");
+            
+            // Store queue information
+            isInQueue = true;
+            queuePosition = position;
+            queuedCheckout = checkoutCounter;
+            
+            // Customer is still waiting for their turn
+            waitingForCheckoutTurn = true;
+        }
         
         /// <summary>
-        /// Test method to verify the product placement fix
+        /// Called when customer's position in queue changes
         /// </summary>
+        /// <param name="newPosition">New position in queue</param>
+        public void OnQueuePositionChanged(int newPosition)
+        {
+            Debug.Log($"CustomerBehavior {name} moved to queue position {newPosition + 1}");
+            queuePosition = newPosition;
+        }
+        
+        /// <summary>
+        /// Called when it's the customer's turn at checkout
+        /// </summary>
+        /// <param name="checkoutCounter">The checkout counter that's ready</param>
+        public void OnCheckoutReady(CheckoutCounter checkoutCounter)
+        {
+            Debug.Log($"CustomerBehavior {name} can now proceed to checkout counter {checkoutCounter.name}");
+            
+            // Clear queue flags
+            isInQueue = false;
+            queuePosition = -1;
+            queuedCheckout = null;
+            
+            // Signal that it's our turn (this will allow HandlePurchasingState to continue)
+            waitingForCheckoutTurn = false;
+        }
+        
+        /// <summary>
+        /// Force customer to leave queue (for testing)
+        /// </summary>
+        public void ForceLeaveQueue()
+        {
+            if (isInQueue && queuedCheckout != null)
+            {
+                Debug.Log($"CustomerBehavior {name} forcibly leaving queue");
+                
+                // Clear queue state
+                isInQueue = false;
+                queuePosition = -1;
+                queuedCheckout = null;
+                waitingForCheckoutTurn = false;
+                
+                // Force customer to leave
+                ChangeState(CustomerState.Leaving);
+            }
+            else
+            {
+                Debug.Log($"CustomerBehavior {name} is not in a queue");
+            }
+        }
+        
+        #endregion
+        
+        #region Cleanup and Utilities
+        
+        /// <summary>
+        /// Destroy all products that the customer has selected but not purchased
+        /// Called when the customer leaves the shop
+        /// </summary>
+        private void DestroyCustomerProducts()
+        {
+            // Count unpurchased products
+            int unpurchasedCount = 0;
+            foreach (Product product in selectedProducts)
+            {
+                if (product != null && !product.IsPurchased)
+                {
+                    unpurchasedCount++;
+                }
+            }
+            
+            // Log how many products the customer is taking with them
+            if (unpurchasedCount > 0)
+            {
+                Debug.Log($"CustomerBehavior {name} is leaving with {unpurchasedCount} unpurchased products - cleaning up");
+            
+                // Create a new list to avoid modification during iteration
+                List<Product> productsToDestroy = new List<Product>();
+                
+                foreach (Product product in selectedProducts)
+                {
+                    if (product != null && !product.IsPurchased)
+                    {
+                        productsToDestroy.Add(product);
+                    }
+                }
+                
+                // Destroy each product GameObject that hasn't been purchased
+                foreach (Product product in productsToDestroy)
+                {
+                    Debug.Log($"Destroying unpurchased product: {product.ProductData?.ProductName ?? "Unknown"}");
+                    Destroy(product.gameObject);
+                }
+            }
+            
+            // Clear all product lists regardless
+            selectedProducts.Clear();
+            placedOnCounterProducts.Clear();
+        }
+        
+        /// <summary>
+        /// Get formatted debug info about customer's current state
+        /// </summary>
+        public string GetDebugInfo()
+        {
+            return $"Customer {name}: State={currentState}, InQueue={isInQueue}, QueuePos={queuePosition}, " +
+                   $"WaitingTurn={waitingForCheckoutTurn}, WaitingCheckout={isWaitingForCheckout}, " +
+                   $"Products={selectedProducts.Count}, Placed={placedOnCounterProducts.Count}";
+        }
+        
+        /// <summary>
+        /// Delayed initialization to ensure all components are ready
+        /// </summary>
+        public IEnumerator DelayedInitialization()
+        {
+            yield return null; // Wait one frame
+            
+            if (customerMovement == null)
+            {
+                customerMovement = GetComponent<CustomerMovement>();
+            }
+            
+            Debug.Log($"CustomerBehavior {name} delayed initialization completed");
+        }
+        
+        /// <summary>
+        /// Migrate legacy fields from main Customer component
+        /// </summary>
+        public void MigrateLegacyFields(float legacyShoppingTime, ShelfSlot legacyTargetShelf)
+        {
+            shoppingTime = legacyShoppingTime;
+            targetShelf = legacyTargetShelf;
+            
+            Debug.Log("CustomerBehavior: Legacy fields migrated successfully");
+        }
+        
+        #endregion
+        
+        #region Debug and Testing
+        
+        [ContextMenu("Toggle State Machine Mode")]
+        public void ToggleStateMachineMode()
+        {
+            useStateMachine = !useStateMachine;
+            Debug.Log($"State machine mode: {(useStateMachine ? "ENABLED" : "DISABLED")}");
+        }
+        
+        [ContextMenu("Debug Current State")]
+        public void DebugCurrentState()
+        {
+            Debug.Log($"=== Customer {name} State Debug ===");
+            Debug.Log($"Mode: {(useStateMachine ? "State Machine" : "Coroutines")}");
+            Debug.Log($"Current State: {currentState}");
+            Debug.Log($"Time in State: {timeInCurrentState:F1}s");
+            Debug.Log($"Recent Transitions:");
+            foreach (string transition in recentTransitions)
+            {
+                Debug.Log($"  {transition}");
+            }
+        }
+        
         [ContextMenu("Test Product Placement Fix")]
         public void TestProductPlacementFix()
         {
@@ -1200,9 +1291,6 @@ namespace TabletopShop
             Debug.Log("===================================");
         }
         
-        /// <summary>
-        /// Debug method to verify customer queue and permissions
-        /// </summary>
         [ContextMenu("Debug Customer Queue State")]
         public void DebugCustomerQueueState()
         {
@@ -1232,124 +1320,6 @@ namespace TabletopShop
             Debug.Log("===================================");
         }
         
-        #endregion        
-        #region Queue Management
-        
-        /// <summary>
-        /// Called when customer joins a checkout queue
-        /// </summary>
-        /// <param name="checkoutCounter">The checkout counter they're queuing for</param>
-        /// <param name="position">Their position in the queue (0 = next in line)</param>
-        public void OnJoinedQueue(CheckoutCounter checkoutCounter, int position)
-        {
-            Debug.Log($"CustomerBehavior {name} joined queue at position {position + 1} for checkout {checkoutCounter.name}");
-            
-            // Store queue information
-            isInQueue = true;
-            queuePosition = position;
-            queuedCheckout = checkoutCounter;
-            
-            // Customer is still waiting for their turn
-            waitingForCheckoutTurn = true;
-        }
-        
-        /// <summary>
-        /// Called when customer's position in queue changes
-        /// </summary>
-        /// <param name="newPosition">New position in queue</param>
-        public void OnQueuePositionChanged(int newPosition)
-        {
-            Debug.Log($"CustomerBehavior {name} moved to queue position {newPosition + 1}");
-            queuePosition = newPosition;
-        }
-        
-        /// <summary>
-        /// Called when it's the customer's turn at checkout
-        /// </summary>
-        /// <param name="checkoutCounter">The checkout counter that's ready</param>
-        public void OnCheckoutReady(CheckoutCounter checkoutCounter)
-        {
-            Debug.Log($"CustomerBehavior {name} can now proceed to checkout counter {checkoutCounter.name}");
-            
-            // Clear queue flags
-            isInQueue = false;
-            queuePosition = -1;
-            queuedCheckout = null;
-            
-            // Signal that it's our turn (this will allow HandlePurchasingState to continue)
-            waitingForCheckoutTurn = false;
-            
-            // Note: Item placement will happen in HandlePurchasingState after waitingForCheckoutTurn becomes false
-        }
-        
-        #endregion
-        #region Store Hours Integration
-        
-        /// <summary>
-        /// Check if the store is currently open for customers
-        /// </summary>
-        public bool IsStoreOpen()
-        {
-            StoreHours storeHours = FindFirstObjectByType<StoreHours>();
-            if (storeHours != null)
-            {
-                return storeHours.IsStoreOpen;
-            }
-            
-            // Fallback: assume store is open if no StoreHours system found
-            return true;
-        }
-        
-        /// <summary>
-        /// Check if customer should continue shopping or leave due to store closing
-        /// </summary>
-        public bool ShouldLeaveStoreDueToHours()
-        {
-            StoreHours storeHours = FindFirstObjectByType<StoreHours>();
-            if (storeHours != null)
-            {
-                // If store is closed, customer should leave
-                if (!storeHours.IsStoreOpen)
-                {
-                    Debug.Log($"CustomerBehavior {name}: Store is closed - customer should leave");
-                    return true;
-                }
-                
-                // If store is closing soon (less than 30 minutes), finish current shopping
-                float timeUntilClose = storeHours.GetTimeUntilClose();
-                if (timeUntilClose <= 0.5f && timeUntilClose > 0f) // Less than 30 minutes
-                {
-                    Debug.Log($"CustomerBehavior {name}: Store closing soon ({timeUntilClose:F1}h) - finishing up shopping");
-                    // Don't force leave immediately, but hurry up shopping
-                    return false;
-                }
-            }
-            
-            return false;
-        }
-        
-        /// <summary>
-        /// Check if customer should hurry up their shopping due to store closing soon
-        /// </summary>
-        public bool ShouldHurryUpShopping()
-        {
-            StoreHours storeHours = FindFirstObjectByType<StoreHours>();
-            if (storeHours != null)
-            {
-                float timeUntilClose = storeHours.GetTimeUntilClose();
-                // If less than 30 minutes until close, hurry up
-                return timeUntilClose <= 0.5f && timeUntilClose > 0f;
-            }
-            
-            return false;
-        }
-        
-        #endregion
-        #region Queue System Debug Methods
-        
-        /// <summary>
-        /// Debug method to check current queue status
-        /// </summary>
         [ContextMenu("Check Queue Status")]
         public void CheckQueueStatus()
         {
@@ -1365,45 +1335,7 @@ namespace TabletopShop
             Debug.Log("===============================");
         }
         
-        /// <summary>
-        /// Force customer to leave queue (for testing)
-        /// </summary>
-        [ContextMenu("Force Leave Queue")]
-        public void ForceLeaveQueue()
-        {
-            if (isInQueue && queuedCheckout != null)
-            {
-                Debug.Log($"CustomerBehavior {name} forcibly leaving queue");
-                
-                // Notify checkout counter that we're leaving the queue
-                // (Assuming CheckoutCounter has a method for this)
-                // queuedCheckout.RemoveCustomerFromQueue(GetComponent<Customer>());
-                
-                // Clear queue state
-                isInQueue = false;
-                queuePosition = -1;
-                queuedCheckout = null;
-                waitingForCheckoutTurn = false;
-                
-                // Force customer to leave
-                ChangeState(CustomerState.Leaving);
-            }
-            else
-            {
-                Debug.Log($"CustomerBehavior {name} is not in a queue");
-            }
-        }
-        
-        /// <summary>
-        /// Get formatted debug info about customer's current state
-        /// </summary>
-        public string GetDebugInfo()
-        {
-            return $"Customer {name}: State={currentState}, InQueue={isInQueue}, QueuePos={queuePosition}, " +
-                   $"WaitingTurn={waitingForCheckoutTurn}, WaitingCheckout={isWaitingForCheckout}, " +
-                   $"Products={selectedProducts.Count}, Placed={placedOnCounterProducts.Count}";
-        }
-        
         #endregion
     }
+
 }
