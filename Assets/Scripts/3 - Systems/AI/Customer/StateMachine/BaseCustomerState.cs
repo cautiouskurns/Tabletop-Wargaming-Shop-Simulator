@@ -3,10 +3,9 @@ using UnityEngine;
 namespace TabletopShop
 {
     /// <summary>
-    /// Abstract base class for customer states.
-    /// Provides common functionality and default implementations for state behavior.
+    /// Base class for customer states - states control ALL their own logic
     /// </summary>
-   public abstract class BaseCustomerState
+    public abstract class BaseCustomerState
     {
         protected CustomerBehavior customer;
         
@@ -15,7 +14,7 @@ namespace TabletopShop
         public abstract void OnExit(CustomerBehavior customer);
         
         /// <summary>
-        /// States can request their own transitions
+        /// States request their own transitions
         /// </summary>
         protected void RequestTransition(CustomerState newState, string reason)
         {
@@ -27,13 +26,13 @@ namespace TabletopShop
         /// </summary>
         protected bool IsStoreOpen()
         {
-            var storeHours = UnityEngine.Object.FindFirstObjectByType<StoreHours>();
+            var storeHours = Object.FindFirstObjectByType<StoreHours>();
             return storeHours?.IsStoreOpen ?? true;
         }
         
         protected bool IsStoreClosingSoon()
         {
-            var storeHours = UnityEngine.Object.FindFirstObjectByType<StoreHours>();
+            var storeHours = Object.FindFirstObjectByType<StoreHours>();
             if (storeHours != null)
             {
                 float timeUntilClose = storeHours.GetTimeUntilClose();

@@ -2,37 +2,133 @@ using UnityEngine;
 
 namespace TabletopShop
 {
+ 
     /// <summary>
-    /// Leaving state - delegates to existing coroutine logic for now
+    /// LEAVING STATE - Controls exit behavior
     /// </summary>
     public class LeavingState : BaseCustomerState
     {
-        private Coroutine leavingCoroutine;
+        private float leavingStartTime;
+        private bool hasFoundExit = false;
+        private const float MAX_LEAVING_TIME = 45f;
+        private const float CLEANUP_DELAY = 2f;
         
         public override void OnEnter(CustomerBehavior customer)
         {
             this.customer = customer;
-            Debug.Log($"{customer.name} entered Leaving state");
+            leavingStartTime = Time.time;
+            hasFoundExit = false;
             
-            // For now, use the existing coroutine
-            leavingCoroutine = customer.StartCoroutine(customer.HandleLeavingState());
+            Debug.Log($"{customer.name} leaving shop");
+            
+            // STATE CONTROLS: Clean up any remaining state
+            CleanupCustomerState();
+            
+            // STATE CONTROLS: Start movement to exit
+            StartExitMovement();
         }
         
         public override void OnUpdate(CustomerBehavior customer)
         {
-            // The coroutine handles everything for now
-            // Later we can gradually move logic here
+            float leavingTime = Time.time - leavingStartTime;
+            
+            // STATE DECIDES: Timeout check
+            if (leavingTime > MAX_LEAVING_TIME)
+            {
+                Debug.LogWarning($"{customer.name}: Leaving timeout, destroying");
+                Object.Destroy(customer.gameObject);
+                return;
+            }
+            
+            // STATE DECIDES: Check if reached exit
+            if (hasFoundExit && HasReachedDestination())
+            {
+                Debug.Log($"{customer.name}: Reached exit");
+                
+                // Wait briefly then destroy
+                if (leavingTime >= CLEANUP_DELAY)
+                {
+                    DestroyCustomer();
+                }
+            }
         }
         
         public override void OnExit(CustomerBehavior customer)
         {
-            Debug.Log($"{customer.name} exiting Leaving state");
-            
-            if (leavingCoroutine != null)
+            float totalLeavingTime = Time.time - leavingStartTime;
+            Debug.Log($"{customer.name} finished leaving after {totalLeavingTime:F1}s");
+        }
+        
+        /// <summary>
+        /// STATE CONTROLS: Clean up customer state
+        /// </summary>
+        private void CleanupCustomerState()
+        {
+            // Clean up queue state
+            if (customer.IsInQueue)
             {
-                customer.StopCoroutine(leavingCoroutine);
-                leavingCoroutine = null;
+                customer.ForceLeaveQueue();
             }
+            
+            // Stop any movement
+            var movement = customer.GetComponent<CustomerMovement>();
+            movement?.StopMovement();
+            
+            // Clean up unpurchased products
+            DestroyUnpurchasedProducts();
+        }
+        
+        /// <summary>
+        /// STATE CONTROLS: Start movement to exit
+        /// </summary>
+        private void StartExitMovement()
+        {
+            var movement = customer.GetComponent<CustomerMovement>();
+            if (movement != null && movement.MoveToExitPoint())
+            {
+                hasFoundExit = true;
+                Debug.Log($"{customer.name} started moving to exit");
+            }
+            else
+            {
+                Debug.LogWarning($"{customer.name} couldn't find exit, destroying immediately");
+                Object.Destroy(customer.gameObject, 1f);
+            }
+        }
+        
+        /// <summary>
+        /// STATE CHECKS: Has reached destination
+        /// </summary>
+        private bool HasReachedDestination()
+        {
+            var movement = customer.GetComponent<CustomerMovement>();
+            return movement?.HasReachedDestination() ?? false;
+        }
+        
+        /// <summary>
+        /// STATE CONTROLS: Destroy unpurchased products
+        /// </summary>
+        private void DestroyUnpurchasedProducts()
+        {
+            foreach (Product product in customer.SelectedProducts)
+            {
+                if (product != null && !product.IsPurchased)
+                {
+                    Debug.Log($"Destroying unpurchased product: {product.ProductData?.ProductName ?? "Unknown"}");
+                    Object.Destroy(product.gameObject);
+                }
+            }
+            
+            customer.SelectedProducts.Clear();
+        }
+        
+        /// <summary>
+        /// STATE CONTROLS: Destroy customer
+        /// </summary>
+        private void DestroyCustomer()
+        {
+            Debug.Log($"{customer.name} cleanup - removing from scene");
+            Object.Destroy(customer.gameObject);
         }
     }
 }
