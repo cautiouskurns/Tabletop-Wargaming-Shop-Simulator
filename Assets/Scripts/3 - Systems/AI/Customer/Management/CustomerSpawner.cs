@@ -7,6 +7,7 @@ namespace TabletopShop
     /// <summary>
     /// Customer spawner system for managing customer lifecycle in the shop
     /// Handles spawning customers at intervals and tracking active customers
+    /// Tesdt
     /// </summary>
     public class CustomerSpawner : MonoBehaviour
     {
