@@ -88,7 +88,22 @@ namespace TabletopShop
             if (useStateMachine && currentStateObject != null)
             {
                 UpdateStateMachineVisualization();
+                
+                // Log state machine activity every few frames for debugging
+                if (Time.frameCount % 300 == 0) // Every 5 seconds at 60fps
+                {
+                    Debug.Log($"[STATE MACHINE] {name} running in state: {currentState} for {timeInCurrentState:F1}s");
+                }
+                
                 currentStateObject.OnUpdate(this);
+            }
+            else if (useStateMachine && currentStateObject == null)
+            {
+                // State machine is enabled but not running - this shouldn't happen
+                if (Time.frameCount % 60 == 0) // Every second at 60fps
+                {
+                    Debug.LogWarning($"[STATE MACHINE] {name} has useStateMachine=true but currentStateObject=null! States dict: {(states != null ? states.Count : 0)} states");
+                }
             }
         }
         
@@ -101,6 +116,8 @@ namespace TabletopShop
         /// </summary>
         private void InitializeSimpleStateMachine()
         {
+            Debug.Log($"[STATE MACHINE] Initializing state machine for {name}");
+
             states = new Dictionary<CustomerState, BaseCustomerState>
             {
                 { CustomerState.Entering, new EnteringState() },
@@ -109,7 +126,15 @@ namespace TabletopShop
                 { CustomerState.Leaving, new LeavingState() }
             };
             
-            Debug.Log($"Simple state machine initialized for {name}");
+            Debug.Log($"[STATE MACHINE] Successfully initialized with {states.Count} states: {string.Join(", ", states.Keys)}");
+            
+            // DON'T set initial state here - let StartCustomerLifecycle do it properly
+            // This ensures OnEnter() gets called correctly
+            currentState = CustomerState.Entering; // Just for display purposes
+            currentStateObject = null; // Will be set when lifecycle starts
+            stateStartTime = Time.time;
+            
+            Debug.Log($"[STATE MACHINE] State machine ready - waiting for lifecycle start");
         }
         
         /// <summary>
@@ -126,12 +151,28 @@ namespace TabletopShop
         /// </summary>
         public void ChangeStateSimple(CustomerState newState, string reason = "")
         {
-            if (newState == currentState) return;
+            // Allow same-state transitions during initialization (when currentStateObject is null)
+            bool isInitialTransition = currentStateObject == null;
+            
+            if (newState == currentState && !isInitialTransition) 
+            {
+                Debug.Log($"[STATE MACHINE] {name} already in state {newState} - ignoring transition request");
+                return;
+            }
             
             CustomerState oldState = currentState;
             
-            // Exit old state
-            currentStateObject?.OnExit(this);
+            Debug.Log($"[STATE MACHINE] {name} transitioning: {oldState} → {newState} (Reason: {reason})");
+            
+            // Exit old state (only if we have a current state object)
+            if (currentStateObject != null)
+            {
+                currentStateObject.OnExit(this);
+            }
+            else
+            {
+                Debug.Log($"[STATE MACHINE] {name} no previous state to exit (initial transition)");
+            }
             
             // Change state
             currentState = newState;
@@ -139,6 +180,7 @@ namespace TabletopShop
             stateStartTime = Time.time;
             
             // Enter new state
+            Debug.Log($"[STATE MACHINE] {name} calling OnEnter for {newState}");
             currentStateObject.OnEnter(this);
             
             // Log transition
@@ -146,7 +188,7 @@ namespace TabletopShop
             recentTransitions.Add(transitionLog);
             if (recentTransitions.Count > 10) recentTransitions.RemoveAt(0);
             
-            Debug.Log($"[{name}] State transition: {transitionLog}");
+            Debug.Log($"[STATE MACHINE] {name} successfully entered {newState}");
             
             // Notify listeners
             OnStateChangeRequested?.Invoke(oldState, newState);
@@ -252,17 +294,37 @@ namespace TabletopShop
             if (useStateMachine)
             {
                 // NEW: Use simple state machine
-                Debug.Log($"CustomerBehavior {name}: Using new state machine system");
+                Debug.Log($"[STATE MACHINE] {name}: Using new state machine system");
                 
                 // Stop any running legacy coroutines
                 if (lifecycleCoroutine != null)
                 {
                     StopCoroutine(lifecycleCoroutine);
                     lifecycleCoroutine = null;
+                    Debug.Log($"[STATE MACHINE] {name}: Stopped legacy coroutine");
                 }
                 
-                // Start state machine
+                // Ensure states are initialized
+                if (states == null || states.Count == 0)
+                {
+                    Debug.LogWarning($"[STATE MACHINE] {name}: States not initialized, re-initializing");
+                    InitializeSimpleStateMachine();
+                }
+                
+                // Start state machine by transitioning to initial state
+                // This will properly call OnEnter() even if it's the same state
+                Debug.Log($"[STATE MACHINE] {name}: Starting state machine with {startingState}");
                 ChangeStateSimple(startingState, "Lifecycle start");
+                
+                // Verify state machine is now running
+                if (currentStateObject != null)
+                {
+                    Debug.Log($"[STATE MACHINE] {name}: ✓ State machine successfully started in {currentState}");
+                }
+                else
+                {
+                    Debug.LogError($"[STATE MACHINE] {name}: ✗ Failed to start state machine - currentStateObject is null!");
+                }
             }
             else
             {
@@ -1224,25 +1286,108 @@ namespace TabletopShop
         
         #region Debug and Testing
         
-        [ContextMenu("Toggle State Machine Mode")]
-        public void ToggleStateMachineMode()
+        [ContextMenu("Test State Machine")]
+        public void TestStateMachine()
         {
-            useStateMachine = !useStateMachine;
-            Debug.Log($"State machine mode: {(useStateMachine ? "ENABLED" : "DISABLED")}");
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("State machine test requires Play mode");
+                return;
+            }
+            
+            StartCoroutine(TestStateMachineCoroutine());
+        }
+        
+        private IEnumerator TestStateMachineCoroutine()
+        {
+            Debug.Log($"=== STATE MACHINE TEST FOR {name} ===");
+            
+            // Force state machine mode
+            useStateMachine = true;
+            Debug.Log($"✓ Set useStateMachine = true");
+            
+            // Initialize if needed
+            if (states == null || states.Count == 0)
+            {
+                InitializeSimpleStateMachine();
+                Debug.Log($"✓ Re-initialized state machine");
+            }
+            
+            // Test all state transitions
+            Debug.Log($"Testing state transitions...");
+            
+            ChangeStateSimple(CustomerState.Entering, "Test - Entering");
+            yield return new WaitForSeconds(2f);
+            
+            ChangeStateSimple(CustomerState.Shopping, "Test - Shopping");
+            yield return new WaitForSeconds(2f);
+            
+            ChangeStateSimple(CustomerState.Purchasing, "Test - Purchasing");
+            yield return new WaitForSeconds(2f);
+            
+            ChangeStateSimple(CustomerState.Leaving, "Test - Leaving");
+            
+            Debug.Log($"✓ State machine test completed for {name}");
+        }
+        
+        [ContextMenu("Force Enable State Machine")]
+        public void ForceEnableStateMachine()
+        {
+            useStateMachine = true;
+            Debug.Log($"✓ Force enabled state machine for {name}");
+            
+            if (Application.isPlaying)
+            {
+                // Stop any coroutines
+                if (lifecycleCoroutine != null)
+                {
+                    StopCoroutine(lifecycleCoroutine);
+                    lifecycleCoroutine = null;
+                    Debug.Log($"✓ Stopped legacy coroutine");
+                }
+                
+                // Re-initialize if needed
+                if (states == null || states.Count == 0)
+                {
+                    InitializeSimpleStateMachine();
+                    Debug.Log($"✓ Re-initialized state machine");
+                }
+                
+                // Start in entering state
+                ChangeStateSimple(CustomerState.Entering, "Force enable");
+            }
         }
         
         [ContextMenu("Debug Current State")]
         public void DebugCurrentState()
         {
-            Debug.Log($"=== Customer {name} State Debug ===");
-            Debug.Log($"Mode: {(useStateMachine ? "State Machine" : "Coroutines")}");
+            Debug.Log("=== CUSTOMER STATE MACHINE DEBUG ===");
+            Debug.Log($"Customer: {name}");
+            Debug.Log($"Use State Machine: {useStateMachine}");
             Debug.Log($"Current State: {currentState}");
+            Debug.Log($"State Object: {(currentStateObject != null ? currentStateObject.GetType().Name : "NULL")}");
             Debug.Log($"Time in State: {timeInCurrentState:F1}s");
-            Debug.Log($"Recent Transitions:");
-            foreach (string transition in recentTransitions)
+            Debug.Log($"States Dictionary: {(states != null ? $"{states.Count} states" : "NULL")}");
+            Debug.Log($"Movement Component: {(customerMovement != null ? "OK" : "NULL")}");
+            
+            if (states != null)
             {
-                Debug.Log($"  {transition}");
+                Debug.Log($"Available States: {string.Join(", ", states.Keys)}");
             }
+            
+            Debug.Log($"Recent Transitions:");
+            if (recentTransitions.Count > 0)
+            {
+                foreach (var transition in recentTransitions)
+                {
+                    Debug.Log($"  {transition}");
+                }
+            }
+            else
+            {
+                Debug.Log("  No transitions recorded");
+            }
+            Debug.Log("========================");
         }
         
         [ContextMenu("Test Product Placement Fix")]

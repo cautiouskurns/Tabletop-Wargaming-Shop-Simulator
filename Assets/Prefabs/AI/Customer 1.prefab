@@ -160,6 +160,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.CustomerBehavior
   currentState: 0
+  currentStateDisplay: 0
+  timeInCurrentState: 0
+  recentTransitions: []
+  useStateMachine: 1
   shoppingTime: 0
   targetShelf: {fileID: 0}
   baseSpendingPower: 100

@@ -18,7 +18,15 @@ namespace TabletopShop
         /// </summary>
         protected void RequestTransition(CustomerState newState, string reason)
         {
-            customer?.ChangeStateSimple(newState, reason);
+            if (customer != null)
+            {
+                Debug.Log($"[STATE] {customer.name} requesting transition to {newState}: {reason}");
+                customer.ChangeStateSimple(newState, reason);
+            }
+            else
+            {
+                Debug.LogError("[STATE] Cannot request transition - customer reference is null!");
+            }
         }
         
         /// <summary>
