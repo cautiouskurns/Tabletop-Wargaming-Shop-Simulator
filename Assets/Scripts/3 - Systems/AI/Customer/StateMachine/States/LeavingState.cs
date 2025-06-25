@@ -71,7 +71,7 @@ namespace TabletopShop
             }
             
             // Stop any movement
-            var movement = customer.GetComponent<CustomerMovement>();
+            var movement = customer.GetMovement();
             movement?.StopMovement();
             
             // Clean up unpurchased products
@@ -83,7 +83,7 @@ namespace TabletopShop
         /// </summary>
         private void StartExitMovement()
         {
-            var movement = customer.GetComponent<CustomerMovement>();
+            var movement = customer.GetMovement();
             if (movement != null && movement.MoveToExitPoint())
             {
                 hasFoundExit = true;
@@ -101,7 +101,7 @@ namespace TabletopShop
         /// </summary>
         private bool HasReachedDestination()
         {
-            var movement = customer.GetComponent<CustomerMovement>();
+            var movement = customer.GetMovement();
             return movement?.HasReachedDestination() ?? false;
         }
         
@@ -110,16 +110,43 @@ namespace TabletopShop
         /// </summary>
         private void DestroyUnpurchasedProducts()
         {
+            // Count unpurchased products
+            int unpurchasedCount = 0;
             foreach (Product product in customer.SelectedProducts)
             {
                 if (product != null && !product.IsPurchased)
+                {
+                    unpurchasedCount++;
+                }
+            }
+            
+            // Log how many products the customer is taking with them
+            if (unpurchasedCount > 0)
+            {
+                Debug.Log($"{customer.name} is leaving with {unpurchasedCount} unpurchased products - cleaning up");
+                
+                // Create a new list to avoid modification during iteration
+                System.Collections.Generic.List<Product> productsToDestroy = new System.Collections.Generic.List<Product>();
+                
+                foreach (Product product in customer.SelectedProducts)
+                {
+                    if (product != null && !product.IsPurchased)
+                    {
+                        productsToDestroy.Add(product);
+                    }
+                }
+                
+                // Destroy each product GameObject that hasn't been purchased
+                foreach (Product product in productsToDestroy)
                 {
                     Debug.Log($"Destroying unpurchased product: {product.ProductData?.ProductName ?? "Unknown"}");
                     Object.Destroy(product.gameObject);
                 }
             }
             
+            // Clear all product lists regardless
             customer.SelectedProducts.Clear();
+            customer.PlacedOnCounterProducts.Clear();
         }
         
         /// <summary>

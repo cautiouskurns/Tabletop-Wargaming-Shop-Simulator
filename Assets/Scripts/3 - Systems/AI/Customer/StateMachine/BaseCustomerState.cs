@@ -34,19 +34,17 @@ namespace TabletopShop
         /// </summary>
         protected bool IsStoreOpen()
         {
-            var storeHours = Object.FindFirstObjectByType<StoreHours>();
-            return storeHours?.IsStoreOpen ?? true;
+            return customer?.GetIsStoreOpen() ?? true;
         }
         
         protected bool IsStoreClosingSoon()
         {
-            var storeHours = Object.FindFirstObjectByType<StoreHours>();
-            if (storeHours != null)
-            {
-                float timeUntilClose = storeHours.GetTimeUntilClose();
-                return timeUntilClose <= 0.5f && timeUntilClose > 0f; // Less than 30 minutes
-            }
-            return false;
+            return customer?.GetShouldHurryUpShopping() ?? false;
+        }
+        
+        protected bool ShouldLeaveStoreDueToHours()
+        {
+            return customer?.GetShouldLeaveStoreDueToHours() ?? false;
         }
     }
 }

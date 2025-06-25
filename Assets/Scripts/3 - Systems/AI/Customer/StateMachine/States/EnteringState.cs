@@ -46,7 +46,7 @@ namespace TabletopShop
             }
             
             // STATE DECIDES: Store closing check
-            if (!IsStoreOpen())
+            if (!IsStoreOpen() || ShouldLeaveStoreDueToHours())
             {
                 RequestTransition(CustomerState.Leaving, "Store closed during entry");
                 return;
@@ -91,7 +91,7 @@ namespace TabletopShop
             customer.SetTargetShelf(randomShelf);
             
             // Move to shelf
-            var movement = customer.GetComponent<CustomerMovement>();
+            var movement = customer.GetMovement();
             if (movement != null && movement.MoveToShelfPosition(randomShelf))
             {
                 hasFoundShelf = true;
@@ -110,7 +110,7 @@ namespace TabletopShop
         /// </summary>
         private bool HasReachedDestination()
         {
-            var movement = customer.GetComponent<CustomerMovement>();
+            var movement = customer.GetMovement();
             return movement?.HasReachedDestination() ?? false;
         }
     }

@@ -11,9 +11,18 @@ namespace TabletopShop
         private float shoppingStartTime;
         private float lastProductCheckTime;
         private float lastShelfSwitchTime;
+        private float shelfArrivalTime;
+        private bool hasArrivedAtCurrentShelf = false;
+        private ShelfSlot currentBrowsingShelf = null;
+        private bool isWaitingAfterShelfSwitch = false;
+        private float shelfSwitchWaitStartTime;
+        
         private const float PRODUCT_CHECK_INTERVAL = 3f;
         private const float SHELF_SWITCH_PROBABILITY = 0.3f;
         private const float SHELF_SWITCH_COOLDOWN = 2f;
+        private const float MINIMUM_BROWSE_TIME = 5f; // Minimum time to spend at each shelf
+        private const float BROWSE_CHECK_INTERVAL = 1f; // How often to check while browsing
+        private const float POST_SWITCH_WAIT_TIME = 2f; // Wait time after shelf switch (matches legacy)
         
         public override void OnEnter(CustomerBehavior customer)
         {
@@ -21,6 +30,11 @@ namespace TabletopShop
             shoppingStartTime = Time.time;
             lastProductCheckTime = Time.time;
             lastShelfSwitchTime = Time.time;
+            shelfArrivalTime = Time.time;
+            hasArrivedAtCurrentShelf = false;
+            currentBrowsingShelf = customer.TargetShelf; // Start with current target shelf
+            isWaitingAfterShelfSwitch = false;
+            shelfSwitchWaitStartTime = 0f;
             
             Debug.Log($"{customer.name} started shopping for {customer.ShoppingTime:F1}s");
         }
@@ -31,7 +45,7 @@ namespace TabletopShop
             float targetShoppingTime = customer.ShoppingTime;
             
             // STATE DECIDES: Check if store is closing
-            if (!IsStoreOpen())
+            if (!IsStoreOpen() || ShouldLeaveStoreDueToHours())
             {
                 Debug.Log($"{customer.name}: Store closed during shopping");
                 RequestTransition(CustomerState.Leaving, "Store closed");
@@ -53,11 +67,9 @@ namespace TabletopShop
                 return;
             }
             
-            // STATE CONTROLS: Handle shelf browsing
-            HandleShelfBrowsing(shoppedTime);
-            
-            // STATE CONTROLS: Handle product selection
-            HandleProductSelection(shoppedTime);
+            // STATE CONTROLS: Handle shelf browsing and product selection
+            // Use proper timing to match legacy "yield return new WaitForSeconds(1f)" behavior
+            HandleShoppingBehavior(shoppedTime);
         }
         
         public override void OnExit(CustomerBehavior customer)
@@ -67,34 +79,82 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// STATE CONTROLS: Handle shelf browsing and movement
+        /// STATE CONTROLS: Unified shopping behavior - matches legacy coroutine exactly
+        /// </summary>
+        private void HandleShoppingBehavior(float shoppedTime)
+        {
+            // Handle shelf browsing first
+            HandleShelfBrowsing(shoppedTime);
+            
+            // Handle product selection (only when properly positioned at shelf)
+            HandleProductSelection(shoppedTime);
+        }
+        
+        /// <summary>
+        /// STATE CONTROLS: Handle shelf browsing and movement - matches legacy coroutine behavior
         /// </summary>
         private void HandleShelfBrowsing(float shoppedTime)
         {
-            var movement = customer.GetComponent<CustomerMovement>();
+            var movement = customer.GetMovement();
             if (movement == null) return;
             
-            // Switch shelves occasionally
-            bool shouldSwitchShelf = false;
-            
-            if (movement.HasReachedDestination())
+            // Handle post-switch waiting period (matches legacy "yield return new WaitForSeconds(2f)")
+            if (isWaitingAfterShelfSwitch)
             {
-                shouldSwitchShelf = true;
+                float waitTime = Time.time - shelfSwitchWaitStartTime;
+                if (waitTime < POST_SWITCH_WAIT_TIME)
+                {
+                    return; // Still waiting after shelf switch
+                }
+                else
+                {
+                    isWaitingAfterShelfSwitch = false;
+                    Debug.Log($"{customer.name} finished post-switch wait ({waitTime:F1}s) - resuming movement");
+                }
             }
-            else if (Time.time - lastShelfSwitchTime > SHELF_SWITCH_COOLDOWN && 
-                     UnityEngine.Random.value < SHELF_SWITCH_PROBABILITY)
+            
+            // Check if customer has arrived at current shelf
+            if (!hasArrivedAtCurrentShelf && movement.HasReachedDestination())
             {
-                shouldSwitchShelf = true;
+                hasArrivedAtCurrentShelf = true;
+                shelfArrivalTime = Time.time;
+                currentBrowsingShelf = customer.TargetShelf;
+                Debug.Log($"{customer.name} arrived at shelf: {currentBrowsingShelf?.name ?? "Unknown"} - starting browse period");
+                return; // Don't immediately switch, give time to browse
             }
             
-            if (shouldSwitchShelf)
+            // If we're browsing at a shelf, enforce minimum browse time
+            if (hasArrivedAtCurrentShelf)
             {
-                SwitchToRandomShelf();
+                float browsingTime = Time.time - shelfArrivalTime;
+                
+                // Must browse for minimum time before considering a switch
+                if (browsingTime < MINIMUM_BROWSE_TIME)
+                {
+                    return; // Stay at current shelf, continue browsing
+                }
+                
+                // After minimum browse time, occasionally switch shelves (30% chance)
+                // This matches the legacy "if (UnityEngine.Random.value < 0.3f)" check
+                if (Time.time - lastShelfSwitchTime > BROWSE_CHECK_INTERVAL && 
+                    UnityEngine.Random.value < SHELF_SWITCH_PROBABILITY)
+                {
+                    Debug.Log($"{customer.name} finished browsing {currentBrowsingShelf?.name ?? "Unknown"} after {browsingTime:F1}s - switching shelves");
+                    SwitchToRandomShelf();
+                }
+            }
+            else if (!movement.IsMoving && !isWaitingAfterShelfSwitch)
+            {
+            // If we're not moving and haven't arrived, try to get to a shelf
+                if (customer.TargetShelf == null || Time.time - lastShelfSwitchTime > SHELF_SWITCH_COOLDOWN)
+                {
+                    SwitchToRandomShelf();
+                }
             }
         }
         
         /// <summary>
-        /// STATE CONTROLS: Switch to a random shelf
+        /// STATE CONTROLS: Switch to a random shelf - reset browsing state
         /// </summary>
         private void SwitchToRandomShelf()
         {
@@ -105,25 +165,40 @@ namespace TabletopShop
             ShelfSlot randomShelf = availableShelves[UnityEngine.Random.Range(0, availableShelves.Length)];
             customer.SetTargetShelf(randomShelf);
             
-            var movement = customer.GetComponent<CustomerMovement>();
+            var movement = customer.GetMovement();
             if (movement != null && movement.MoveToShelfPosition(randomShelf))
             {
+                // Reset browsing state for new shelf
                 lastShelfSwitchTime = Time.time;
-                Debug.Log($"{customer.name} switched to shelf: {randomShelf.name}");
+                hasArrivedAtCurrentShelf = false;
+                shelfArrivalTime = Time.time;
+                currentBrowsingShelf = null;
+                
+                // Start post-switch waiting period (matches legacy 2-second wait)
+                isWaitingAfterShelfSwitch = true;
+                shelfSwitchWaitStartTime = Time.time;
+                
+                Debug.Log($"{customer.name} switching to shelf: {randomShelf.name} - waiting {POST_SWITCH_WAIT_TIME}s before movement");
             }
         }
         
         /// <summary>
-        /// STATE CONTROLS: Handle product selection
+        /// STATE CONTROLS: Handle product selection - matches legacy timing exactly
         /// </summary>
         private void HandleProductSelection(float shoppedTime)
         {
-            if (shoppedTime - lastProductCheckTime >= PRODUCT_CHECK_INTERVAL)
+            // Only check for products if we've arrived at a shelf and spent some time there
+            // This matches the legacy behavior where products are checked "every few seconds" during browsing
+            if (hasArrivedAtCurrentShelf && customer.TargetShelf != null)
             {
-                lastProductCheckTime = shoppedTime;
+                float browsingTime = Time.time - shelfArrivalTime;
                 
-                if (customer.TargetShelf != null)
+                // Start checking for products after a brief browsing delay (like legacy 2-second wait)
+                if (browsingTime >= 2f && shoppedTime - lastProductCheckTime >= PRODUCT_CHECK_INTERVAL)
                 {
+                    lastProductCheckTime = shoppedTime;
+                    
+                    Debug.Log($"{customer.name} checking for products at {customer.TargetShelf.name} (browsed for {browsingTime:F1}s)");
                     TrySelectProductsAtShelf(customer.TargetShelf);
                 }
             }
@@ -144,8 +219,9 @@ namespace TabletopShop
             
             if (canAfford && wantsProduct)
             {
-                // Add to selected products
-                customer.SelectedProducts.Add(availableProduct);
+                // Add to selected products and update total
+                customer.AddSelectedProduct(availableProduct);
+                customer.UpdateTotalPurchaseAmount(availableProduct.CurrentPrice);
                 
                 // Remove product from shelf
                 Product removedProduct = shelf.RemoveProduct();
@@ -154,7 +230,7 @@ namespace TabletopShop
                     removedProduct.RemoveFromShelf();
                 }
                 
-                Debug.Log($"{customer.name} selected {availableProduct.ProductData?.ProductName ?? "Product"} for ${availableProduct.CurrentPrice}");
+                Debug.Log($"{customer.name} selected {availableProduct.ProductData?.ProductName ?? "Product"} for ${availableProduct.CurrentPrice} (Total: ${customer.TotalPurchaseAmount:F2})");
                 
                 // Start following customer
                 customer.StartCoroutine(AttachProductToCustomer(availableProduct));
@@ -168,14 +244,7 @@ namespace TabletopShop
         {
             if (product == null) return false;
             
-            float currentTotal = 0f;
-            foreach (var selectedProduct in customer.SelectedProducts)
-            {
-                if (selectedProduct != null)
-                    currentTotal += selectedProduct.CurrentPrice;
-            }
-            
-            float remainingBudget = customer.BaseSpendingPower - currentTotal;
+            float remainingBudget = customer.BaseSpendingPower - customer.TotalPurchaseAmount;
             return product.CurrentPrice <= remainingBudget;
         }
         
@@ -186,8 +255,13 @@ namespace TabletopShop
         {
             if (product == null || product.IsPurchased || !product.IsOnShelf) return false;
             
-            // Simple probability check - could be expanded with preferences
-            return UnityEngine.Random.value <= 0.8f; // 80% chance
+            // Use the same probability as legacy implementation
+            float randomValue = UnityEngine.Random.value;
+            bool wants = randomValue <= customer.PurchaseProbability;
+            
+            Debug.Log($"{customer.name} - Random value: {randomValue:F3}, Purchase probability: {customer.PurchaseProbability:F3}, Wants product: {wants}");
+            
+            return wants;
         }
         
         /// <summary>
@@ -201,7 +275,7 @@ namespace TabletopShop
             
             while (customer != null && product != null && 
                    customer.SelectedProducts.Contains(product) && 
-                   !customer.IsWaitingForCheckout)
+                   !customer.PlacedOnCounterProducts.Contains(product))
             {
                 if (product.transform != null && customer.transform != null)
                 {

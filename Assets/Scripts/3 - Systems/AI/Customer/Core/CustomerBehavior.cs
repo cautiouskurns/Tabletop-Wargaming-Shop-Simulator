@@ -59,13 +59,77 @@ namespace TabletopShop
         public event Action<CustomerState, CustomerState> OnStateChangeRequested;
         public event Action<ShelfSlot> OnTargetShelfChanged;
         
-        // Properties
+        // Properties - Enhanced for State Machine compatibility
         public CustomerState CurrentState => currentState;
         public float ShoppingTime => shoppingTime;
         public ShelfSlot TargetShelf => targetShelf;
         public List<Product> SelectedProducts => selectedProducts;
         public float TotalPurchaseAmount => totalPurchaseAmount;
         public float BaseSpendingPower => baseSpendingPower;
+        
+        // Additional property access for state machine
+        public float PurchaseProbability => purchaseProbability;
+        public List<Product> PlacedOnCounterProducts => placedOnCounterProducts;
+        
+        // State Machine Helper Methods
+        public void AddSelectedProduct(Product product) => selectedProducts.Add(product);
+        public void RemoveSelectedProduct(Product product) => selectedProducts.Remove(product);
+        public void AddPlacedProduct(Product product) => placedOnCounterProducts.Add(product);
+        public void UpdateTotalPurchaseAmount(float amount) => totalPurchaseAmount += amount;
+        public void SetWaitingForCheckout(bool waiting) => isWaitingForCheckout = waiting;
+        
+        // Component Access Helper Methods
+        public Customer GetMainCustomer() => mainCustomer;
+        public CustomerMovement GetMovement() => customerMovement;
+        
+        // Store Hours Helper Methods (for state machine access to legacy methods)
+        public bool GetIsStoreOpen()
+        {
+            StoreHours storeHours = FindFirstObjectByType<StoreHours>();
+            if (storeHours != null)
+            {
+                return storeHours.IsStoreOpen;
+            }
+            
+            // Fallback: assume store is open if no StoreHours system found
+            return true;
+        }
+        
+        public bool GetShouldLeaveStoreDueToHours()
+        {
+            StoreHours storeHours = FindFirstObjectByType<StoreHours>();
+            if (storeHours != null)
+            {
+                // If store is closed, customer should leave
+                if (!storeHours.IsStoreOpen)
+                {
+                    return true;
+                }
+                
+                // If store is closing soon (less than 30 minutes), finish current shopping
+                float timeUntilClose = storeHours.GetTimeUntilClose();
+                if (timeUntilClose <= 0.5f && timeUntilClose > 0f) // Less than 30 minutes
+                {
+                    // Don't force leave immediately, but hurry up shopping
+                    return false;
+                }
+            }
+            
+            return false;
+        }
+        
+        public bool GetShouldHurryUpShopping()
+        {
+            StoreHours storeHours = FindFirstObjectByType<StoreHours>();
+            if (storeHours != null)
+            {
+                float timeUntilClose = storeHours.GetTimeUntilClose();
+                // If less than 30 minutes until close, hurry up
+                return timeUntilClose <= 0.5f && timeUntilClose > 0f;
+            }
+            
+            return false;
+        }
         
         // ICustomerCheckoutBehavior properties
         public bool IsInQueue => isInQueue;
@@ -178,6 +242,12 @@ namespace TabletopShop
             currentState = newState;
             currentStateObject = states[newState];
             stateStartTime = Time.time;
+            
+            // Update visual state indicator BEFORE entering new state
+            if (mainCustomer != null && mainCustomer.Visuals != null)
+            {
+                mainCustomer.Visuals.UpdateStateDisplay(newState);
+            }
             
             // Enter new state
             Debug.Log($"[STATE MACHINE] {name} calling OnEnter for {newState}");
@@ -1479,6 +1549,117 @@ namespace TabletopShop
             Debug.Log($"Placed products: {placedOnCounterProducts.Count}");
             Debug.Log("===============================");
         }
+        
+        [ContextMenu("Toggle State Machine System")]
+        public void ToggleStateMachineSystem()
+        {
+            useStateMachine = !useStateMachine;
+            
+            Debug.Log($"✓ Toggled to {(useStateMachine ? "STATE MACHINE" : "LEGACY COROUTINES")} system for {name}");
+            
+            if (Application.isPlaying)
+            {
+                // Stop current system
+                StopCustomerLifecycle();
+                
+                // Wait a frame then restart in current state
+                StartCoroutine(RestartInCurrentState());
+            }
+        }
+        
+        /// <summary>
+        /// Restart customer lifecycle in current state after system switch
+        /// </summary>
+        private IEnumerator RestartInCurrentState()
+        {
+            yield return null; // Wait one frame
+            
+            Debug.Log($"Restarting {name} in {currentState} using {(useStateMachine ? "state machine" : "coroutines")}");
+            StartCustomerLifecycle(currentState);
+        }
+        
+        [ContextMenu("Validate System Parity")]
+        public void ValidateSystemParity()
+        {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("System parity validation requires Play mode");
+                return;
+            }
+            
+            Debug.Log("=== SYSTEM PARITY VALIDATION ===");
+            Debug.Log($"Customer: {name}");
+            Debug.Log($"Current System: {(useStateMachine ? "State Machine" : "Legacy Coroutines")}");
+            Debug.Log($"Current State: {currentState}");
+            Debug.Log($"Shopping Time: {shoppingTime:F1}s");
+            Debug.Log($"Base Spending Power: ${baseSpendingPower:F2}");
+            Debug.Log($"Purchase Probability: {purchaseProbability:F3}");
+            Debug.Log($"Selected Products: {selectedProducts.Count}");
+            Debug.Log($"Total Purchase Amount: ${totalPurchaseAmount:F2}");
+            Debug.Log($"Placed Products: {placedOnCounterProducts.Count}");
+            Debug.Log($"Queue State: InQueue={isInQueue}, Position={queuePosition}, WaitingTurn={waitingForCheckoutTurn}");
+            Debug.Log($"Movement Component: {(customerMovement != null ? "Available" : "NULL")}");
+            Debug.Log($"Main Customer: {(mainCustomer != null ? "Available" : "NULL")}");
+            
+            // Test store hours integration
+            Debug.Log($"Store Open: {GetIsStoreOpen()}");
+            Debug.Log($"Should Leave: {GetShouldLeaveStoreDueToHours()}");
+            Debug.Log($"Should Hurry: {GetShouldHurryUpShopping()}");
+            
+            Debug.Log("=== Both systems should show identical values ===");
+        }
+        
+        [ContextMenu("Debug Shopping Behavior")]
+        public void DebugShoppingBehavior()
+        {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("Shopping behavior debug requires Play mode");
+                return;
+            }
+            
+            Debug.Log("=== SHOPPING BEHAVIOR DEBUG ===");
+            Debug.Log($"Customer: {name}");
+            Debug.Log($"System: {(useStateMachine ? "STATE MACHINE" : "LEGACY COROUTINES")}");
+            Debug.Log($"Current State: {currentState}");
+            Debug.Log($"Target Shelf: {(targetShelf != null ? targetShelf.name : "None")}");
+            Debug.Log($"Is Moving: {(customerMovement != null ? customerMovement.IsMoving : false)}");
+            Debug.Log($"Has Reached Destination: {(customerMovement != null ? customerMovement.HasReachedDestination() : false)}");
+            Debug.Log($"Selected Products: {selectedProducts.Count}");
+            Debug.Log($"Total Purchase Amount: ${totalPurchaseAmount:F2}");
+            
+            // Check shelf status if we have a target
+            if (targetShelf != null)
+            {
+                Debug.Log($"--- SHELF STATUS ---");
+                Debug.Log($"Shelf Name: {targetShelf.name}");
+                Debug.Log($"Is Empty: {targetShelf.IsEmpty}");
+                Debug.Log($"Has Product: {targetShelf.CurrentProduct != null}");
+                if (targetShelf.CurrentProduct != null)
+                {
+                    Debug.Log($"Product: {targetShelf.CurrentProduct.ProductData?.ProductName ?? "Unknown"}");
+                    Debug.Log($"Price: ${targetShelf.CurrentProduct.CurrentPrice:F2}");
+                    Debug.Log($"Can Afford: {CanAffordProduct(targetShelf.CurrentProduct)}");
+                    Debug.Log($"Wants Product: {WantsProduct(targetShelf.CurrentProduct)}");
+                }
+            }
+            
+            Debug.Log("=== State machine should now browse and select products ===");
+        }
+        
+        // // Helper methods for debugging (copied from legacy implementation)
+        // private bool CanAffordProduct(Product product)
+        // {
+        //     if (product == null) return false;
+        //     float remainingBudget = baseSpendingPower - totalPurchaseAmount;
+        //     return product.CurrentPrice <= remainingBudget;
+        // }
+        
+        // private bool WantsProduct(Product product)
+        // {
+        //     if (product == null || product.IsPurchased || !product.IsOnShelf) return false;
+        //     return UnityEngine.Random.value <= purchaseProbability;
+        // }
         
         #endregion
     }

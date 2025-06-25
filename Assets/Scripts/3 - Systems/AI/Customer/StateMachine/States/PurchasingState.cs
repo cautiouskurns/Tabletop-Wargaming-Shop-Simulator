@@ -44,8 +44,8 @@ namespace TabletopShop
                 return;
             }
             
-            // STATE DECIDES: Store closing check
-            if (!IsStoreOpen())
+            // STATE DECIDES: Store closing check (allow purchase completion even if store is closing)
+            if (!IsStoreOpen() && ShouldLeaveStoreDueToHours())
             {
                 Debug.Log($"{customer.name}: Store closed during purchase");
                 RequestTransition(CustomerState.Leaving, "Store closed");
@@ -89,7 +89,7 @@ namespace TabletopShop
         /// </summary>
         private void StartCheckoutProcess()
         {
-            var movement = customer.GetComponent<CustomerMovement>();
+            var movement = customer.GetMovement();
             if (movement == null)
             {
                 Debug.LogError($"{customer.name} cannot move to checkout - no movement component");
@@ -117,7 +117,7 @@ namespace TabletopShop
         /// </summary>
         private void HandleMovementToCheckout()
         {
-            var movement = customer.GetComponent<CustomerMovement>();
+            var movement = customer.GetMovement();
             if (movement == null) return;
             
             if (movement.HasReachedDestination())
@@ -129,7 +129,7 @@ namespace TabletopShop
                 if (targetCheckoutCounter != null)
                 {
                     // This will trigger the queue system
-                    targetCheckoutCounter.OnCustomerArrival(customer.GetComponent<Customer>());
+                    targetCheckoutCounter.OnCustomerArrival(customer.GetMainCustomer());
                 }
             }
             else if (!movement.IsMoving)
@@ -151,6 +151,22 @@ namespace TabletopShop
                 customer.StartCoroutine(PlaceItemsOnCounter());
                 hasPlacedItems = true;
             }
+            else
+            {
+                // Safety timeout for waiting
+                float waitTime = Time.time - purchaseStartTime;
+                if (waitTime > MAX_WAIT_TIME)
+                {
+                    Debug.LogWarning($"{customer.name} has been waiting for {waitTime:F1}s - CheckoutCounter may not support queue callbacks. Proceeding anyway.");
+                    customer.SetWaitingForCheckout(false);
+                    // Force clear queue state
+                    if (customer.IsInQueue && customer.QueuedCheckout != null)
+                    {
+                        customer.ForceLeaveQueue();
+                    }
+                    hasPlacedItems = false; // Retry placement next frame
+                }
+            }
         }
         
         /// <summary>
@@ -158,7 +174,15 @@ namespace TabletopShop
         /// </summary>
         private void HandleTransactionCompletion()
         {
-            // Wait for checkout to complete
+            // Set flag to indicate we're waiting for checkout if not already set
+            if (!customer.IsWaitingForCheckout)
+            {
+                customer.SetWaitingForCheckout(true);
+                Debug.Log($"{customer.name} waiting for checkout completion");
+            }
+            
+            // Wait for checkout to complete (OnCheckoutCompleted will be called)
+            // This mirrors the legacy coroutine behavior exactly
             if (!customer.IsWaitingForCheckout)
             {
                 hasCompletedTransaction = true;
@@ -170,6 +194,7 @@ namespace TabletopShop
                     if (product != null)
                     {
                         product.Purchase();
+                        Debug.Log($"{customer.name} purchased {product.ProductData?.ProductName ?? "Product"} successfully");
                     }
                 }
                 
@@ -178,6 +203,14 @@ namespace TabletopShop
                 {
                     targetCheckoutCounter.OnCustomerDeparture();
                 }
+            }
+            
+            // Safety check - if checkout counter becomes null or inactive, stop waiting
+            if (targetCheckoutCounter == null || !targetCheckoutCounter.gameObject.activeInHierarchy)
+            {
+                Debug.LogWarning($"{customer.name} checkout counter became invalid, completing transaction anyway");
+                hasCompletedTransaction = true;
+                customer.SetWaitingForCheckout(false);
             }
         }
         
@@ -192,6 +225,19 @@ namespace TabletopShop
                 yield break;
             }
             
+            // Safety check: Only place items if we're not waiting for our turn and not in queue
+            if (customer.WaitingForCheckoutTurn)
+            {
+                Debug.LogWarning($"{customer.name} attempted to place items while waiting for checkout turn - blocking!");
+                yield break;
+            }
+            
+            if (customer.IsInQueue)
+            {
+                Debug.LogWarning($"{customer.name} attempted to place items while still in queue - blocking!");
+                yield break;
+            }
+            
             Debug.Log($"{customer.name} placing {customer.SelectedProducts.Count} items on counter");
             
             for (int i = 0; i < customer.SelectedProducts.Count; i++)
@@ -199,11 +245,34 @@ namespace TabletopShop
                 Product product = customer.SelectedProducts[i];
                 if (product != null)
                 {
-                    targetCheckoutCounter.PlaceProduct(product, customer.GetComponent<Customer>());
+                    Debug.Log($"{customer.name} placing product {i + 1}/{customer.SelectedProducts.Count}: {product.ProductData?.ProductName ?? product.name}");
+                    
+                    // Place the product at checkout with customer association
+                    targetCheckoutCounter.PlaceProduct(product, customer.GetMainCustomer());
+                    
+                    // Ensure product retains its IInteractable interface
+                    ProductInteraction productInteraction = product.GetComponent<ProductInteraction>();
+                    if (productInteraction != null)
+                    {
+                        productInteraction.UpdateInteractionState();
+                        Debug.Log($"Updated interaction state for {product.ProductData?.ProductName ?? product.name} - CanInteract: {product.CanInteract}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"ProductInteraction component missing on {product.ProductData?.ProductName ?? product.name}");
+                    }
+                    
+                    // Add to placed products list for tracking
+                    customer.AddPlacedProduct(product);
+                    
+                    // Small delay between placements for natural look
                     yield return new WaitForSeconds(0.5f);
                 }
             }
             
+            Debug.Log($"{customer.name} finished placing {customer.PlacedOnCounterProducts.Count} items on counter");
+            
+            // Force UI refresh to ensure all products are visible
             targetCheckoutCounter.RefreshUI();
         }
         
