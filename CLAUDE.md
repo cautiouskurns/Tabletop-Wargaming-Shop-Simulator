@@ -50,10 +50,26 @@ Repository/                # Data access patterns
 ### Key Systems
 
 #### Customer AI System
+- **Dual Architecture**: State machine (new) and coroutine-based (legacy) systems
 - **State Machine**: CustomerState enum (Entering → Shopping → Purchasing → Leaving)
 - **Component Composition**: CustomerMovement, CustomerBehavior, CustomerVisuals
 - **NavMesh Movement**: Unity AI Navigation for pathfinding
 - **Direct Component Access**: Use `customer.Movement.X` not delegation methods
+
+##### State Machine Implementation
+- **Toggle Control**: `useStateMachine` bool in CustomerBehavior
+- **State Classes**: EnteringState, ShoppingState, PurchasingState, LeavingState
+- **Timing Constants**: 
+  - `PRODUCT_CHECK_INTERVAL = 3f` - Time between product availability checks
+  - `MINIMUM_BROWSE_TIME = 5f` - Required shelf browsing duration
+  - `POST_SWITCH_WAIT_TIME = 2f` - Delay after switching shelves
+  - `CHECKOUT_COMPLETION_TIMEOUT = 30f` - Max wait for checkout callbacks
+
+##### Critical Timing Considerations
+- **Absolute vs Relative Time**: Use `Time.time` for consistency in state timing
+- **Initialization**: Set `lastProductCheckTime` to allow immediate first checks
+- **Interval Checks**: Ensure proper time difference calculations
+- **Debugging**: Frame-rate logging every 60 frames (~1 second intervals)
 
 #### Economic System (GameManager)
 - **Central Authority**: All economic transactions flow through GameManager
@@ -112,3 +128,96 @@ Current development targets a 15-20 minute Alpha build featuring:
 - Runtime tests for customer AI behavior
 - UI component testing for inventory interactions
 - Use Unity Test Runner for all testing workflows
+
+#### AI Behavior Testing & Debugging
+- **State Machine Validation**: Verify one-to-one functionality parity with legacy coroutines
+- **Timing Analysis**: Monitor frame-rate performance with comprehensive debug logging
+- **Systematic Debugging**: Use structured logging prefixes for categorized issue tracking
+- **Product Selection Testing**: Validate affordability calculations and probability logic
+- **Movement Integration**: Test NavMesh pathfinding with state transitions
+
+## Debugging Methodologies
+
+### Systematic AI Debugging Approach
+When debugging complex AI behaviors (especially Customer AI state machines):
+
+1. **Comprehensive Logging Strategy**:
+   - Use structured debug prefixes for categorization
+   - Log both successful and failed conditions
+   - Include timing information and state transitions
+   - Track numerical values for calculations
+
+2. **Debug Logging Prefixes**:
+   ```
+   [SHOPPING-DEBUG] - General shopping state tracking
+   [SHELF-DEBUG]    - Shelf browsing and movement behavior
+   [PRODUCT-DEBUG]  - Product selection timing and conditions
+   [SELECT-DEBUG]   - Detailed product selection process
+   [WANT-DEBUG]     - Purchase probability calculations
+   [PURCHASE-DEBUG] - Checkout and transaction flow
+   ```
+
+3. **State Machine Debugging Process**:
+   - **Step 1**: Add frame-by-frame state tracking (every 60 frames)
+   - **Step 2**: Log all timing calculations with exact values
+   - **Step 3**: Track each condition in complex logic separately
+   - **Step 4**: Use success/failure indicators (✅/❌) for clarity
+   - **Step 5**: Include before/after values for state changes
+
+4. **Timing Analysis Best Practices**:
+   - Use consistent time references (prefer `Time.time` for absolute timing)
+   - Initialize timing variables to allow immediate first checks
+   - Log timing calculations with clear comparisons
+   - Include both current values and required thresholds
+
+5. **Common AI Debugging Patterns**:
+   ```csharp
+   // Good: Detailed condition logging
+   bool condition = CheckCondition();
+   Debug.Log($"[DEBUG] {name}: Condition check - {condition} (details)");
+   
+   // Good: Timing analysis
+   float elapsed = Time.time - startTime;
+   bool ready = elapsed >= threshold;
+   Debug.Log($"[DEBUG] {name}: Timing - {elapsed:F1}s >= {threshold:F1}s = {ready}");
+   
+   // Good: State transition logging
+   Debug.Log($"[DEBUG] {name}: {oldState} → {newState} (reason: {reason})");
+   ```
+
+6. **Performance Considerations**:
+   - Use conditional compilation for debug builds: `#if UNITY_EDITOR`
+   - Implement debug level controls for verbose logging
+   - Remove or disable intensive logging for production builds
+   - Consider frame-rate impact of excessive logging
+
+## Development Workflow
+
+### CLAUDE.md Maintenance Best Practices
+
+#### When to Update CLAUDE.md
+Update this documentation when making changes to:
+- **Major Systems**: New AI behaviors, economic features, or core gameplay mechanics
+- **Architecture**: Design pattern changes, interface modifications, or component restructuring  
+- **Dependencies**: Unity package additions/removals or external tool integrations
+- **Testing Approaches**: New debugging methodologies or testing strategies
+- **Breaking Changes**: Modifications that affect how existing systems work
+
+#### Update Process
+1. **Concurrent Updates**: Modify CLAUDE.md in the same commit as related code changes
+2. **Pull Request Integration**: Include documentation updates in feature PRs
+3. **Accuracy Review**: Verify documentation matches actual implementation during code reviews
+4. **Incremental Approach**: Make small, focused updates rather than large rewrites
+
+#### Documentation Standards
+- **Actionable Content**: Focus on "how-to" information for developers
+- **Current State**: Remove outdated information promptly
+- **Structured Format**: Use consistent markdown formatting and clear hierarchies
+- **Code Examples**: Include practical code snippets for complex concepts
+- **Debug Integration**: Document debugging approaches alongside system descriptions
+
+#### Version Control
+- Use descriptive commit messages for documentation updates
+- Tag documentation-heavy commits for easy reference
+- Maintain documentation accuracy as a code quality standard
+- Review CLAUDE.md changes as thoroughly as code changes

@@ -14,8 +14,10 @@ namespace TabletopShop
         private bool hasPlacedItems = false;
         private bool hasCompletedTransaction = false;
         private CheckoutCounter targetCheckoutCounter = null;
+        private float checkoutWaitStartTime = 0f;
         private const float CHECKOUT_TIMEOUT = 120f;
         private const float MAX_WAIT_TIME = 60f;
+        private const float CHECKOUT_COMPLETION_TIMEOUT = 30f;
         
         public override void OnEnter(CustomerBehavior customer)
         {
@@ -25,6 +27,7 @@ namespace TabletopShop
             hasPlacedItems = false;
             hasCompletedTransaction = false;
             targetCheckoutCounter = null;
+            checkoutWaitStartTime = 0f;
             
             Debug.Log($"{customer.name} started purchasing with {customer.SelectedProducts.Count} products");
             
@@ -170,47 +173,81 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// STATE CONTROLS: Handle transaction completion
+        /// STATE CONTROLS: Handle transaction completion with timeout mechanism
         /// </summary>
         private void HandleTransactionCompletion()
         {
-            // Set flag to indicate we're waiting for checkout if not already set
-            if (!customer.IsWaitingForCheckout)
+            // Initialize wait timer if not already set
+            if (!customer.IsWaitingForCheckout && checkoutWaitStartTime == 0f)
             {
                 customer.SetWaitingForCheckout(true);
-                Debug.Log($"{customer.name} waiting for checkout completion");
+                checkoutWaitStartTime = Time.time;
+                Debug.Log($"{customer.name} started waiting for checkout completion at {checkoutWaitStartTime:F1}s");
             }
             
-            // Wait for checkout to complete (OnCheckoutCompleted will be called)
-            // This mirrors the legacy coroutine behavior exactly
+            // Calculate how long we've been waiting for checkout completion
+            float waitTime = Time.time - checkoutWaitStartTime;
+            
+            // Check if transaction has been completed by external callback (normal flow)
             if (!customer.IsWaitingForCheckout)
             {
-                hasCompletedTransaction = true;
-                Debug.Log($"{customer.name} transaction completed");
-                
-                // Mark products as purchased
-                foreach (Product product in customer.SelectedProducts)
+                Debug.Log($"{customer.name} checkout completed via callback after {waitTime:F1}s");
+                CompleteTransaction();
+                return;
+            }
+            
+            // TIMEOUT MECHANISM: Force completion if we've been waiting too long
+            if (waitTime > CHECKOUT_COMPLETION_TIMEOUT)
+            {
+                Debug.LogWarning($"{customer.name} checkout completion timeout after {waitTime:F1}s - forcing completion");
+                customer.SetWaitingForCheckout(false);
+                CompleteTransaction();
+                return;
+            }
+            
+            // Safety check - if checkout counter becomes null or inactive, complete immediately
+            if (targetCheckoutCounter == null || !targetCheckoutCounter.gameObject.activeInHierarchy)
+            {
+                Debug.LogWarning($"{customer.name} checkout counter became invalid after {waitTime:F1}s - completing transaction");
+                customer.SetWaitingForCheckout(false);
+                CompleteTransaction();
+                return;
+            }
+            
+            // Debug logging every 5 seconds while waiting
+            if (waitTime > 0f && (int)(waitTime * 10) % 50 == 0) // Every 5 seconds
+            {
+                Debug.Log($"{customer.name} still waiting for checkout completion ({waitTime:F1}s / {CHECKOUT_COMPLETION_TIMEOUT:F1}s)");
+            }
+        }
+        
+        /// <summary>
+        /// Complete the transaction and mark products as purchased
+        /// </summary>
+        private void CompleteTransaction()
+        {
+            hasCompletedTransaction = true;
+            Debug.Log($"{customer.name} transaction completed - marking {customer.SelectedProducts.Count} products as purchased");
+            
+            // Mark products as purchased
+            foreach (Product product in customer.SelectedProducts)
+            {
+                if (product != null)
                 {
-                    if (product != null)
-                    {
-                        product.Purchase();
-                        Debug.Log($"{customer.name} purchased {product.ProductData?.ProductName ?? "Product"} successfully");
-                    }
-                }
-                
-                // Notify checkout counter
-                if (targetCheckoutCounter != null)
-                {
-                    targetCheckoutCounter.OnCustomerDeparture();
+                    product.Purchase();
+                    Debug.Log($"{customer.name} purchased {product.ProductData?.ProductName ?? "Product"} successfully");
                 }
             }
             
-            // Safety check - if checkout counter becomes null or inactive, stop waiting
-            if (targetCheckoutCounter == null || !targetCheckoutCounter.gameObject.activeInHierarchy)
+            // Notify checkout counter of departure
+            if (targetCheckoutCounter != null)
             {
-                Debug.LogWarning($"{customer.name} checkout counter became invalid, completing transaction anyway");
-                hasCompletedTransaction = true;
-                customer.SetWaitingForCheckout(false);
+                Debug.Log($"{customer.name} notifying checkout counter of departure");
+                targetCheckoutCounter.OnCustomerDeparture();
+            }
+            else
+            {
+                Debug.LogWarning($"{customer.name} cannot notify checkout counter - reference is null");
             }
         }
         
