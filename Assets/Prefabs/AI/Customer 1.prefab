@@ -167,7 +167,7 @@ MonoBehaviour:
   shoppingTime: 0
   targetShelf: {fileID: 0}
   baseSpendingPower: 100
-  purchaseProbability: 0.8
+  purchaseProbability: 0.95
 --- !u!114 &1743512066011946273
 MonoBehaviour:
   m_ObjectHideFlags: 0

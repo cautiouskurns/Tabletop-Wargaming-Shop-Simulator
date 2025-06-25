@@ -27,7 +27,7 @@ namespace TabletopShop
         
         [Header("Purchase Configuration")]
         [SerializeField] private float baseSpendingPower = 100f;
-        [SerializeField] private float purchaseProbability = 0.8f;
+        [SerializeField] private float purchaseProbability = 0.95f;
         
         // Component references
         private CustomerMovement customerMovement;
@@ -891,35 +891,35 @@ namespace TabletopShop
         /// </summary>
         /// <param name="product">Product to check</param>
         /// <returns>True if customer can afford the product</returns>
-        private bool CanAffordProduct(Product product)
-        {
-            if (product == null) return false;
+        // private bool CanAffordProduct(Product product)
+        // {
+        //     if (product == null) return false;
             
-            float remainingBudget = baseSpendingPower - totalPurchaseAmount;
-            return product.CurrentPrice <= remainingBudget;
-        }
+        //     float remainingBudget = baseSpendingPower - totalPurchaseAmount;
+        //     return product.CurrentPrice <= remainingBudget;
+        // }
         
         /// <summary>
         /// Check if customer wants a specific product (based on purchase probability and preferences)
         /// </summary>
         /// <param name="product">Product to check</param>
         /// <returns>True if customer wants the product</returns>
-        private bool WantsProduct(Product product)
-        {
-            if (product == null || product.IsPurchased || !product.IsOnShelf) 
-            {
-                Debug.Log($"CustomerBehavior {name} - Product failed basic checks: IsNull: {product == null}, IsPurchased: {product?.IsPurchased}, IsOnShelf: {product?.IsOnShelf}");
-                return false;
-            }
+        // private bool WantsProduct(Product product)
+        // {
+        //     if (product == null || product.IsPurchased || !product.IsOnShelf) 
+        //     {
+        //         Debug.Log($"CustomerBehavior {name} - Product failed basic checks: IsNull: {product == null}, IsPurchased: {product?.IsPurchased}, IsOnShelf: {product?.IsOnShelf}");
+        //         return false;
+        //     }
             
-            // Base probability of wanting any product
-            float randomValue = UnityEngine.Random.value;
-            bool wants = randomValue <= purchaseProbability;
+        //     // Base probability of wanting any product
+        //     float randomValue = UnityEngine.Random.value;
+        //     bool wants = randomValue <= purchaseProbability;
             
-            Debug.Log($"CustomerBehavior {name} - Random value: {randomValue:F3}, Purchase probability: {purchaseProbability:F3}, Wants product: {wants}");
+        //     Debug.Log($"CustomerBehavior {name} - Random value: {randomValue:F3}, Purchase probability: {purchaseProbability:F3}, Wants product: {wants}");
             
-            return wants;
-        }
+        //     return wants;
+        // }
         
         /// <summary>
         /// Attach a selected product to the customer (visually showing that they are carrying it)
@@ -1647,19 +1647,19 @@ namespace TabletopShop
             Debug.Log("=== State machine should now browse and select products ===");
         }
         
-        // // Helper methods for debugging (copied from legacy implementation)
-        // private bool CanAffordProduct(Product product)
-        // {
-        //     if (product == null) return false;
-        //     float remainingBudget = baseSpendingPower - totalPurchaseAmount;
-        //     return product.CurrentPrice <= remainingBudget;
-        // }
+        // Helper methods for debugging (copied from legacy implementation)
+        private bool CanAffordProduct(Product product)
+        {
+            if (product == null) return false;
+            float remainingBudget = baseSpendingPower - totalPurchaseAmount;
+            return product.CurrentPrice <= remainingBudget;
+        }
         
-        // private bool WantsProduct(Product product)
-        // {
-        //     if (product == null || product.IsPurchased || !product.IsOnShelf) return false;
-        //     return UnityEngine.Random.value <= purchaseProbability;
-        // }
+        private bool WantsProduct(Product product)
+        {
+            if (product == null || product.IsPurchased || !product.IsOnShelf) return false;
+            return UnityEngine.Random.value <= purchaseProbability;
+        }
         
         #endregion
     }
