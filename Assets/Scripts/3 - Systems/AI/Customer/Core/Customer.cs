@@ -253,6 +253,7 @@ namespace TabletopShop
         
         #endregion
 
+
         #region Unity Editor Support
         
         private void OnValidate()
