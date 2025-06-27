@@ -32,7 +32,7 @@ namespace TabletopShop
                 isCursorLocked = false;
             }
             
-            Debug.Log($"CursorManager Awake: cursor {(startWithCursorLocked ? "locked" : "unlocked")}");
+//            Debug.Log($"CursorManager Awake: cursor {(startWithCursorLocked ? "locked" : "unlocked")}");
         }
         
         private void Start()

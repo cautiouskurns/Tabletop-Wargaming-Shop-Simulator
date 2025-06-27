@@ -4,7 +4,8 @@
     "references": [
         "Unity.TextMeshPro",
         "Unity.InputSystem",
-        "Unity.AI.Navigation"
+        "Unity.AI.Navigation",
+        "Opsive.BehaviorDesigner.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

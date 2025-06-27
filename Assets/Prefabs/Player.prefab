@@ -203,7 +203,7 @@ MonoBehaviour:
   interactionRange: 3
   interactableLayer:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 3895
   interactionKey: 101
   crosshairUI: {fileID: 0}
   uiCanvas: {fileID: 0}
