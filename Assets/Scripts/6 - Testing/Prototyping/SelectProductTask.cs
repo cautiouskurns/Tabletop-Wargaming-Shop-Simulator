@@ -11,7 +11,7 @@ namespace TabletopShop
         
         public override TaskStatus OnUpdate()
         {
-            SimpleTestCustomer customer = GetComponent<SimpleTestCustomer>();
+            Customer customer = GetComponent<Customer>();
             if (customer == null || customer.currentTargetShelf == null)
             {
                 Debug.LogError("[SelectProductTask] No customer data or target shelf!");
@@ -36,7 +36,7 @@ namespace TabletopShop
             return TaskStatus.Success;
         }
         
-        private bool TrySelectProduct(SimpleTestCustomer customer)
+        private bool TrySelectProduct(Customer customer)
         {
             ShelfSlot shelf = customer.currentTargetShelf;
             
@@ -78,7 +78,7 @@ namespace TabletopShop
             return PurchaseProduct(customer, shelf, product);
         }
         
-        private bool PurchaseProduct(SimpleTestCustomer customer, ShelfSlot shelf, Product product)
+        private bool PurchaseProduct(Customer customer, ShelfSlot shelf, Product product)
         {
             // Add to customer's selected products and deduct money
             customer.AddProduct(product);

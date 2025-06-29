@@ -24,7 +24,7 @@ namespace TabletopShop
 
         public override TaskStatus OnUpdate()
         {
-            SimpleTestCustomer customer = GetComponent<SimpleTestCustomer>();
+            Customer customer = GetComponent<Customer>();
             if (customer == null) return TaskStatus.Failure;
             
             TaskStatus result = TaskStatus.Failure;
@@ -63,7 +63,7 @@ namespace TabletopShop
             return TaskStatus.Failure;
         }
 
-        private TaskStatus CheckShoppingTime(SimpleTestCustomer customer)
+        private TaskStatus CheckShoppingTime(Customer customer)
         {
             float elapsed = Time.time - customer.shoppingStartTime;
             return elapsed >= customer.ShoppingTime ? TaskStatus.Success : TaskStatus.Failure;
@@ -75,13 +75,11 @@ namespace TabletopShop
             return (storeHours?.IsStoreOpen ?? true) ? TaskStatus.Success : TaskStatus.Failure;
         }
 
-        private TaskStatus CheckReachedDestination(SimpleTestCustomer customer)
+        private TaskStatus CheckReachedDestination(Customer customer)
         {
-            if (customer.NavAgent == null) return TaskStatus.Success;
+            if (customer.Movement == null) return TaskStatus.Success;
 
-            bool reached = !customer.NavAgent.pathPending &&
-                          customer.NavAgent.remainingDistance < 1f &&
-                          customer.NavAgent.velocity.magnitude < 0.1f;
+            bool reached = customer.Movement.HasReachedDestination();
 
             return reached ? TaskStatus.Success : TaskStatus.Running;
         }

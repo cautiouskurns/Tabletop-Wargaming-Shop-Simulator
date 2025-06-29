@@ -19,7 +19,8 @@ namespace TabletopShop
         [SerializeField] private CustomerState currentStateDisplay;  // Shows current state in Inspector
         [SerializeField] private float timeInCurrentState;           // Live timer in Inspector
         [SerializeField] private List<string> recentTransitions = new List<string>(); // Last 10 transitions
-        [SerializeField] private bool useStateMachine = true;       // Toggle between systems
+        [SerializeField] private bool useStateMachine = false;       // Toggle between systems
+        [SerializeField] private bool useBehaviorDesigner = true;   // Use Behavior Designer instead of state machine
         
         [Header("Shopping Configuration")]
         [SerializeField] private float shoppingTime;
@@ -148,6 +149,13 @@ namespace TabletopShop
         
         private void Update()
         {
+            // Skip all updates if using Behavior Designer
+            if (useBehaviorDesigner)
+            {
+                UpdateStateMachineVisualization(); // Still show current state in inspector
+                return;
+            }
+            
             // Update state machine if active
             if (useStateMachine && currentStateObject != null)
             {

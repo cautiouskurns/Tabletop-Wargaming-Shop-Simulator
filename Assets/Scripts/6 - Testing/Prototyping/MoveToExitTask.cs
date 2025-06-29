@@ -13,7 +13,7 @@ namespace TabletopShop
         
         public override void OnStart()
         {
-            SimpleTestCustomer customer = GetComponent<SimpleTestCustomer>();
+            Customer customer = GetComponent<Customer>();
             if (customer == null)
             {
                 Debug.LogError("[MoveToExitTask] No CustomerData component found!");
@@ -24,17 +24,17 @@ namespace TabletopShop
             Vector3 exitPosition = customer.spawnPosition + Vector3.back * exitDistance;
             
             // Start movement
-            if (customer.NavAgent != null && customer.NavAgent.isActiveAndEnabled)
+            if (customer.Movement != null)
             {
-                customer.NavAgent.SetDestination(exitPosition);
-                isMoving = true;
+                bool moveStarted = customer.Movement.MoveToPosition(exitPosition);
+                isMoving = moveStarted;
                 
                 if (customer.showDebugLogs)
                     Debug.Log("[MoveToExitTask] ✅ Moving to exit");
             }
             else
             {
-                Debug.LogError("[MoveToExitTask] NavMeshAgent not available!");
+                Debug.LogError("[MoveToExitTask] Movement component not available!");
             }
         }
         
@@ -43,14 +43,12 @@ namespace TabletopShop
             if (!isMoving)
                 return TaskStatus.Failure;
             
-            SimpleTestCustomer customer = GetComponent<SimpleTestCustomer>();
+            Customer customer = GetComponent<Customer>();
             if (customer == null)
                 return TaskStatus.Failure;
             
             // Check if reached exit
-            if (customer.NavAgent != null && 
-                !customer.NavAgent.pathPending && 
-                customer.NavAgent.remainingDistance < 1f)
+            if (customer.Movement != null && customer.Movement.HasReachedDestination())
             {
                 if (customer.showDebugLogs)
                     Debug.Log("[MoveToExitTask] ✅ Reached exit");

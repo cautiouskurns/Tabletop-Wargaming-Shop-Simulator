@@ -19,7 +19,7 @@ namespace TabletopShop
 
         public override void OnStart()
         {
-            SimpleTestCustomer customer = GetComponent<SimpleTestCustomer>();
+            Customer customer = GetComponent<Customer>();
             if (customer == null || customer.currentTargetShelf == null)
             {
                 Debug.LogError("[MoveToShelfTask] No customer data or target shelf!");
@@ -47,7 +47,7 @@ namespace TabletopShop
             if (!isMoving)
                 return TaskStatus.Failure;
 
-            SimpleTestCustomer customer = GetComponent<SimpleTestCustomer>();
+            Customer customer = GetComponent<Customer>();
             if (customer == null || customer.currentTargetShelf == null)
                 return TaskStatus.Failure;
 
@@ -75,23 +75,20 @@ namespace TabletopShop
             return shelfPosition + shelfForward * standDistance;
         }
 
-        private bool StartMovement(SimpleTestCustomer customer, Vector3 targetPosition)
+        private bool StartMovement(Customer customer, Vector3 targetPosition)
         {
-            if (customer.NavAgent != null && customer.NavAgent.isActiveAndEnabled)
+            if (customer.Movement != null)
             {
-                customer.NavAgent.SetDestination(targetPosition);
-                return true;
+                return customer.Movement.MoveToPosition(targetPosition);
             }
             return false;
         }
 
-        private bool HasReachedDestination(SimpleTestCustomer customer)
+        private bool HasReachedDestination(Customer customer)
         {
-            if (customer.NavAgent == null) return true;
+            if (customer.Movement == null) return true;
 
-            return !customer.NavAgent.pathPending &&
-                   customer.NavAgent.remainingDistance < reachThreshold &&
-                   customer.NavAgent.velocity.magnitude < 0.1f;
+            return customer.Movement.HasReachedDestination();
         }
     }
 }

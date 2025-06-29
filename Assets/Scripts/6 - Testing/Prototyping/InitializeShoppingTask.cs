@@ -8,7 +8,7 @@ namespace TabletopShop
     {
         public override TaskStatus OnUpdate()
         {
-            SimpleTestCustomer customer = GetComponent<SimpleTestCustomer>();
+            Customer customer = GetComponent<Customer>();
             if (customer == null)
             {
                 Debug.LogError("[InitializeShoppingTask] No CustomerData component found!");

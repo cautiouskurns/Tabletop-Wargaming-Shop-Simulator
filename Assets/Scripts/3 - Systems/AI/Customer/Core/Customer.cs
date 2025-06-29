@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace TabletopShop
 {
@@ -34,6 +35,18 @@ namespace TabletopShop
         [SerializeField] private CustomerBehavior customerBehavior;
         [SerializeField] private CustomerVisuals customerVisuals;
         
+        [Header("Behavior Designer Compatibility")]
+        [SerializeField] private float startingMoney = 1000f;
+        [SerializeField] private int maxProducts = 3;
+
+        [Header("Debug")]
+        public bool showDebugLogs = true;
+        
+        // Behavior Designer compatibility properties
+        private float _currentMoney;
+        private List<Product> _selectedProducts = new List<Product>();
+        private float _shoppingStartTime;
+        
         // Component access properties - expose components directly for better flexibility
         public CustomerMovement Movement => customerMovement;
         public CustomerBehavior Behavior => customerBehavior;
@@ -52,6 +65,32 @@ namespace TabletopShop
         public Vector3 CurrentDestination => customerMovement?.CurrentDestination ?? Vector3.zero;
         public bool HasDestination => customerMovement?.HasDestination ?? false;
         
+        // Behavior Designer compatibility properties
+        public float currentMoney 
+        { 
+            get => _currentMoney; 
+            set => _currentMoney = value; 
+        }
+        
+        public List<Product> selectedProducts 
+        { 
+            get => _selectedProducts; 
+            set => _selectedProducts = value ?? new List<Product>(); 
+        }
+        
+        public ShelfSlot currentTargetShelf 
+        { 
+            get => TargetShelf; 
+            set => SetTargetShelf(value); 
+        }
+        
+        public Vector3 spawnPosition { get; private set; }
+        public float shoppingStartTime => _shoppingStartTime;
+        
+        // Configuration properties for Behavior Designer
+        public float StartingMoney => startingMoney;
+        public int MaxProducts => maxProducts;
+        
         // Note: Legacy properties removed - use direct component access instead:
         // customer.Behavior.CurrentState, customer.Movement.IsMoving, etc.
 
@@ -62,6 +101,10 @@ namespace TabletopShop
             try
             {
                 Debug.Log($"Customer {name}: Awake() START");
+                
+                // Initialize Behavior Designer compatibility
+                _currentMoney = startingMoney;
+                spawnPosition = transform.position;
                 
                 InitializeComponents();
                 
@@ -135,6 +178,55 @@ namespace TabletopShop
         {
             // Target shelf is now managed by the behavior component
             // This event handler can be used for additional coordination if needed
+        }
+        
+        #endregion
+        
+        #region Behavior Designer Helper Methods
+        
+        /// <summary>
+        /// Start shopping timer for Behavior Designer tasks
+        /// </summary>
+        public void StartShoppingTimer()
+        {
+            _shoppingStartTime = Time.time;
+            if (showDebugLogs)
+                Debug.Log($"Customer {name}: Shopping timer started at {_shoppingStartTime:F1}s");
+        }
+        
+        /// <summary>
+        /// Add product to selected products and deduct money (Behavior Designer compatibility)
+        /// </summary>
+        public void AddProduct(Product product)
+        {
+            if (product == null)
+            {
+                Debug.LogWarning($"Customer {name}: Tried to add null product");
+                return;
+            }
+            
+            _selectedProducts.Add(product);
+            _currentMoney -= product.CurrentPrice;
+            
+            if (showDebugLogs)
+                Debug.Log($"Customer {name}: Added {product.ProductData?.ProductName ?? "Unknown"} for ${product.CurrentPrice:F2}. Money: ${_currentMoney:F2}");
+        }
+        
+        /// <summary>
+        /// Cleanup selected products on destroy (Behavior Designer compatibility)
+        /// </summary>
+        public void CleanupOnDestroy()
+        {
+            if (showDebugLogs)
+                Debug.Log($"Customer {name}: Cleanup - Selected {_selectedProducts.Count} products, Spent ${startingMoney - _currentMoney:F2}");
+            
+            foreach (Product product in _selectedProducts)
+            {
+                if (product != null && !product.IsPurchased)
+                    Destroy(product.gameObject);
+            }
+            
+            _selectedProducts.Clear();
         }
         
         #endregion
