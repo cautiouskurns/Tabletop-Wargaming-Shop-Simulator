@@ -169,7 +169,7 @@ MonoBehaviour:
   recentTransitions: []
   useStateMachine: 1
   useBehaviorDesigner: 0
-  shoppingTime: 0
+  shoppingTime: 100
   targetShelf: {fileID: 0}
   baseSpendingPower: 100
   purchaseProbability: 0.95

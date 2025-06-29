@@ -157,7 +157,7 @@ namespace TabletopShop
             // Calculate position in front of shelf
             Vector3 shelfPosition = shelf.transform.position;
             Vector3 shelfForward = shelf.transform.forward;
-            Vector3 targetPosition = shelfPosition + shelfForward * 2f; // Stand 2 units in front
+            Vector3 targetPosition = shelfPosition + shelfForward * 4f; // Stand 2 units in front
             
             return SetDestination(targetPosition);
         }

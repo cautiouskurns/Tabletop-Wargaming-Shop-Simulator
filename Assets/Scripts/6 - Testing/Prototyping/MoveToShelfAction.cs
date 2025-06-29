@@ -9,9 +9,6 @@ namespace TabletopShop
 {
     public class MoveToShelfTask : Action
     {
-        [Tooltip("Distance from shelf to stand")]
-        public float standDistance = 2f;
-
         [Tooltip("How close to consider 'reached'")]
         public float reachThreshold = 1f;
 
@@ -20,25 +17,33 @@ namespace TabletopShop
         public override void OnStart()
         {
             Customer customer = GetComponent<Customer>();
-            if (customer == null || customer.currentTargetShelf == null)
+            if (customer == null)
             {
-                Debug.LogError("[MoveToShelfTask] No customer data or target shelf!");
+                Debug.LogError("[MoveToShelfTask] Customer component is NULL!");
+                return;
+            }
+            
+            if (customer.currentTargetShelf == null)
+            {
+                Debug.LogError($"[MoveToShelfTask] {customer.name}: currentTargetShelf is NULL!");
                 return;
             }
 
-            // All movement logic lives here
-            Vector3 targetPosition = CalculateCustomerPosition(customer.currentTargetShelf);
-            bool moveStarted = StartMovement(customer, targetPosition);
+            Debug.Log($"[MoveToShelfTask] {customer.name}: OnStart - Target shelf: {customer.currentTargetShelf.name}");
+            Debug.Log($"[MoveToShelfTask] {customer.name}: Customer.Movement is {(customer.Movement != null ? "AVAILABLE" : "NULL")}");
+
+            // Use the existing CustomerMovement method that handles NavMesh properly
+            bool moveStarted = customer.Movement.MoveToShelfPosition(customer.currentTargetShelf);
 
             if (moveStarted)
             {
                 isMoving = true;
                 if (customer.showDebugLogs)
-                    Debug.Log($"[MoveToShelfTask] ✅ Started moving to {customer.currentTargetShelf.name}");
+                    Debug.Log($"[MoveToShelfTask] ✅ {customer.name}: Started moving to {customer.currentTargetShelf.name}");
             }
             else
             {
-                Debug.LogError("[MoveToShelfTask] Failed to start movement!");
+                Debug.LogError($"[MoveToShelfTask] {customer.name}: Failed to start movement!");
             }
         }
 
@@ -67,22 +72,6 @@ namespace TabletopShop
             isMoving = false;
         }
 
-        private Vector3 CalculateCustomerPosition(ShelfSlot shelf)
-        {
-            // Logic for where customer should stand
-            Vector3 shelfPosition = shelf.transform.position;
-            Vector3 shelfForward = shelf.transform.forward;
-            return shelfPosition + shelfForward * standDistance;
-        }
-
-        private bool StartMovement(Customer customer, Vector3 targetPosition)
-        {
-            if (customer.Movement != null)
-            {
-                return customer.Movement.MoveToPosition(targetPosition);
-            }
-            return false;
-        }
 
         private bool HasReachedDestination(Customer customer)
         {

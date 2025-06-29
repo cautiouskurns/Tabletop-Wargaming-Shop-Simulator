@@ -6,9 +6,6 @@ namespace TabletopShop
 {
     public class MoveToExitTask : Action
     {
-        [Tooltip("Distance behind spawn point to consider as exit")]
-        public float exitDistance = 25f;
-        
         private bool isMoving = false;
         
         public override void OnStart()
@@ -16,25 +13,28 @@ namespace TabletopShop
             Customer customer = GetComponent<Customer>();
             if (customer == null)
             {
-                Debug.LogError("[MoveToExitTask] No CustomerData component found!");
+                Debug.LogError("[MoveToExitTask] Customer component not found!");
                 return;
             }
             
-            // Calculate exit position
-            Vector3 exitPosition = customer.spawnPosition + Vector3.back * exitDistance;
-            
-            // Start movement
-            if (customer.Movement != null)
+            if (customer.Movement == null)
             {
-                bool moveStarted = customer.Movement.MoveToPosition(exitPosition);
-                isMoving = moveStarted;
-                
+                Debug.LogError("[MoveToExitTask] Movement component not available!");
+                return;
+            }
+            
+            // Use the existing CustomerMovement method that handles NavMesh properly
+            bool moveStarted = customer.Movement.MoveToExitPoint();
+            isMoving = moveStarted;
+            
+            if (moveStarted)
+            {
                 if (customer.showDebugLogs)
-                    Debug.Log("[MoveToExitTask] ✅ Moving to exit");
+                    Debug.Log($"[MoveToExitTask] ✅ {customer.name}: Started moving to exit");
             }
             else
             {
-                Debug.LogError("[MoveToExitTask] Movement component not available!");
+                Debug.LogError($"[MoveToExitTask] {customer.name}: Failed to start exit movement!");
             }
         }
         

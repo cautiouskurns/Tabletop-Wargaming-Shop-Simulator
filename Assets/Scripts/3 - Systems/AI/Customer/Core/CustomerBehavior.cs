@@ -20,7 +20,7 @@ namespace TabletopShop
         [SerializeField] private float timeInCurrentState;           // Live timer in Inspector
         [SerializeField] private List<string> recentTransitions = new List<string>(); // Last 10 transitions
         [SerializeField] private bool useStateMachine = false;       // Toggle between systems
-        [SerializeField] private bool useBehaviorDesigner = true;   // Use Behavior Designer instead of state machine
+        public bool useBehaviorDesigner = true;   // Use Behavior Designer instead of state machine
         
         [Header("Shopping Configuration")]
         [SerializeField] private float shoppingTime;
@@ -153,6 +153,12 @@ namespace TabletopShop
             if (useBehaviorDesigner)
             {
                 UpdateStateMachineVisualization(); // Still show current state in inspector
+                
+                // Debug log every 5 seconds to confirm Behavior Designer mode
+                if (Time.frameCount % 300 == 0) // Every 5 seconds at 60fps
+                {
+                    Debug.Log($"🎯 BEHAVIOR DESIGNER MODE: {name} - Visual updates only, legacy AI disabled");
+                }
                 return;
             }
             
@@ -164,7 +170,7 @@ namespace TabletopShop
                 // Log state machine activity every few frames for debugging
                 if (Time.frameCount % 300 == 0) // Every 5 seconds at 60fps
                 {
-                    Debug.Log($"[STATE MACHINE] {name} running in state: {currentState} for {timeInCurrentState:F1}s");
+                    Debug.Log($"🔄 LEGACY MODE (STATE MACHINE): {name} running in state: {currentState} for {timeInCurrentState:F1}s");
                 }
                 
                 currentStateObject.OnUpdate(this);
@@ -207,6 +213,43 @@ namespace TabletopShop
             stateStartTime = Time.time;
             
             Debug.Log($"[STATE MACHINE] State machine ready - waiting for lifecycle start");
+        }
+        
+        /// <summary>
+        /// Initialize CustomerBehavior for Behavior Designer mode - visual components only
+        /// </summary>
+        public void InitializeBehaviorDesignerMode()
+        {
+            Debug.Log($"🎯 BEHAVIOR DESIGNER MODE: Initializing {name} for Behavior Designer");
+            
+            // Stop any running legacy systems
+            if (lifecycleCoroutine != null)
+            {
+                StopCoroutine(lifecycleCoroutine);
+                lifecycleCoroutine = null;
+                Debug.Log($"🎯 BEHAVIOR DESIGNER MODE: Stopped legacy coroutine for {name}");
+            }
+            
+            // Clear state machine references
+            currentStateObject = null;
+            if (states != null)
+            {
+                states.Clear();
+                Debug.Log($"🎯 BEHAVIOR DESIGNER MODE: Cleared state machine for {name}");
+            }
+            
+            // Set default state for visual display
+            currentState = CustomerState.Entering;
+            stateStartTime = Time.time;
+            
+            // Ensure visual components are initialized for feedback
+            if (mainCustomer != null && mainCustomer.Visuals != null)
+            {
+                mainCustomer.Visuals.UpdateStateDisplay(currentState);
+                Debug.Log($"🎯 BEHAVIOR DESIGNER MODE: Visual feedback ready for {name}");
+            }
+            
+            Debug.Log($"🎯 BEHAVIOR DESIGNER MODE: {name} ready for Behavior Trees - legacy AI disabled");
         }
         
         /// <summary>

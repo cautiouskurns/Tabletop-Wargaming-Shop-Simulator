@@ -91,6 +91,9 @@ namespace TabletopShop
         public float StartingMoney => startingMoney;
         public int MaxProducts => maxProducts;
         
+        // System mode access
+        public bool useBehaviorDesigner => customerBehavior?.useBehaviorDesigner ?? false;
+        
         // Note: Legacy properties removed - use direct component access instead:
         // customer.Behavior.CurrentState, customer.Movement.IsMoving, etc.
 
@@ -129,7 +132,17 @@ namespace TabletopShop
                 
                 if (customerBehavior != null)
                 {
-                    customerBehavior.StartCustomerLifecycle(currentState);
+                    // Check if using Behavior Designer or legacy system
+                    if (useBehaviorDesigner)
+                    {
+                        Debug.Log($"🎯 BEHAVIOR DESIGNER MODE: {name} - Legacy lifecycle SKIPPED, using Behavior Trees");
+                        customerBehavior.InitializeBehaviorDesignerMode();
+                    }
+                    else
+                    {
+                        Debug.Log($"🔄 LEGACY MODE: {name} - Using state machine/coroutine system");
+                        customerBehavior.StartCustomerLifecycle(currentState);
+                    }
                 }
                 else
                 {
