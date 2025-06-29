@@ -7,61 +7,91 @@ using Opsive.BehaviorDesigner.Runtime;
 
 namespace TabletopShop
 {
-    public class MoveToShelfAction : Action
+    public class MoveToShelfTask : Action
     {
-        [Tooltip("The shelf to move to (from shared variable)")]
-        [SerializeField] SharedVariable<GameObject> targetShelf;
-        
+        [Tooltip("Distance from shelf to stand")]
+        public float standDistance = 2f;
+
+        [Tooltip("How close to consider 'reached'")]
+        public float reachThreshold = 1f;
+
+        private bool isMoving = false;
+
+        public override void OnStart()
+        {
+            SimpleTestCustomer customer = GetComponent<SimpleTestCustomer>();
+            if (customer == null || customer.currentTargetShelf == null)
+            {
+                Debug.LogError("[MoveToShelfTask] No customer data or target shelf!");
+                return;
+            }
+
+            // All movement logic lives here
+            Vector3 targetPosition = CalculateCustomerPosition(customer.currentTargetShelf);
+            bool moveStarted = StartMovement(customer, targetPosition);
+
+            if (moveStarted)
+            {
+                isMoving = true;
+                if (customer.showDebugLogs)
+                    Debug.Log($"[MoveToShelfTask] ✅ Started moving to {customer.currentTargetShelf.name}");
+            }
+            else
+            {
+                Debug.LogError("[MoveToShelfTask] Failed to start movement!");
+            }
+        }
+
         public override TaskStatus OnUpdate()
         {
-            Debug.Log($"[MoveToShelfAction] Starting movement check...");
-            Debug.Log($"[MoveToShelfAction] Shared variable contains: {targetShelf.Value?.name ?? "NULL"}");
-            Debug.Log($"[MoveToShelfAction] Static backup contains: {FindShelfAction.LastFoundShelf?.name ?? "NULL"}");
-            
+            if (!isMoving)
+                return TaskStatus.Failure;
+
             SimpleTestCustomer customer = GetComponent<SimpleTestCustomer>();
-            if (customer == null) 
-            {
-                Debug.LogError("[MoveToShelfAction] No SimpleTestCustomer component found!");
+            if (customer == null || customer.currentTargetShelf == null)
                 return TaskStatus.Failure;
-            }
-            
-            // Try shared variable first, then static backup
-            GameObject shelfObject = targetShelf.Value ?? FindShelfAction.LastFoundShelf;
-            
-            if (shelfObject == null)
+
+            // Check if reached destination using our logic
+            if (HasReachedDestination(customer))
             {
-                Debug.LogWarning("[MoveToShelfAction] ❌ No target shelf assigned!");
-                Debug.LogWarning("[MoveToShelfAction] Both shared variable and static backup are NULL!");
-                Debug.LogWarning("[MoveToShelfAction] Make sure FindShelfAction ran successfully first!");
-                return TaskStatus.Failure;
-            }
-            
-            Debug.Log($"[MoveToShelfAction] Using shelf: {shelfObject.name} (from {(targetShelf.Value != null ? "shared variable" : "static backup")})");
-            
-            ShelfSlot shelfSlot = shelfObject.GetComponent<ShelfSlot>();
-            if (shelfSlot == null)
-            {
-                Debug.LogWarning($"[MoveToShelfAction] ❌ {shelfObject.name} doesn't have ShelfSlot component!");
-                return TaskStatus.Failure;
-            }
-            
-            // Start moving to shelf
-            bool startedMove = customer.MoveToShelf(shelfSlot);
-            if (!startedMove)
-            {
-                Debug.LogWarning("[MoveToShelfAction] ❌ Failed to start movement to shelf!");
-                return TaskStatus.Failure;
-            }
-            
-            // Check if reached destination
-            if (customer.HasReachedDestination())
-            {
-                Debug.Log($"[MoveToShelfAction] ✅ Reached shelf: {shelfObject.name}");
+                if (customer.showDebugLogs)
+                    Debug.Log($"[MoveToShelfTask] ✅ Reached {customer.currentTargetShelf.name}");
                 return TaskStatus.Success;
             }
-            
-            Debug.Log($"[MoveToShelfAction] 🏃 Still moving to {shelfObject.name}...");
+
             return TaskStatus.Running;
+        }
+
+        public override void OnEnd()
+        {
+            isMoving = false;
+        }
+
+        private Vector3 CalculateCustomerPosition(ShelfSlot shelf)
+        {
+            // Logic for where customer should stand
+            Vector3 shelfPosition = shelf.transform.position;
+            Vector3 shelfForward = shelf.transform.forward;
+            return shelfPosition + shelfForward * standDistance;
+        }
+
+        private bool StartMovement(SimpleTestCustomer customer, Vector3 targetPosition)
+        {
+            if (customer.NavAgent != null && customer.NavAgent.isActiveAndEnabled)
+            {
+                customer.NavAgent.SetDestination(targetPosition);
+                return true;
+            }
+            return false;
+        }
+
+        private bool HasReachedDestination(SimpleTestCustomer customer)
+        {
+            if (customer.NavAgent == null) return true;
+
+            return !customer.NavAgent.pathPending &&
+                   customer.NavAgent.remainingDistance < reachThreshold &&
+                   customer.NavAgent.velocity.magnitude < 0.1f;
         }
     }
 }

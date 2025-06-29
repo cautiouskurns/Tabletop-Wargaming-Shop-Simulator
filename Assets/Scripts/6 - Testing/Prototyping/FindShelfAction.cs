@@ -1,45 +1,67 @@
 using UnityEngine;
 using Opsive.BehaviorDesigner.Runtime.Tasks.Actions;
 using Opsive.BehaviorDesigner.Runtime.Tasks;
+using System.Collections.Generic;
 using Opsive.GraphDesigner.Runtime.Variables;
 using Opsive.BehaviorDesigner.Runtime;
 
 namespace TabletopShop
 {
-    public class FindShelfAction : Action
+    public class FindShelfTask : Action
     {
-        [Tooltip("Store the found shelf in this shared variable")]
-        public SharedVariable<GameObject> targetShelf;
-        
-        // Debug: Static variable to track the shelf
-        public static GameObject LastFoundShelf;
+        [Tooltip("Prefer shelves with products over empty ones")]
+        public bool preferProductShelves = true;
         
         public override TaskStatus OnUpdate()
         {
-            Debug.Log("[FindShelfAction] Starting shelf search...");
-            
             SimpleTestCustomer customer = GetComponent<SimpleTestCustomer>();
             if (customer == null) 
             {
-                Debug.LogError("[FindShelfAction] No SimpleTestCustomer component found!");
+                Debug.LogError("[FindShelfTask] No CustomerData component found!");
                 return TaskStatus.Failure;
             }
             
-            ShelfSlot shelf = customer.FindShelf();
-            if (shelf != null)
+            // All shelf-finding logic lives here
+            ShelfSlot foundShelf = FindBestShelf();
+            
+            if (foundShelf != null)
             {
-                // Store the found shelf in shared variable
-                targetShelf.Value = shelf.gameObject;
-                LastFoundShelf = shelf.gameObject; // Debug backup
+                customer.currentTargetShelf = foundShelf;
                 
-                Debug.Log($"[FindShelfAction] ✅ Found and stored shelf: {shelf.name}");
-                Debug.Log($"[FindShelfAction] Shared variable now contains: {targetShelf.Value?.name ?? "NULL"}");
-                Debug.Log($"[FindShelfAction] Static backup contains: {LastFoundShelf?.name ?? "NULL"}");
+                if (customer.showDebugLogs)
+                    Debug.Log($"[FindShelfTask] ✅ Found shelf: {foundShelf.name}");
                 return TaskStatus.Success;
             }
             
-            Debug.LogWarning("[FindShelfAction] ❌ No shelf found!");
+            if (customer.showDebugLogs)
+                Debug.LogWarning("[FindShelfTask] ❌ No suitable shelf found!");
             return TaskStatus.Failure;
+        }
+        
+        private ShelfSlot FindBestShelf()
+        {
+            ShelfSlot[] allShelves = Object.FindObjectsOfType<ShelfSlot>();
+            
+            if (allShelves.Length == 0)
+                return null;
+            
+            // Logic for finding the best shelf
+            if (preferProductShelves)
+            {
+                // First try to find shelves with products
+                var shelvesWithProducts = new List<ShelfSlot>();
+                foreach (var shelf in allShelves)
+                {
+                    if (!shelf.IsEmpty && shelf.CurrentProduct != null)
+                        shelvesWithProducts.Add(shelf);
+                }
+                
+                if (shelvesWithProducts.Count > 0)
+                    return shelvesWithProducts[Random.Range(0, shelvesWithProducts.Count)];
+            }
+            
+            // Fallback to any shelf
+            return allShelves[Random.Range(0, allShelves.Length)];
         }
     }
 }
