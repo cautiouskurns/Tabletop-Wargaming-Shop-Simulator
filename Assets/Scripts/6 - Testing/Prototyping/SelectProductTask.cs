@@ -6,8 +6,20 @@ namespace TabletopShop
 {
     public class SelectProductTask : Action
     {
-        [Tooltip("Probability of buying a product (0-1)")]
-        public float buyProbability = 0.7f;
+        [Header("Settings Override (Optional)")]
+        [Tooltip("Leave null to use global settings from CustomerBehaviorSettingsManager")]
+        public CustomerBehaviorSettings settingsOverride;
+        
+        /// <summary>
+        /// Get the shopping settings to use (either override or global)
+        /// </summary>
+        private ShoppingSettings GetShoppingSettings()
+        {
+            if (settingsOverride != null && settingsOverride.shopping != null)
+                return settingsOverride.shopping;
+            
+            return CustomerBehaviorSettingsManager.Shopping;
+        }
         
         public override TaskStatus OnUpdate()
         {
@@ -48,11 +60,13 @@ namespace TabletopShop
                 return false;
             }
             
-            // Check if already have max products
-            if (customer.selectedProducts.Count >= customer.MaxProducts)
+            // Check if already have max products using settings
+            var shoppingSettings = GetShoppingSettings();
+            int maxProducts = shoppingSettings?.maxProducts ?? customer.MaxProducts;
+            if (customer.selectedProducts.Count >= maxProducts)
             {
                 if (customer.showDebugLogs)
-                    Debug.Log("[SelectProductTask] Already have maximum products");
+                    Debug.Log($"[SelectProductTask] Already have maximum products ({maxProducts})");
                 return false;
             }
             
@@ -66,11 +80,12 @@ namespace TabletopShop
                 return false;
             }
             
-            // Buying decision logic
+            // Buying decision logic using settings
+            float buyProbability = shoppingSettings?.buyProbability ?? 0.7f;
             if (Random.value > buyProbability)
             {
                 if (customer.showDebugLogs)
-                    Debug.Log("[SelectProductTask] Not interested in product");
+                    Debug.Log($"[SelectProductTask] Not interested in product (buy probability: {buyProbability:F2})");
                 return false;
             }
             

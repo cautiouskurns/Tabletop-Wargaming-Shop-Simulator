@@ -10,16 +10,25 @@ namespace TabletopShop
     /// </summary>
     public class WaitForScanningTask : Action
     {
-        [Tooltip("Maximum time to wait for scanning before timeout")]
-        public float maxScanWaitTime = 120f;
-        
-        [Tooltip("How often to check scanning progress (seconds)")]
-        public float progressCheckInterval = 2f;
+        [Header("Settings Override (Optional)")]
+        [Tooltip("Leave null to use global settings from CustomerBehaviorSettingsManager")]
+        public CustomerBehaviorSettings settingsOverride;
         
         private CheckoutCounter checkoutCounter = null;
         private float scanStartTime = 0f;
         private float lastProgressCheck = 0f;
         private int lastScannedCount = 0;
+        
+        /// <summary>
+        /// Get the checkout settings to use (either override or global)
+        /// </summary>
+        private CheckoutSettings GetCheckoutSettings()
+        {
+            if (settingsOverride != null && settingsOverride.checkout != null)
+                return settingsOverride.checkout;
+            
+            return CustomerBehaviorSettingsManager.Checkout;
+        }
         
         public override void OnStart()
         {
@@ -55,11 +64,13 @@ namespace TabletopShop
             if (customer == null)
                 return TaskStatus.Failure;
             
-            // Check timeout
+            // Check timeout using settings
+            var checkoutSettings = GetCheckoutSettings();
+            float maxScanWaitTime = checkoutSettings?.maxScanWaitTime ?? 120f;
             float waitTime = Time.time - scanStartTime;
             if (waitTime > maxScanWaitTime)
             {
-                Debug.LogWarning($"[WaitForScanningTask] {customer.name}: Scanning timeout after {waitTime:F1}s - proceeding anyway");
+                Debug.LogWarning($"[WaitForScanningTask] {customer.name}: Scanning timeout after {waitTime:F1}s (max: {maxScanWaitTime}s) - proceeding anyway");
                 return TaskStatus.Success; // Allow customer to continue even if not all scanned
             }
             
@@ -71,7 +82,8 @@ namespace TabletopShop
                 return TaskStatus.Success;
             }
             
-            // Periodic progress updates
+            // Periodic progress updates using settings interval
+            float progressCheckInterval = checkoutSettings?.progressCheckInterval ?? 2f;
             if (Time.time - lastProgressCheck >= progressCheckInterval)
             {
                 CheckScanningProgress(customer);

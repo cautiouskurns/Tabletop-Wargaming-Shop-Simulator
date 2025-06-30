@@ -10,12 +10,24 @@ namespace TabletopShop
     /// </summary>
     public class JoinQueueTask : Action
     {
-        [Tooltip("Maximum time to wait in queue before giving up")]
-        public float maxQueueWaitTime = 60f;
+        [Header("Settings Override (Optional)")]
+        [Tooltip("Leave null to use global settings from CustomerBehaviorSettingsManager")]
+        public CustomerBehaviorSettings settingsOverride;
         
         private CheckoutCounter checkoutCounter = null;
         private float queueStartTime = 0f;
         private bool hasJoinedQueue = false;
+        
+        /// <summary>
+        /// Get the checkout settings to use (either override or global)
+        /// </summary>
+        private CheckoutSettings GetCheckoutSettings()
+        {
+            if (settingsOverride != null && settingsOverride.checkout != null)
+                return settingsOverride.checkout;
+            
+            return CustomerBehaviorSettingsManager.Checkout;
+        }
         
         public override void OnStart()
         {
@@ -52,10 +64,11 @@ namespace TabletopShop
             if (customer == null)
                 return TaskStatus.Failure;
             
-            // Check timeout
-            if (Time.time - queueStartTime > maxQueueWaitTime)
+            // Check timeout using settings
+            var checkoutSettings = GetCheckoutSettings();
+            if (checkoutSettings != null && Time.time - queueStartTime > checkoutSettings.maxQueueWaitTime)
             {
-                Debug.LogWarning($"[JoinQueueTask] {customer.name}: Queue wait timeout - giving up");
+                Debug.LogWarning($"[JoinQueueTask] {customer.name}: Queue wait timeout ({checkoutSettings.maxQueueWaitTime}s) - giving up");
                 return TaskStatus.Failure;
             }
             
@@ -67,8 +80,9 @@ namespace TabletopShop
                 return TaskStatus.Success;
             }
             
-            // Still waiting in queue
-            if (customer.showDebugLogs && Time.frameCount % 180 == 0) // Log every 3 seconds
+            // Still waiting in queue - log based on settings interval
+            var logInterval = checkoutSettings?.queueStatusLogInterval ?? 3f;
+            if (customer.showDebugLogs && Time.frameCount % Mathf.RoundToInt(logInterval * 60f) == 0)
             {
                 int queuePosition = GetQueuePosition(customer);
                 Debug.Log($"[JoinQueueTask] {customer.name}: Waiting in queue (position: {queuePosition})");
