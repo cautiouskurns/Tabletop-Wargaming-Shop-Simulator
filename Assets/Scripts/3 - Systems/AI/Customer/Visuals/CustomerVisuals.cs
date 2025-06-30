@@ -374,10 +374,21 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Get display name for a customer state
+        /// Get display name for a customer state - now prioritizes BD task names
         /// </summary>
         private string GetStateDisplayName(CustomerState state)
         {
+            // Try to get BD task name first if customer has useBehaviorDesigner enabled
+            if (mainCustomer != null && mainCustomer.Behavior != null && mainCustomer.Behavior.useBehaviorDesigner)
+            {
+                string bdTaskName = mainCustomer.Behavior.GetCurrentBDTaskName();
+                if (!string.IsNullOrEmpty(bdTaskName) && bdTaskName != "BD Error" && bdTaskName != "No BD")
+                {
+                    return bdTaskName;
+                }
+            }
+            
+            // Fallback to legacy state names
             switch (state)
             {
                 case CustomerState.Entering:

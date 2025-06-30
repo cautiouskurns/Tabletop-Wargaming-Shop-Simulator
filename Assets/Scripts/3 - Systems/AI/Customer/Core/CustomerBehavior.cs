@@ -1712,6 +1712,289 @@ namespace TabletopShop
             return UnityEngine.Random.value <= purchaseProbability;
         }
         
+        /// <summary>
+        /// Get the name of the currently active Behavior Designer task for display purposes
+        /// </summary>
+        /// <returns>Name of the active task or fallback text</returns>
+        public string GetCurrentBDTaskName()
+        {
+            var behaviorTree = GetComponent<Opsive.BehaviorDesigner.Runtime.BehaviorTree>();
+            if (behaviorTree == null)
+            {
+                return "No BD";
+            }
+            
+            // Check if behavior tree is running
+            if (behaviorTree.Status == Opsive.BehaviorDesigner.Runtime.Tasks.TaskStatus.Inactive)
+            {
+                return "BD Inactive";
+            }
+            
+            try
+            {
+                // Find all tasks and check which ones are active using proper index-based API
+                var allTasks = behaviorTree.FindTasks<Opsive.BehaviorDesigner.Runtime.Tasks.Task>();
+                
+                // Collect all active tasks with their priority
+                var activeTasks = new List<(string taskName, int priority)>();
+                
+                for (int i = 0; i < allTasks.Length; i++)
+                {
+                    var task = allTasks[i];
+                    if (task != null)
+                    {
+                        try
+                        {
+                            if (behaviorTree.IsNodeActive(true, i))
+                            {
+                                string taskName = task.GetType().Name;
+                                int priority = GetTaskPriority(taskName);
+                                activeTasks.Add((taskName, priority));
+                            }
+                        }
+                        catch
+                        {
+                            continue;
+                        }
+                    }
+                }
+                
+                // Sort by priority (higher priority = more specific task)
+                activeTasks.Sort((a, b) => b.priority.CompareTo(a.priority));
+                
+                // Return the highest priority active task
+                foreach (var (taskName, priority) in activeTasks)
+                {
+                    if (priority > 0) // Skip framework tasks (priority 0)
+                    {
+                        return GetFriendlyTaskName(taskName);
+                    }
+                }
+                
+                // If no prioritized tasks found, return based on overall status
+                return behaviorTree.Status == Opsive.BehaviorDesigner.Runtime.Tasks.TaskStatus.Running ? "BD Running" : "BD Idle";
+            }
+            catch
+            {
+                return "BD Error";
+            }
+        }
+        
+        /// <summary>
+        /// Get priority for task - higher priority means more specific/leaf-level task
+        /// </summary>
+        private int GetTaskPriority(string taskName)
+        {
+            // Highest priority - specific action tasks (what we want to show)
+            if (taskName.Contains("MoveToCheckoutTask") || 
+                taskName.Contains("JoinQueueTask") ||
+                taskName.Contains("PlaceProductsTask") ||
+                taskName.Contains("WaitForScanningTask") ||
+                taskName.Contains("CompleteCheckoutTask") ||
+                taskName.Contains("MoveToExitTask") ||
+                taskName.Contains("CleanupAndDestroyTask") ||
+                taskName.Contains("FindShelfTask") ||
+                taskName.Contains("MoveToShelfTask") ||
+                taskName.Contains("SelectProductTask"))
+                return 100;
+            
+            // Medium priority - phase tasks
+            if (taskName.Contains("InitializeShopping"))
+                return 50;
+            
+            // Lower priority - container tasks
+            if (taskName.Contains("ShoppingLoop") ||
+                taskName.Contains("ShoppingPhase") ||
+                taskName.Contains("CheckoutPhase") ||
+                taskName.Contains("ExitPhase"))
+                return 25;
+            
+            // Skip framework tasks completely
+            if (taskName.Contains("StackedAction") || 
+                taskName.Contains("Composite") || 
+                taskName.Contains("Decorator") ||
+                taskName.Contains("Conditional") ||
+                taskName.Contains("Parallel") ||
+                taskName.Contains("Sequence") ||
+                taskName.Contains("Selector"))
+                return 0;
+            
+            // Other custom tasks
+            if (taskName.EndsWith("Task"))
+                return 10;
+            
+            return 1; // Default for other tasks
+        }
+        
+        /// <summary>
+        /// Convert task name to friendly display name
+        /// </summary>
+        private string GetFriendlyTaskName(string taskName)
+        {
+            if (taskName.Contains("InitializeShopping"))
+                return "Entering Store";
+            else if (taskName.Contains("MoveToCheckoutTask"))
+                return "Moving to Checkout";
+            else if (taskName.Contains("JoinQueueTask"))
+                return "Joining Queue";
+            else if (taskName.Contains("PlaceProductsTask"))
+                return "Placing Products";
+            else if (taskName.Contains("WaitForScanningTask"))
+                return "Waiting for Scanning";
+            else if (taskName.Contains("CompleteCheckoutTask"))
+                return "Completing Checkout";
+            else if (taskName.Contains("MoveToExitTask"))
+                return "Leaving Store";
+            else if (taskName.Contains("CleanupAndDestroyTask"))
+                return "Cleaning Up";
+            else if (taskName.Contains("FindShelfTask"))
+                return "Finding Shelf";
+            else if (taskName.Contains("MoveToShelfTask"))
+                return "Moving to Shelf";
+            else if (taskName.Contains("SelectProductTask"))
+                return "Selecting Product";
+            else if (taskName.Contains("ShoppingPhase"))
+                return "Shopping";
+            else if (taskName.Contains("CheckoutPhase"))
+                return "At Checkout";
+            else if (taskName.Contains("ExitPhase"))
+                return "Exiting";
+            else if (taskName.Contains("ShoppingLoop"))
+                return "Browsing Products";
+            else if (taskName.EndsWith("Task"))
+                return taskName.Replace("Task", "");
+            else
+                return taskName;
+        }
+        
+        [ContextMenu("Test BD Task Display")]
+        public void TestBDTaskDisplay()
+        {
+            string taskName = GetCurrentBDTaskName();
+            Debug.Log($"=== BD TASK DISPLAY TEST: {name} ===");
+            Debug.Log($"Current BD Task Name: '{taskName}'");
+            Debug.Log($"useBehaviorDesigner: {useBehaviorDesigner}");
+            
+            // Also test the visual display if available
+            var visuals = GetComponent<CustomerVisuals>();
+            if (visuals != null)
+            {
+                Debug.Log("CustomerVisuals component found - display should update automatically");
+            }
+            else
+            {
+                Debug.LogWarning("No CustomerVisuals component found");
+            }
+            
+            // Debug all active tasks
+            var behaviorTree = GetComponent<Opsive.BehaviorDesigner.Runtime.BehaviorTree>();
+            if (behaviorTree != null)
+            {
+                var allTasks = behaviorTree.FindTasks<Opsive.BehaviorDesigner.Runtime.Tasks.Task>();
+                Debug.Log($"=== ALL ACTIVE TASKS DEBUG ===");
+                for (int i = 0; i < allTasks.Length; i++)
+                {
+                    var task = allTasks[i];
+                    if (task != null)
+                    {
+                        try
+                        {
+                            bool isActive = behaviorTree.IsNodeActive(true, i);
+                            if (isActive)
+                            {
+                                Debug.Log($"  ACTIVE [{i}]: {task.GetType().Name}");
+                            }
+                        }
+                        catch { }
+                    }
+                }
+            }
+            
+            Debug.Log("========================");
+        }
+        
+        [ContextMenu("Print Current BD Tasks")]
+        public void PrintCurrentBDTasks()
+        {
+            var behaviorTree = GetComponent<Opsive.BehaviorDesigner.Runtime.BehaviorTree>();
+            if (behaviorTree == null)
+            {
+                Debug.LogError($"❌ {name}: No BehaviorTree component found!");
+                return;
+            }
+            
+            Debug.Log($"=== BD TASKS DEBUG: {name} ===");
+            Debug.Log($"BehaviorTree Status: {behaviorTree.Status}");
+            Debug.Log($"Enabled: {behaviorTree.enabled}");
+            Debug.Log($"Start When Enabled: {behaviorTree.StartWhenEnabled}");
+            
+            // Use proper BehaviorTree API to find tasks
+            try
+            {
+                // Find all tasks in the behavior tree
+                var allTasks = behaviorTree.FindTasks<Opsive.BehaviorDesigner.Runtime.Tasks.Task>();
+                Debug.Log($"Total Tasks Found: {allTasks.Length}");
+                
+                if (allTasks.Length > 0)
+                {
+                    Debug.Log("=== ALL TASKS IN TREE ===");
+                    for (int i = 0; i < allTasks.Length; i++)
+                    {
+                        var task = allTasks[i];
+                        if (task != null)
+                        {
+                            // Check if this task is currently active/running
+                            bool isActive = false;
+                            try
+                            {
+                                isActive = behaviorTree.IsNodeActive(true, i);
+                            }
+                            catch (System.Exception e)
+                            {
+                                Debug.LogWarning($"Could not check if task is active: {e.Message}");
+                            }
+                            
+                            string status = isActive ? "🟢 ACTIVE" : "⚪ Inactive";
+                            Debug.Log($"  [{i}] {status}: {task.GetType().Name}");
+                            
+                            // For our custom tasks, print more details
+                            if (task.GetType().Name.Contains("MoveToCheckout") || 
+                                task.GetType().Name.Contains("SelectProduct") ||
+                                task.GetType().Name.Contains("Shop"))
+                            {
+                                Debug.Log($"    → Custom Task: {task.GetType().FullName}");
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("No tasks found in behavior tree!");
+                }
+                
+                // Check if behavior tree is properly started
+                if (behaviorTree.Status == Opsive.BehaviorDesigner.Runtime.Tasks.TaskStatus.Inactive)
+                {
+                    Debug.LogWarning("⚠️ Behavior Tree is not running!");
+                    if (behaviorTree.StartWhenEnabled && behaviorTree.enabled)
+                    {
+                        Debug.Log("Attempting to restart behavior tree...");
+                        behaviorTree.RestartBehavior();
+                    }
+                }
+                else
+                {
+                    Debug.Log($"✅ Behavior Tree Status: {behaviorTree.Status}");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Error accessing BD tasks via public API: {e.Message}");
+            }
+            
+            Debug.Log("========================");
+        }
+        
         #endregion
     }
 
