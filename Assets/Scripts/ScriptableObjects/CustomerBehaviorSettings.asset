@@ -13,24 +13,27 @@ MonoBehaviour:
   m_Name: CustomerBehaviorSettings
   m_EditorClassIdentifier: TabletopShop::TabletopShop.CustomerBehaviorSettings
   shopping:
-    buyProbability: 0.7
-    shoppingDuration: 30
-    maxProducts: 5
-    shelfBrowseTime: 3
+    buyProbability: 1
+    shoppingDuration: 60
+    maxProducts: 3
+    shelfBrowseTime: 5
     shelfSwitchProbability: 0.3
     productCheckInterval: 3
     emptyShelfWaitTime: 2
   checkout:
     maxQueueWaitTime: 60
     queueStatusLogInterval: 3
-    maxScanWaitTime: 120
+    maxScanWaitTime: 60
     progressCheckInterval: 2
     paymentProcessingTime: 5
+    maxPaymentWaitTime: 30
+    departureDelay: 1
     itemCollectionTime: 2
     productPlacementDelay: 0.5
     maxPlacementTime: 30
     generalCheckoutTimeout: 180
     checkoutCompleteDelay: 1
+    destroyDelay: 1
   enableDebugLogging: 1
   globalSpeedMultiplier: 1
   storeClosingReactionTime: 30

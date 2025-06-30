@@ -3348,7 +3348,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TabletopShop.CustomerSpawner
   customerPrefabs:
   - {fileID: 3168686079647345549, guid: ef56eed9a205c4cc8a90c160e7ec7dfb, type: 3}
-  - {fileID: 3168686079647345549, guid: e361eba0d964843e2878c658f11ecc2f, type: 3}
   spawnPoint: {fileID: 373795100}
   exitPoint: {fileID: 1237276469}
   minSpawnInterval: 4

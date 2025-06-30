@@ -27,6 +27,12 @@ namespace TabletopShop
         [Tooltip("Time taken to complete payment processing")]
         public float paymentProcessingTime = 5f;
         
+        [Tooltip("Maximum time to wait for payment processing")]
+        public float maxPaymentWaitTime = 30f;
+        
+        [Tooltip("Time to wait before starting departure sequence")]
+        public float departureDelay = 1f;
+        
         [Tooltip("Time customer takes to collect items after payment")]
         public float itemCollectionTime = 2f;
         
@@ -43,5 +49,9 @@ namespace TabletopShop
         
         [Tooltip("Time to wait after checkout completion before leaving")]
         public float checkoutCompleteDelay = 1f;
+        
+        [Header("Customer Cleanup")]
+        [Tooltip("Delay before destroying customer after completing exit")]
+        public float destroyDelay = 1f;
     }
 }

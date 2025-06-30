@@ -10,16 +10,25 @@ namespace TabletopShop
     /// </summary>
     public class CompleteCheckoutTask : Action
     {
-        [Tooltip("Maximum time to wait for payment processing")]
-        public float maxPaymentWaitTime = 30f;
-        
-        [Tooltip("Time to wait before starting departure sequence")]
-        public float departureDelay = 1f;
+        [Header("Settings Override (Optional)")]
+        [Tooltip("Leave null to use global settings from CustomerBehaviorSettingsManager")]
+        public CustomerBehaviorSettings settingsOverride;
         
         private CheckoutCounter checkoutCounter = null;
         private float paymentStartTime = 0f;
         private bool hasRequestedPayment = false;
         private bool paymentCompleted = false;
+        
+        /// <summary>
+        /// Get the checkout settings to use (either override or global)
+        /// </summary>
+        private CheckoutSettings GetCheckoutSettings()
+        {
+            if (settingsOverride != null && settingsOverride.checkout != null)
+                return settingsOverride.checkout;
+            
+            return CustomerBehaviorSettingsManager.Checkout;
+        }
         
         public override void OnStart()
         {
@@ -74,11 +83,13 @@ namespace TabletopShop
             if (customer == null)
                 return TaskStatus.Failure;
             
-            // Check timeout
+            // Check timeout using settings
+            var checkoutSettings = GetCheckoutSettings();
+            float maxPaymentWaitTime = checkoutSettings?.maxPaymentWaitTime ?? 30f;
             float waitTime = Time.time - paymentStartTime;
             if (waitTime > maxPaymentWaitTime)
             {
-                Debug.LogWarning($"[CompleteCheckoutTask] {customer.name}: Payment timeout after {waitTime:F1}s");
+                Debug.LogWarning($"[CompleteCheckoutTask] {customer.name}: Payment timeout after {waitTime:F1}s (max: {maxPaymentWaitTime}s)");
                 return TaskStatus.Failure;
             }
             
@@ -99,7 +110,8 @@ namespace TabletopShop
                     if (customer.showDebugLogs)
                         Debug.Log($"[CompleteCheckoutTask] ✅ {customer.name}: Payment completed successfully");
                     
-                    // Start departure sequence after brief delay
+                    // Start departure sequence after brief delay from settings
+                    float departureDelay = checkoutSettings?.departureDelay ?? 1f;
                     //Invoke(nameof(StartDepartureSequence), departureDelay);
                     return TaskStatus.Running;
                 }

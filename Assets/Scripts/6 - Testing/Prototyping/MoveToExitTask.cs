@@ -6,7 +6,22 @@ namespace TabletopShop
 {
     public class MoveToExitTask : Action
     {
+        [Header("Settings Override (Optional)")]
+        [Tooltip("Leave null to use global settings from CustomerBehaviorSettingsManager")]
+        public CustomerBehaviorSettings settingsOverride;
+        
         private bool isMoving = false;
+        
+        /// <summary>
+        /// Get the checkout settings to use (either override or global)
+        /// </summary>
+        private CheckoutSettings GetCheckoutSettings()
+        {
+            if (settingsOverride != null && settingsOverride.checkout != null)
+                return settingsOverride.checkout;
+            
+            return CustomerBehaviorSettingsManager.Checkout;
+        }
         
         public override void OnStart()
         {

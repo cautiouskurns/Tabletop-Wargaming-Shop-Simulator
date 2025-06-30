@@ -11,12 +11,24 @@ namespace TabletopShop
     /// </summary>
     public class PlaceProductsTask : Action
     {
-        [Tooltip("Time between placing each product")]
-        public float placementInterval = 0.5f;
+        [Header("Settings Override (Optional)")]
+        [Tooltip("Leave null to use global settings from CustomerBehaviorSettingsManager")]
+        public CustomerBehaviorSettings settingsOverride;
         
         private CheckoutCounter checkoutCounter = null;
         private bool hasStartedPlacement = false;
         private int productsPlaced = 0;
+        
+        /// <summary>
+        /// Get the checkout settings to use (either override or global)
+        /// </summary>
+        private CheckoutSettings GetCheckoutSettings()
+        {
+            if (settingsOverride != null && settingsOverride.checkout != null)
+                return settingsOverride.checkout;
+            
+            return CustomerBehaviorSettingsManager.Checkout;
+        }
         
         public override void OnStart()
         {
@@ -103,9 +115,11 @@ namespace TabletopShop
                     if (customer.showDebugLogs)
                         Debug.Log($"[PlaceProductsTask] {customer.name}: Placed product {productsPlaced}/{customer.selectedProducts.Count}: {product.ProductData?.ProductName ?? product.name}");
                     
-                    // Wait before placing next product
+                    // Wait before placing next product using settings
                     if (productsPlaced < customer.selectedProducts.Count)
                     {
+                        var checkoutSettings = GetCheckoutSettings();
+                        float placementInterval = checkoutSettings?.productPlacementDelay ?? 0.5f;
                         yield return new WaitForSeconds(placementInterval);
                     }
                 }

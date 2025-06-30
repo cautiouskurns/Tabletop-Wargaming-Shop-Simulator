@@ -6,8 +6,20 @@ namespace TabletopShop
 {
     public class CleanupAndDestroyTask : Action
     {
-        [Tooltip("Delay before destroying customer")]
-        public float destroyDelay = 1f;
+        [Header("Settings Override (Optional)")]
+        [Tooltip("Leave null to use global settings from CustomerBehaviorSettingsManager")]
+        public CustomerBehaviorSettings settingsOverride;
+        
+        /// <summary>
+        /// Get the checkout settings to use (either override or global)
+        /// </summary>
+        private CheckoutSettings GetCheckoutSettings()
+        {
+            if (settingsOverride != null && settingsOverride.checkout != null)
+                return settingsOverride.checkout;
+            
+            return CustomerBehaviorSettingsManager.Checkout;
+        }
         
         public override TaskStatus OnUpdate()
         {
@@ -18,7 +30,9 @@ namespace TabletopShop
             // Cleanup logic
             customer.CleanupOnDestroy();
             
-            // Destroy after delay
+            // Destroy after delay using settings
+            var checkoutSettings = GetCheckoutSettings();
+            float destroyDelay = checkoutSettings?.destroyDelay ?? 1f;
             Object.Destroy(customer.gameObject, destroyDelay);
             
             if (customer.showDebugLogs)
