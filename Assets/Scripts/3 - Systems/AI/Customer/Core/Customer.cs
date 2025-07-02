@@ -44,7 +44,7 @@ namespace TabletopShop
         
         // Behavior Designer compatibility properties
         private float _currentMoney;
-        private List<Product> _selectedProducts = new List<Product>();
+        public List<Product> _selectedProducts = new List<Product>();
         private float _shoppingStartTime;
         
         // Component access properties - expose components directly for better flexibility

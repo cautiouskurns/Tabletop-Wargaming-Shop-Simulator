@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CustomerBehaviorSettings
   m_EditorClassIdentifier: TabletopShop::TabletopShop.CustomerBehaviorSettings
   shopping:
-    buyProbability: 1
+    buyProbability: 0.3
     shoppingDuration: 60
     maxProducts: 3
     shelfBrowseTime: 5
