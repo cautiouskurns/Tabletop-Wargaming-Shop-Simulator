@@ -1,0 +1,196 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15572ee3667f44da39a27880bf0ba0c2, type: 3}
+  m_Name: MainLoreKnowledgeBase
+  m_EditorClassIdentifier: TabletopShop::TabletopShop.LoreKnowledgeBaseSO
+  loreEntries:
+  - faction: 0
+    entryTitle: The Runeforged Legion
+    category: Characters
+    depthLevel: 1
+    unlockCondition: 0
+    unlockRequirement: 0
+    unlockDescription: Available from start
+    description: 'Elite warriors who have bonded their souls to ancient runic weapons.
+      Each Runeblade carries a sword, axe, or spear inscribed with mystical runes
+      that grant supernatural abilities.
+
+
+      Led by Warmaster Thane Ironrune,
+      the Legion serves as both protector and enforcer for the realm''s most sacred
+      sites.'
+    previewText: Mysterious knowledge awaits...
+    icon: {fileID: 0}
+    isUnlocked: 1
+    readCount: 0
+  - faction: 0
+    entryTitle: Runic Weapons
+    category: Technology
+    depthLevel: 1
+    unlockCondition: 0
+    unlockRequirement: 0
+    unlockDescription: Available from start
+    description: 'Ancient weapons forged in the First Age, each inscribed with runes
+      of power. These weapons are living entities that choose their wielders.
+
+
+      Five
+      types exist: Flamestrike (fire), Frostbite (ice), Stormcaller (lightning),
+      Earthshaker (earth), and Voidrender (dark energy).'
+    previewText: Mysterious knowledge awaits...
+    icon: {fileID: 0}
+    isUnlocked: 1
+    readCount: 0
+  - faction: 0
+    entryTitle: The Great Forging
+    category: History
+    depthLevel: 2
+    unlockCondition: 2
+    unlockRequirement: 5
+    unlockDescription: Serve 5 customers
+    description: 'Three thousand years ago, during the War of Shadows, the greatest
+      smiths and mages united to create weapons capable of standing against Void
+      corruption.
+
+
+      The Great Forging lasted seven years and cost dozens of
+      lives, but turned the tide of war.'
+    previewText: Mysterious knowledge awaits...
+    icon: {fileID: 0}
+    isUnlocked: 0
+    readCount: 0
+  - faction: 0
+    entryTitle: Warmaster Thane Ironrune
+    category: Characters
+    depthLevel: 2
+    unlockCondition: 2
+    unlockRequirement: 5
+    unlockDescription: Serve 5 customers
+    description: 'The legendary leader of the Runeforged Legion, wielding the massive
+      runic sword ''Doombreaker'' for over fifty years. His runes channel pure force
+      that can shatter castle walls.
+
+
+      Thane''s tactical brilliance and unwavering
+      dedication have kept the Legion united through countless battles.'
+    previewText: Mysterious knowledge awaits...
+    icon: {fileID: 0}
+    isUnlocked: 0
+    readCount: 0
+  - faction: 0
+    entryTitle: The Forge of Eternal Flames
+    category: Locations
+    depthLevel: 3
+    unlockCondition: 1
+    unlockRequirement: 10
+    unlockDescription: Play for 10 minutes
+    description: 'Hidden in the Ironpeak Mountains, this forge burns with fires that
+      never die. Legend says the flames were lit by dragons and blessed by gods.
+
+
+      Ancient
+      meteoric anvils and perfect-pitch hammers guide smiths in creating the most
+      powerful runic weapons.'
+    previewText: Mysterious knowledge awaits...
+    icon: {fileID: 0}
+    isUnlocked: 0
+    readCount: 0
+  - faction: 1
+    entryTitle: The Corrupted
+    category: Characters
+    depthLevel: 1
+    unlockCondition: 0
+    unlockRequirement: 0
+    unlockDescription: Available from start
+    description: 'Once-mortal beings transformed by Void energy. Their flesh becomes
+      crystalline and their eyes glow purple. They retain intelligence but gain terrible
+      abilities.
+
+
+      Many struggle with their lost humanity, caught between their
+      former lives and dark nature.'
+    previewText: Mysterious knowledge awaits...
+    icon: {fileID: 0}
+    isUnlocked: 1
+    readCount: 0
+  - faction: 1
+    entryTitle: Void Crystals
+    category: Technology
+    depthLevel: 1
+    unlockCondition: 0
+    unlockRequirement: 0
+    unlockDescription: Available from start
+    description: 'Purple-black crystals that grow where Void influence is strongest.
+      They pulse with malevolent energy and can corrupt living beings.
+
+
+      The
+      crystals seem collectively intelligent, growing in purposeful patterns that
+      may be fragments of a greater Void consciousness.'
+    previewText: Mysterious knowledge awaits...
+    icon: {fileID: 0}
+    isUnlocked: 1
+    readCount: 0
+  - faction: 1
+    entryTitle: The Void Incursion
+    category: History
+    depthLevel: 2
+    unlockCondition: 2
+    unlockRequirement: 5
+    unlockDescription: Serve 5 customers
+    description: 'The catastrophic event that began the War of Shadows. Reality was
+      torn open, allowing Void creatures and energy to pour into our world.
+
+
+      The
+      Incursion lasted only three days, but its effects ripple through history. Smaller
+      rifts still appear randomly.'
+    previewText: Mysterious knowledge awaits...
+    icon: {fileID: 0}
+    isUnlocked: 0
+    readCount: 0
+  - faction: 1
+    entryTitle: Shadowlord Malachar
+    category: Characters
+    depthLevel: 2
+    unlockCondition: 2
+    unlockRequirement: 5
+    unlockDescription: Serve 5 customers
+    description: 'The first and most powerful Corrupted, once a noble king. His attempts
+      to harness Void energy for defense transformed him into something beyond mortal
+      comprehension.
+
+
+      Now twelve feet tall with obsidian flesh, he seeks to
+      ''elevate'' all life through Void corruption.'
+    previewText: Mysterious knowledge awaits...
+    icon: {fileID: 0}
+    isUnlocked: 0
+    readCount: 0
+  - faction: 1
+    entryTitle: The Whispering Void
+    category: Locations
+    depthLevel: 3
+    unlockCondition: 1
+    unlockRequirement: 10
+    unlockDescription: Play for 10 minutes
+    description: 'A massive crater where reality remains unstable. Purple energy
+      shimmers and whispers echo from shadows. Time moves differently here.
+
+
+      Massive
+      Void Crystals serve as focal points for rituals and gateways for creatures
+      from the Void dimension.'
+    previewText: Mysterious knowledge awaits...
+    icon: {fileID: 0}
+    isUnlocked: 0
+    readCount: 0

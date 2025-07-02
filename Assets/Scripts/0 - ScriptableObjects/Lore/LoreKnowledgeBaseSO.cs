@@ -1,11 +1,27 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 namespace TabletopShop
 {
+    public enum FactionType
+    {
+        Runeblades,
+        Voidborn
+    }
+    
+    public enum UnlockConditionType
+    {
+        AlwaysAvailable,
+        TimePlayedMinutes,
+        CustomersServed,
+        PreviousDepthUnlocked,
+        GameEventTriggered
+    }
+    
     /// <summary>
     /// ScriptableObject that stores structured lore entries for the tabletop shop simulation.
-    /// Contains multiple lore entries that can be browsed through the in-game codex system.
+    /// Enhanced with faction depth levels and unlock progression system.
     /// </summary>
     [CreateAssetMenu(fileName = "New Lore Knowledge Base", menuName = "Tabletop Shop/Lore Knowledge Base")]
     public class LoreKnowledgeBaseSO : ScriptableObject
@@ -14,47 +30,66 @@ namespace TabletopShop
         [SerializeField] private List<LoreEntry> loreEntries = new List<LoreEntry>();
         
         /// <summary>
-        /// Individual lore entry containing faction-specific information
+        /// Individual lore entry containing faction-specific information with depth progression
         /// </summary>
         [System.Serializable]
         public class LoreEntry
         {
             [Header("Basic Information")]
-            [SerializeField] private string factionName;
+            [SerializeField] private FactionType faction;
             [SerializeField] private string entryTitle;
             [SerializeField] private string category;
+            
+            [Header("Depth & Progression")]
+            [SerializeField] [Range(1, 5)] private int depthLevel = 1;
+            [SerializeField] public UnlockConditionType unlockCondition = UnlockConditionType.AlwaysAvailable;
+            [SerializeField] public float unlockRequirement = 0f;
+            [SerializeField] public string unlockDescription = "Available from start";
             
             [Header("Content")]
             [TextArea(3, 8)]
             [SerializeField] private string description;
+            [SerializeField] private string previewText = "Mysterious knowledge awaits...";
             
             [Header("Visual")]
             [SerializeField] private Sprite icon;
             
-            [Header("Metadata")]
-            [SerializeField] private bool isUnlocked = true;
+            [Header("Runtime Data")]
+            [SerializeField] public bool isUnlocked = true;
             [SerializeField] private int readCount = 0;
+            [SerializeField] private DateTime firstReadTime;
+            [SerializeField] private DateTime lastReadTime;
             
             // Properties for external access
-            public string FactionName => factionName;
+            public FactionType Faction => faction;
+            public string FactionName => faction.ToString();
             public string EntryTitle => entryTitle;
             public string Category => category;
+            public int DepthLevel => depthLevel;
+            public UnlockConditionType UnlockCondition => unlockCondition;
+            public float UnlockRequirement => unlockRequirement;
+            public string UnlockDescription => unlockDescription;
             public string Description => description;
+            public string PreviewText => previewText;
             public Sprite Icon => icon;
             public bool IsUnlocked => isUnlocked;
             public int ReadCount => readCount;
+            public DateTime FirstReadTime => firstReadTime;
+            public DateTime LastReadTime => lastReadTime;
             
             /// <summary>
             /// Constructor for creating lore entries programmatically
             /// </summary>
-            public LoreEntry(string faction, string title, string category, string description, Sprite icon = null)
+            public LoreEntry(FactionType faction, string title, string category, string description, int depthLevel = 1, Sprite icon = null)
             {
-                this.factionName = faction;
+                this.faction = faction;
                 this.entryTitle = title;
                 this.category = category;
                 this.description = description;
+                this.depthLevel = depthLevel;
                 this.icon = icon;
-                this.isUnlocked = true;
+                this.unlockCondition = depthLevel == 1 ? UnlockConditionType.AlwaysAvailable : UnlockConditionType.PreviousDepthUnlocked;
+                this.isUnlocked = depthLevel == 1;
                 this.readCount = 0;
             }
             
@@ -64,6 +99,25 @@ namespace TabletopShop
             public void MarkAsRead()
             {
                 readCount++;
+                if (readCount == 1)
+                    firstReadTime = DateTime.Now;
+                lastReadTime = DateTime.Now;
+            }
+            
+            /// <summary>
+            /// Unlock this entry
+            /// </summary>
+            public void Unlock()
+            {
+                isUnlocked = true;
+            }
+            
+            /// <summary>
+            /// Lock this entry (for testing or resetting)
+            /// </summary>
+            public void Lock()
+            {
+                isUnlocked = false;
             }
             
             /// <summary>
@@ -79,19 +133,31 @@ namespace TabletopShop
         /// <summary>
         /// Get all lore entries for a specific faction
         /// </summary>
-        public List<LoreEntry> GetEntriesByFaction(string factionName)
+        public List<LoreEntry> GetEntriesByFaction(FactionType faction)
         {
             List<LoreEntry> factionEntries = new List<LoreEntry>();
             
             foreach (LoreEntry entry in loreEntries)
             {
-                if (entry.FactionName.Equals(factionName, System.StringComparison.OrdinalIgnoreCase))
+                if (entry.Faction == faction)
                 {
                     factionEntries.Add(entry);
                 }
             }
             
             return factionEntries;
+        }
+        
+        /// <summary>
+        /// Get all lore entries for a specific faction by string name (legacy support)
+        /// </summary>
+        public List<LoreEntry> GetEntriesByFaction(string factionName)
+        {
+            if (System.Enum.TryParse<FactionType>(factionName, true, out FactionType faction))
+            {
+                return GetEntriesByFaction(faction);
+            }
+            return new List<LoreEntry>();
         }
         
         /// <summary>
@@ -113,9 +179,24 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Get all unique faction names in this knowledge base
+        /// Get all faction types in this knowledge base
         /// </summary>
-        public List<string> GetAllFactions()
+        public List<FactionType> GetAllFactions()
+        {
+            HashSet<FactionType> factions = new HashSet<FactionType>();
+            
+            foreach (LoreEntry entry in loreEntries)
+            {
+                factions.Add(entry.Faction);
+            }
+            
+            return new List<FactionType>(factions);
+        }
+        
+        /// <summary>
+        /// Get all unique faction names as strings (legacy support)
+        /// </summary>
+        public List<string> GetAllFactionNames()
         {
             HashSet<string> factions = new HashSet<string>();
             
@@ -164,11 +245,11 @@ namespace TabletopShop
         /// <summary>
         /// Find a specific lore entry by faction and title
         /// </summary>
-        public LoreEntry FindEntry(string factionName, string entryTitle)
+        public LoreEntry FindEntry(FactionType faction, string entryTitle)
         {
             foreach (LoreEntry entry in loreEntries)
             {
-                if (entry.FactionName.Equals(factionName, System.StringComparison.OrdinalIgnoreCase) &&
+                if (entry.Faction == faction &&
                     entry.EntryTitle.Equals(entryTitle, System.StringComparison.OrdinalIgnoreCase))
                 {
                     return entry;
@@ -178,10 +259,76 @@ namespace TabletopShop
             return null;
         }
         
+        /// <summary>
+        /// Find a specific lore entry by faction name and title (legacy support)
+        /// </summary>
+        public LoreEntry FindEntry(string factionName, string entryTitle)
+        {
+            if (System.Enum.TryParse<FactionType>(factionName, true, out FactionType faction))
+            {
+                return FindEntry(faction, entryTitle);
+            }
+            return null;
+        }
+        
+        /// <summary>
+        /// Get entries by faction and depth level
+        /// </summary>
+        public List<LoreEntry> GetEntriesByFactionAndDepth(FactionType faction, int depthLevel)
+        {
+            List<LoreEntry> entries = new List<LoreEntry>();
+            
+            foreach (LoreEntry entry in loreEntries)
+            {
+                if (entry.Faction == faction && entry.DepthLevel == depthLevel)
+                {
+                    entries.Add(entry);
+                }
+            }
+            
+            return entries;
+        }
+        
+        /// <summary>
+        /// Get unlocked entries by faction and depth level
+        /// </summary>
+        public List<LoreEntry> GetUnlockedEntriesByFactionAndDepth(FactionType faction, int depthLevel)
+        {
+            List<LoreEntry> entries = new List<LoreEntry>();
+            
+            foreach (LoreEntry entry in loreEntries)
+            {
+                if (entry.Faction == faction && entry.DepthLevel == depthLevel && entry.IsUnlocked)
+                {
+                    entries.Add(entry);
+                }
+            }
+            
+            return entries;
+        }
+        
+        /// <summary>
+        /// Get the maximum depth level for a faction
+        /// </summary>
+        public int GetMaxDepthLevel(FactionType faction)
+        {
+            int maxDepth = 0;
+            
+            foreach (LoreEntry entry in loreEntries)
+            {
+                if (entry.Faction == faction && entry.DepthLevel > maxDepth)
+                {
+                    maxDepth = entry.DepthLevel;
+                }
+            }
+            
+            return maxDepth;
+        }
+        
         #region Editor Helper Methods
         
         /// <summary>
-        /// Create sample lore entries for testing (called from custom editor or initialization)
+        /// Create sample lore entries with depth progression for testing
         /// </summary>
         [ContextMenu("Add Sample Entries")]
         public void CreateSampleEntries()
@@ -189,51 +336,86 @@ namespace TabletopShop
             // Clear existing entries
             loreEntries.Clear();
             
-            // Runeblades faction entries
-            loreEntries.Add(new LoreEntry(
-                "Runeblades",
-                "The Runeforged Legion",
-                "Characters",
-                "Elite warriors who have bonded their souls to ancient runic weapons. Each Runeblade carries a sword, axe, or spear inscribed with mystical runes that grant supernatural abilities. The bonding process is dangerous - many who attempt it are consumed by the weapon's power, but those who succeed become nearly unstoppable in battle.\n\nLed by Warmaster Thane Ironrune, the Legion serves as both protector and enforcer for the realm's most sacred sites."
-            ));
+            CreateRunebladesEntries();
+            CreateVoidbornEntries();
             
-            loreEntries.Add(new LoreEntry(
-                "Runeblades",
-                "Runic Weapons",
-                "Technology",
-                "Ancient weapons forged in the First Age, each inscribed with runes of power. These weapons are not merely tools but living entities that choose their wielders. The runes glow with inner fire during combat, channeling elemental forces through the blade.\n\nFive types of runic weapons exist: Flamestrike (fire), Frostbite (ice), Stormcaller (lightning), Earthshaker (earth), and the legendary Voidrender (dark energy). Each requires different techniques and mental fortitude to master."
-            ));
+            Debug.Log($"Created {loreEntries.Count} lore entries with depth progression.");
+        }
+        
+        private void CreateRunebladesEntries()
+        {
+            // DEPTH LEVEL 1 - Always Available
+            var entry1 = new LoreEntry(FactionType.Runeblades, "The Runeforged Legion", "Characters",
+                "Elite warriors who have bonded their souls to ancient runic weapons. Each Runeblade carries a sword, axe, or spear inscribed with mystical runes that grant supernatural abilities.\n\nLed by Warmaster Thane Ironrune, the Legion serves as both protector and enforcer for the realm's most sacred sites.", 1);
+            loreEntries.Add(entry1);
             
-            loreEntries.Add(new LoreEntry(
-                "Runeblades",
-                "The Great Forging",
-                "History",
-                "Three thousand years ago, during the War of Shadows, the greatest smiths and mages united to create weapons capable of standing against the Void corruption. Working in the Forge of Eternal Flames, they inscribed the first runic weapons with protective wards and devastating power.\n\nThe Great Forging lasted seven years and cost the lives of dozens of craftsmen, but the weapons they created turned the tide of war and established the Runeblade tradition that continues today."
-            ));
+            var entry2 = new LoreEntry(FactionType.Runeblades, "Runic Weapons", "Technology",
+                "Ancient weapons forged in the First Age, each inscribed with runes of power. These weapons are living entities that choose their wielders.\n\nFive types exist: Flamestrike (fire), Frostbite (ice), Stormcaller (lightning), Earthshaker (earth), and Voidrender (dark energy).", 1);
+            loreEntries.Add(entry2);
             
-            // Voidborn faction entries
-            loreEntries.Add(new LoreEntry(
-                "Voidborn",
-                "The Corrupted",
-                "Characters",
-                "Once-mortal beings who have been transformed by prolonged exposure to Void energy. Their flesh takes on a darkened, crystalline appearance, and their eyes glow with purple fire. The Corrupted retain their intelligence and memories but gain terrible new abilities - phasing through solid matter, draining life force, and manipulating shadows.\n\nDespite their fearsome appearance, many Corrupted struggle with their humanity, caught between their former lives and their new dark nature."
-            ));
+            // DEPTH LEVEL 2 - Unlocked after serving customers
+            var entry3 = new LoreEntry(FactionType.Runeblades, "The Great Forging", "History",
+                "Three thousand years ago, during the War of Shadows, the greatest smiths and mages united to create weapons capable of standing against Void corruption.\n\nThe Great Forging lasted seven years and cost dozens of lives, but turned the tide of war.", 2);
+            entry3.unlockCondition = UnlockConditionType.CustomersServed;
+            entry3.unlockRequirement = 5f;
+            entry3.unlockDescription = "Serve 5 customers";
+            entry3.isUnlocked = false;
+            loreEntries.Add(entry3);
             
-            loreEntries.Add(new LoreEntry(
-                "Voidborn",
-                "Void Crystals",
-                "Technology",
-                "Crystalline formations that grow where the Void's influence is strongest. These purple-black crystals pulse with malevolent energy and can power dark technologies or corrupt living beings who touch them. Void crystals are highly sought after by necromancers and forbidden researchers.\n\nThe crystals seem to have a form of collective intelligence, growing in patterns that suggest purpose. Scholars theorize they may be fragments of a greater Void consciousness trying to manifest in our reality."
-            ));
+            var entry4 = new LoreEntry(FactionType.Runeblades, "Warmaster Thane Ironrune", "Characters",
+                "The legendary leader of the Runeforged Legion, wielding the massive runic sword 'Doombreaker' for over fifty years. His runes channel pure force that can shatter castle walls.\n\nThane's tactical brilliance and unwavering dedication have kept the Legion united through countless battles.", 2);
+            entry4.unlockCondition = UnlockConditionType.CustomersServed;
+            entry4.unlockRequirement = 5f;
+            entry4.unlockDescription = "Serve 5 customers";
+            entry4.isUnlocked = false;
+            loreEntries.Add(entry4);
             
-            loreEntries.Add(new LoreEntry(
-                "Voidborn",
-                "The Void Incursion",
-                "History",
-                "The catastrophic event that began the War of Shadows. Reality itself was torn open, allowing creatures and energy from the Void dimension to pour into our world. Entire cities were consumed in purple fire, and the survivors were forever changed.\n\nThe Incursion lasted only three days, but its effects ripple through history. The tear in reality was sealed by the combined sacrifice of twelve archmages, but smaller rifts still appear randomly, bringing fresh waves of corruption and Voidborn creatures."
-            ));
+            // DEPTH LEVEL 3 - Unlocked after time played
+            var entry5 = new LoreEntry(FactionType.Runeblades, "The Forge of Eternal Flames", "Locations",
+                "Hidden in the Ironpeak Mountains, this forge burns with fires that never die. Legend says the flames were lit by dragons and blessed by gods.\n\nAncient meteoric anvils and perfect-pitch hammers guide smiths in creating the most powerful runic weapons.", 3);
+            entry5.unlockCondition = UnlockConditionType.TimePlayedMinutes;
+            entry5.unlockRequirement = 10f;
+            entry5.unlockDescription = "Play for 10 minutes";
+            entry5.isUnlocked = false;
+            loreEntries.Add(entry5);
+        }
+        
+        private void CreateVoidbornEntries()
+        {
+            // DEPTH LEVEL 1 - Always Available
+            var entry1 = new LoreEntry(FactionType.Voidborn, "The Corrupted", "Characters",
+                "Once-mortal beings transformed by Void energy. Their flesh becomes crystalline and their eyes glow purple. They retain intelligence but gain terrible abilities.\n\nMany struggle with their lost humanity, caught between their former lives and dark nature.", 1);
+            loreEntries.Add(entry1);
             
-            Debug.Log($"Created {loreEntries.Count} sample lore entries for Runeblades and Voidborn factions.");
+            var entry2 = new LoreEntry(FactionType.Voidborn, "Void Crystals", "Technology",
+                "Purple-black crystals that grow where Void influence is strongest. They pulse with malevolent energy and can corrupt living beings.\n\nThe crystals seem collectively intelligent, growing in purposeful patterns that may be fragments of a greater Void consciousness.", 1);
+            loreEntries.Add(entry2);
+            
+            // DEPTH LEVEL 2 - Unlocked after serving customers
+            var entry3 = new LoreEntry(FactionType.Voidborn, "The Void Incursion", "History",
+                "The catastrophic event that began the War of Shadows. Reality was torn open, allowing Void creatures and energy to pour into our world.\n\nThe Incursion lasted only three days, but its effects ripple through history. Smaller rifts still appear randomly.", 2);
+            entry3.unlockCondition = UnlockConditionType.CustomersServed;
+            entry3.unlockRequirement = 5f;
+            entry3.unlockDescription = "Serve 5 customers";
+            entry3.isUnlocked = false;
+            loreEntries.Add(entry3);
+            
+            var entry4 = new LoreEntry(FactionType.Voidborn, "Shadowlord Malachar", "Characters",
+                "The first and most powerful Corrupted, once a noble king. His attempts to harness Void energy for defense transformed him into something beyond mortal comprehension.\n\nNow twelve feet tall with obsidian flesh, he seeks to 'elevate' all life through Void corruption.", 2);
+            entry4.unlockCondition = UnlockConditionType.CustomersServed;
+            entry4.unlockRequirement = 5f;
+            entry4.unlockDescription = "Serve 5 customers";
+            entry4.isUnlocked = false;
+            loreEntries.Add(entry4);
+            
+            // DEPTH LEVEL 3 - Unlocked after time played
+            var entry5 = new LoreEntry(FactionType.Voidborn, "The Whispering Void", "Locations",
+                "A massive crater where reality remains unstable. Purple energy shimmers and whispers echo from shadows. Time moves differently here.\n\nMassive Void Crystals serve as focal points for rituals and gateways for creatures from the Void dimension.", 3);
+            entry5.unlockCondition = UnlockConditionType.TimePlayedMinutes;
+            entry5.unlockRequirement = 10f;
+            entry5.unlockDescription = "Play for 10 minutes";
+            entry5.isUnlocked = false;
+            loreEntries.Add(entry5);
         }
         
         /// <summary>
