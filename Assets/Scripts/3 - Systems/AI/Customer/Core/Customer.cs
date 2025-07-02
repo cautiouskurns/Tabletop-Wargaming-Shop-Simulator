@@ -54,7 +54,7 @@ namespace TabletopShop
         
         // Interface implementations for ICustomer
         ICustomerMovement ICustomer.Movement => customerMovement;
-        ICustomerBehavior ICustomer.Behavior => customerBehavior;
+        ICustomerBehavior ICustomer.Behavior => customerBehavior as ICustomerBehavior;
         ICustomerVisuals ICustomer.Visuals => customerVisuals;
         
         // Convenience properties (delegated from components) for ICustomer interface
@@ -132,17 +132,9 @@ namespace TabletopShop
                 
                 if (customerBehavior != null)
                 {
-                    // Check if using Behavior Designer or legacy system
-                    if (useBehaviorDesigner)
-                    {
-                        Debug.Log($"🎯 BEHAVIOR DESIGNER MODE: {name} - Legacy lifecycle SKIPPED, using Behavior Trees");
-                        customerBehavior.InitializeBehaviorDesignerMode();
-                    }
-                    else
-                    {
-                        Debug.Log($"🔄 LEGACY MODE: {name} - Using state machine/coroutine system");
-                        customerBehavior.StartCustomerLifecycle(currentState);
-                    }
+                    // Only use Behavior Designer mode - legacy system removed
+                    Debug.Log($"🎯 BEHAVIOR DESIGNER MODE: {name} - Using Behavior Trees");
+                    customerBehavior.InitializeBehaviorDesignerMode();
                 }
                 else
                 {
