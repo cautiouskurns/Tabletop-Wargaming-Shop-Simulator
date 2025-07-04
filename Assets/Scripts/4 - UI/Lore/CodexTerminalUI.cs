@@ -20,6 +20,7 @@ namespace TabletopShop
         
         [Header("Main Menu")]
         [SerializeField] private Button browseLoreButton;
+        [SerializeField] private Button closeLoreButton;
         
         [Header("Faction Selection")]
         [SerializeField] private Button runebladesButton;
@@ -71,7 +72,7 @@ namespace TabletopShop
             InitializeReferences();
             SetupUI();
             SetupEventListeners();
-            ShowMainMenu();
+            HideAllPanels(); // Keep all panels hidden initially
         }
         
         private void OnEnable()
@@ -140,9 +141,11 @@ namespace TabletopShop
         
         private void SetupEventListeners()
         {
-            // Main menu button
+            // Main menu buttons
             if (browseLoreButton != null)
                 browseLoreButton.onClick.AddListener(ShowFactionSelection);
+            if (closeLoreButton != null)
+                closeLoreButton.onClick.AddListener(CloseLoreTerminal);
             
             // Faction selection buttons
             if (runebladesButton != null)
@@ -537,6 +540,7 @@ namespace TabletopShop
             Debug.Log($"DepthLevelPanel: {(depthLevelPanel != null ? "✓" : "✗ MISSING")}");
             Debug.Log($"EntryDisplayPanel: {(entryDisplayPanel != null ? "✓" : "✗ MISSING")}");
             Debug.Log($"BrowseLoreButton: {(browseLoreButton != null ? "✓" : "✗ MISSING")}");
+            Debug.Log($"CloseLoreButton: {(closeLoreButton != null ? "✓" : "✗ MISSING")}");
             Debug.Log($"RunebladesButton: {(runebladesButton != null ? "✓" : "✗ MISSING")}");
             Debug.Log($"VoidbornButton: {(voidbornButton != null ? "✓" : "✗ MISSING")}");
             Debug.Log($"RunebladesProgressText: {(runebladesProgressText != null ? "✓" : "✗ MISSING")}");
@@ -581,12 +585,29 @@ namespace TabletopShop
         }
         
         /// <summary>
-        /// Public method to open terminal (for button connections)
+        /// Public method to open the lore terminal (called by external button)
         /// </summary>
-        public void OpenTerminal()
+        public void OpenLoreTerminal()
         {
             gameObject.SetActive(true);
             ShowMainMenu();
+        }
+        
+        /// <summary>
+        /// Public method to close the lore terminal
+        /// </summary>
+        public void CloseLoreTerminal()
+        {
+            HideAllPanels();
+            gameObject.SetActive(false);
+        }
+        
+        /// <summary>
+        /// Legacy method for backwards compatibility
+        /// </summary>
+        public void OpenTerminal()
+        {
+            OpenLoreTerminal();
         }
         
         #endregion
