@@ -18,6 +18,9 @@ namespace TabletopShop
         [SerializeField] private GameObject depthLevelPanel;
         [SerializeField] private GameObject entryDisplayPanel;
         
+        [Header("Main Menu")]
+        [SerializeField] private Button browseLoreButton;
+        
         [Header("Faction Selection")]
         [SerializeField] private Button runebladesButton;
         [SerializeField] private Button voidbornButton;
@@ -58,8 +61,8 @@ namespace TabletopShop
         private int currentEntryIndex = 0;
         
         // References
-        private LoreProgressTracker progressTracker;
-        private LoreKnowledgeBaseSO knowledgeBase;
+        [SerializeField] private LoreProgressTracker progressTracker;
+        [SerializeField] private LoreKnowledgeBaseSO knowledgeBase;
         
         #region Unity Lifecycle
         
@@ -99,15 +102,29 @@ namespace TabletopShop
         
         private void InitializeReferences()
         {
+            if (enableDebugLogs)
+                Debug.Log("[CodexTerminalUI] Initializing references...");
+            
             progressTracker = LoreProgressTracker.Instance;
             if (progressTracker != null)
             {
                 knowledgeBase = progressTracker.KnowledgeBase;
+                if (enableDebugLogs)
+                    Debug.Log($"[CodexTerminalUI] Found LoreProgressTracker with knowledge base: {knowledgeBase?.name}");
+            }
+            else
+            {
+                Debug.LogError("[CodexTerminalUI] LoreProgressTracker.Instance is null! Make sure LoreProgressTracker exists in the scene.");
             }
             
             if (knowledgeBase == null)
             {
                 Debug.LogError("[CodexTerminalUI] No knowledge base found! Make sure LoreProgressTracker has a valid knowledge base assigned.");
+            }
+            else
+            {
+                if (enableDebugLogs)
+                    Debug.Log($"[CodexTerminalUI] Knowledge base loaded with {knowledgeBase.EntryCount} entries");
             }
         }
         
@@ -123,6 +140,10 @@ namespace TabletopShop
         
         private void SetupEventListeners()
         {
+            // Main menu button
+            if (browseLoreButton != null)
+                browseLoreButton.onClick.AddListener(ShowFactionSelection);
+            
             // Faction selection buttons
             if (runebladesButton != null)
                 runebladesButton.onClick.AddListener(() => SelectFaction(FactionType.Runeblades));
@@ -468,6 +489,104 @@ namespace TabletopShop
         public void CloseTerminal()
         {
             gameObject.SetActive(false);
+        }
+        
+        #endregion
+        
+        #region Debug Methods
+        
+        /// <summary>
+        /// Debug method to test faction selection panel
+        /// </summary>
+        [ContextMenu("Debug: Show Faction Selection")]
+        public void DebugShowFactionSelection()
+        {
+            Debug.Log("[CodexTerminalUI] Debug: Forcing faction selection panel");
+            ShowFactionSelection();
+        }
+        
+        /// <summary>
+        /// Debug method to test Runeblades faction
+        /// </summary>
+        [ContextMenu("Debug: Select Runeblades")]
+        public void DebugSelectRuneblades()
+        {
+            Debug.Log("[CodexTerminalUI] Debug: Selecting Runeblades faction");
+            SelectFaction(FactionType.Runeblades);
+        }
+        
+        /// <summary>
+        /// Debug method to test Voidborn faction
+        /// </summary>
+        [ContextMenu("Debug: Select Voidborn")]
+        public void DebugSelectVoidborn()
+        {
+            Debug.Log("[CodexTerminalUI] Debug: Selecting Voidborn faction");
+            SelectFaction(FactionType.Voidborn);
+        }
+        
+        /// <summary>
+        /// Debug method to check all UI references
+        /// </summary>
+        [ContextMenu("Debug: Check UI References")]
+        public void DebugCheckUIReferences()
+        {
+            Debug.Log("=== UI REFERENCE CHECK ===");
+            Debug.Log($"MainMenuPanel: {(mainMenuPanel != null ? "✓" : "✗ MISSING")}");
+            Debug.Log($"FactionSelectPanel: {(factionSelectPanel != null ? "✓" : "✗ MISSING")}");
+            Debug.Log($"DepthLevelPanel: {(depthLevelPanel != null ? "✓" : "✗ MISSING")}");
+            Debug.Log($"EntryDisplayPanel: {(entryDisplayPanel != null ? "✓" : "✗ MISSING")}");
+            Debug.Log($"BrowseLoreButton: {(browseLoreButton != null ? "✓" : "✗ MISSING")}");
+            Debug.Log($"RunebladesButton: {(runebladesButton != null ? "✓" : "✗ MISSING")}");
+            Debug.Log($"VoidbornButton: {(voidbornButton != null ? "✓" : "✗ MISSING")}");
+            Debug.Log($"RunebladesProgressText: {(runebladesProgressText != null ? "✓" : "✗ MISSING")}");
+            Debug.Log($"VoidbornProgressText: {(voidbornProgressText != null ? "✓" : "✗ MISSING")}");
+            Debug.Log($"DepthLevelContainer: {(depthLevelContainer != null ? "✓" : "✗ MISSING")}");
+            Debug.Log($"DepthLevelButtonPrefab: {(depthLevelButtonPrefab != null ? "✓" : "✗ MISSING")}");
+            Debug.Log($"ProgressTracker: {(progressTracker != null ? "✓" : "✗ MISSING")}");
+            Debug.Log($"KnowledgeBase: {(knowledgeBase != null ? "✓" : "✗ MISSING")}");
+            Debug.Log("========================");
+        }
+        
+        /// <summary>
+        /// Debug method to test knowledge base data
+        /// </summary>
+        [ContextMenu("Debug: Check Knowledge Base Data")]
+        public void DebugCheckKnowledgeBaseData()
+        {
+            if (knowledgeBase == null)
+            {
+                Debug.LogError("Knowledge base is null!");
+                return;
+            }
+            
+            Debug.Log("=== KNOWLEDGE BASE DATA ===");
+            Debug.Log($"Total entries: {knowledgeBase.EntryCount}");
+            
+            var runebladesEntries = knowledgeBase.GetEntriesByFaction(FactionType.Runeblades);
+            var voidbornEntries = knowledgeBase.GetEntriesByFaction(FactionType.Voidborn);
+            
+            Debug.Log($"Runeblades entries: {runebladesEntries.Count}");
+            foreach (var entry in runebladesEntries)
+            {
+                Debug.Log($"  - {entry.EntryTitle} (Depth {entry.DepthLevel}, Unlocked: {entry.IsUnlocked})");
+            }
+            
+            Debug.Log($"Voidborn entries: {voidbornEntries.Count}");
+            foreach (var entry in voidbornEntries)
+            {
+                Debug.Log($"  - {entry.EntryTitle} (Depth {entry.DepthLevel}, Unlocked: {entry.IsUnlocked})");
+            }
+            Debug.Log("===========================");
+        }
+        
+        /// <summary>
+        /// Public method to open terminal (for button connections)
+        /// </summary>
+        public void OpenTerminal()
+        {
+            gameObject.SetActive(true);
+            ShowMainMenu();
         }
         
         #endregion
