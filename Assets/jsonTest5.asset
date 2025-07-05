@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 935899b62f48ae5498594680ed17d133, type: 3}
-  m_Name: TTWShopTest
+  m_Name: jsonTest5
   m_EditorClassIdentifier: Assembly-CSharp-firstpass::PixelCrushers.DialogueSystem.Wrappers.DialogueDatabase
-  version: 
-  author: 
-  description: 
+  version: 1.0
+  author: Tabletop Shop
+  description: Marcus - Runeblade Enthusiast Customer Dialogue - Fixed Layout
   globalUserScript: 
   emphasisSettings:
   - color: {r: 1, g: 1, b: 1, a: 1}
@@ -46,7 +46,7 @@ MonoBehaviour:
       type: 3
       typeString: CustomFieldType_Files
     - title: Description
-      value: 
+      value: Shop Owner
       type: 0
       typeString: CustomFieldType_Text
     - title: IsPlayer
@@ -60,7 +60,7 @@ MonoBehaviour:
   - id: 2
     fields:
     - title: Name
-      value: NPC
+      value: Marcus
       type: 0
       typeString: CustomFieldType_Text
     - title: Pictures
@@ -68,7 +68,7 @@ MonoBehaviour:
       type: 3
       typeString: CustomFieldType_Files
     - title: Description
-      value: 
+      value: Enthusiastic Runeblade player
       type: 0
       typeString: CustomFieldType_Text
     - title: IsPlayer
@@ -85,26 +85,54 @@ MonoBehaviour:
   - id: 1
     fields:
     - title: Name
-      value: Alert
-      type: 0
-      typeString: 
-    - title: Initial Value
-      value: 
+      value: PlayerKnowledge
       type: 0
       typeString: CustomFieldType_Text
+    - title: Initial Value
+      value: 4
+      type: 1
+      typeString: CustomFieldType_Number
     - title: Description
-      value: 
+      value: Player knowledge level
       type: 0
-      typeString: 
+      typeString: CustomFieldType_Text
+  - id: 2
+    fields:
+    - title: Name
+      value: RunebladeLore
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: Initial Value
+      value: 4
+      type: 1
+      typeString: CustomFieldType_Number
+    - title: Description
+      value: Runeblade lore entries read
+      type: 0
+      typeString: CustomFieldType_Text
+  - id: 3
+    fields:
+    - title: Name
+      value: CustomerSatisfaction
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: Initial Value
+      value: 2
+      type: 1
+      typeString: CustomFieldType_Number
+    - title: Description
+      value: Marcus satisfaction level
+      type: 0
+      typeString: CustomFieldType_Text
   conversations:
   - id: 1
     fields:
     - title: Title
-      value: New Conversation 1
+      value: Marcus - Competitive Advice
       type: 0
       typeString: CustomFieldType_Text
     - title: Description
-      value: 
+      value: Marcus seeks tactical advice
       type: 0
       typeString: CustomFieldType_Text
     - title: Actor
@@ -148,11 +176,7 @@ MonoBehaviour:
       - title: Title
         value: START
         type: 0
-        typeString: 
-      - title: Description
-        value: 
-        type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       - title: Actor
         value: 1
         type: 5
@@ -164,21 +188,21 @@ MonoBehaviour:
       - title: Menu Text
         value: 
         type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       - title: Dialogue Text
         value: 
         type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       - title: Sequence
         value: None()
         type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       conversationID: 1
       isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
-      falseConditionAction: 
+      falseConditionAction: Block
       conditionPriority: 2
       outgoingLinks:
       - originConversationID: 1
@@ -194,239 +218,14 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 160
-        y: 30
-        width: 160
-        height: 30
-    - id: 1
-      fields:
-      - title: Title
-        value: 
-        type: 0
-        typeString: 
-      - title: Description
-        value: 
-        type: 0
-        typeString: 
-      - title: Actor
-        value: 2
-        type: 5
-        typeString: CustomFieldType_Actor
-      - title: Conversant
-        value: 1
-        type: 5
-        typeString: CustomFieldType_Actor
-      - title: Menu Text
-        value: 
-        type: 0
-        typeString: 
-      - title: Dialogue Text
-        value: Hello.
-        type: 0
-        typeString: 
-      - title: Sequence
-        value: 
-        type: 0
-        typeString: 
-      conversationID: 1
-      isRoot: 0
-      isGroup: 0
-      nodeColor: 
-      delaySimStatus: 0
-      falseConditionAction: Block
-      conditionPriority: 2
-      outgoingLinks:
-      - originConversationID: 1
-        originDialogueID: 1
-        destinationConversationID: 1
-        destinationDialogueID: 2
-        isConnector: 0
-        priority: 2
-      conditionsString: 
-      userScript: 
-      onExecute:
-        m_PersistentCalls:
-          m_Calls: []
-      canvasRect:
-        serializedVersion: 2
-        x: 160
-        y: 80
-        width: 160
-        height: 30
-    - id: 2
-      fields:
-      - title: Title
-        value: 
-        type: 0
-        typeString: 
-      - title: Description
-        value: 
-        type: 0
-        typeString: 
-      - title: Actor
-        value: 1
-        type: 5
-        typeString: CustomFieldType_Actor
-      - title: Conversant
-        value: 2
-        type: 5
-        typeString: CustomFieldType_Actor
-      - title: Menu Text
-        value: 
-        type: 0
-        typeString: 
-      - title: Dialogue Text
-        value: Goodbye.
-        type: 0
-        typeString: 
-      - title: Sequence
-        value: 
-        type: 0
-        typeString: 
-      conversationID: 1
-      isRoot: 0
-      isGroup: 0
-      nodeColor: 
-      delaySimStatus: 0
-      falseConditionAction: Block
-      conditionPriority: 2
-      outgoingLinks: []
-      conditionsString: 
-      userScript: 
-      onExecute:
-        m_PersistentCalls:
-          m_Calls: []
-      canvasRect:
-        serializedVersion: 2
-        x: 160
-        y: 130
-        width: 160
-        height: 30
-    entryGroups: []
-    canvasScrollPosition: {x: 0, y: 0}
-    canvasZoom: 1
-  - id: 2
-    fields:
-    - title: Title
-      value: Quest Conversation 1
-      type: 0
-      typeString: 
-    - title: Description
-      value: The NPC is a quest giver in a video game. The NPC offers the player
-        a quest. This conversation relates to the quest.
-      type: 0
-      typeString: 
-    - title: Actor
-      value: 1
-      type: 5
-      typeString: CustomFieldType_Actor
-    - title: Conversant
-      value: 2
-      type: 5
-      typeString: CustomFieldType_Actor
-    overrideSettings:
-      useOverrides: 0
-      overrideSubtitleSettings: 0
-      showNPCSubtitlesDuringLine: 1
-      showNPCSubtitlesWithResponses: 1
-      showPCSubtitlesDuringLine: 0
-      skipPCSubtitleAfterResponseMenu: 0
-      subtitleCharsPerSecond: 30
-      minSubtitleSeconds: 2
-      continueButton: 0
-      overrideSequenceSettings: 0
-      defaultSequence: 
-      defaultPlayerSequence: 
-      defaultResponseMenuSequence: 
-      overrideInputSettings: 0
-      alwaysForceResponseMenu: 1
-      includeInvalidEntries: 0
-      responseTimeout: 0
-      emTagForOldResponses: 0
-      emTagForInvalidResponses: 0
-      cancelSubtitle:
-        key: 27
-        buttonName: 
-      cancelConversation:
-        key: 27
-        buttonName: 
-    nodeColor: 
-    dialogueEntries:
-    - id: 0
-      fields:
-      - title: Title
-        value: START
-        type: 0
-        typeString: 
-      - title: Description
-        value: 
-        type: 0
-        typeString: 
-      - title: Actor
-        value: 1
-        type: 5
-        typeString: CustomFieldType_Actor
-      - title: Conversant
-        value: 2
-        type: 5
-        typeString: CustomFieldType_Actor
-      - title: Menu Text
-        value: 
-        type: 0
-        typeString: 
-      - title: Dialogue Text
-        value: 
-        type: 0
-        typeString: 
-      - title: Sequence
-        value: None()
-        type: 0
-        typeString: 
-      conversationID: 2
-      isRoot: 1
-      isGroup: 0
-      nodeColor: 
-      delaySimStatus: 0
-      falseConditionAction: Block
-      conditionPriority: 2
-      outgoingLinks:
-      - originConversationID: 2
-        originDialogueID: 0
-        destinationConversationID: 2
-        destinationDialogueID: 1
-        isConnector: 0
-        priority: 2
-      - originConversationID: 2
-        originDialogueID: 0
-        destinationConversationID: 2
-        destinationDialogueID: 2
-        isConnector: 0
-        priority: 2
-      - originConversationID: 2
-        originDialogueID: 0
-        destinationConversationID: 2
-        destinationDialogueID: 3
-        isConnector: 0
-        priority: 2
-      conditionsString: 
-      userScript: 
-      onExecute:
-        m_PersistentCalls:
-          m_Calls: []
-      canvasRect:
-        serializedVersion: 2
-        x: 496
+        x: 600
         y: 50
         width: 160
         height: 30
     - id: 1
       fields:
       - title: Title
-        value: NPC offers quest.
-        type: 0
-        typeString: CustomFieldType_Text
-      - title: Description
-        value: 
+        value: Marcus Greeting
         type: 0
         typeString: CustomFieldType_Text
       - title: Actor
@@ -442,15 +241,16 @@ MonoBehaviour:
         type: 0
         typeString: CustomFieldType_Text
       - title: Dialogue Text
-        value: Oh wow! You actually have a proper hobby shop! I've been looking everywhere
-          for somewhere that understands the hobby properly.
+        value: Hey there! I've been playing Runeblades for about six months now,
+          and I'm really getting into the competitive scene. I heard you might have
+          some insights on army composition?
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
         value: 
         type: 0
         typeString: CustomFieldType_Text
-      conversationID: 2
+      conversationID: 1
       isRoot: 0
       isGroup: 0
       nodeColor: 
@@ -458,19 +258,76 @@ MonoBehaviour:
       falseConditionAction: Block
       conditionPriority: 2
       outgoingLinks:
-      - originConversationID: 2
+      - originConversationID: 1
         originDialogueID: 1
-        destinationConversationID: 2
+        destinationConversationID: 1
+        destinationDialogueID: 2
+        isConnector: 0
+        priority: 2
+      - originConversationID: 1
+        originDialogueID: 1
+        destinationConversationID: 1
+        destinationDialogueID: 3
+        isConnector: 0
+        priority: 2
+      - originConversationID: 1
+        originDialogueID: 1
+        destinationConversationID: 1
         destinationDialogueID: 4
         isConnector: 0
         priority: 2
-      - originConversationID: 2
-        originDialogueID: 1
-        destinationConversationID: 2
+      conditionsString: 
+      userScript: 
+      onExecute:
+        m_PersistentCalls:
+          m_Calls: []
+      canvasRect:
+        serializedVersion: 2
+        x: 600
+        y: 134
+        width: 160
+        height: 30
+    - id: 2
+      fields:
+      - title: Title
+        value: Expert Response
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Actor
+        value: 1
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 2
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Menu Text
+        value: The meta has shifted recently. What format are you playing?
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Dialogue Text
+        value: The meta has shifted recently. What format are you playing?
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Sequence
+        value: Variable["PlayerKnowledge"] = Variable["PlayerKnowledge"] + 2
+        type: 0
+        typeString: CustomFieldType_Text
+      conversationID: 1
+      isRoot: 0
+      isGroup: 0
+      nodeColor: 
+      delaySimStatus: 0
+      falseConditionAction: Block
+      conditionPriority: 2
+      outgoingLinks:
+      - originConversationID: 1
+        originDialogueID: 2
+        destinationConversationID: 1
         destinationDialogueID: 5
         isConnector: 0
         priority: 2
-      conditionsString: 
+      conditionsString: Variable["RunebladeLore"] >= 3
       userScript: 
       onExecute:
         m_PersistentCalls:
@@ -478,40 +335,36 @@ MonoBehaviour:
       canvasRect:
         serializedVersion: 2
         x: 184
-        y: 134
+        y: 218
         width: 160
         height: 30
-    - id: 2
+    - id: 3
       fields:
       - title: Title
-        value: NPC asks about status of active quest.
-        type: 0
-        typeString: CustomFieldType_Text
-      - title: Description
-        value: 
+        value: Basic Response
         type: 0
         typeString: CustomFieldType_Text
       - title: Actor
-        value: 2
-        type: 5
-        typeString: CustomFieldType_Actor
-      - title: Conversant
         value: 1
         type: 5
         typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 2
+        type: 5
+        typeString: CustomFieldType_Actor
       - title: Menu Text
-        value: 
+        value: Absolutely! What's your current army looking like?
         type: 0
         typeString: CustomFieldType_Text
       - title: Dialogue Text
-        value: 
+        value: Absolutely! What's your current army looking like?
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
-        value: 
+        value: Variable["PlayerKnowledge"] = Variable["PlayerKnowledge"] + 1
         type: 0
         typeString: CustomFieldType_Text
-      conversationID: 2
+      conversationID: 1
       isRoot: 0
       isGroup: 0
       nodeColor: 
@@ -519,15 +372,60 @@ MonoBehaviour:
       falseConditionAction: Block
       conditionPriority: 2
       outgoingLinks:
-      - originConversationID: 2
-        originDialogueID: 2
-        destinationConversationID: 2
+      - originConversationID: 1
+        originDialogueID: 3
+        destinationConversationID: 1
         destinationDialogueID: 6
         isConnector: 0
         priority: 2
-      - originConversationID: 2
-        originDialogueID: 2
-        destinationConversationID: 2
+      conditionsString: 
+      userScript: 
+      onExecute:
+        m_PersistentCalls:
+          m_Calls: []
+      canvasRect:
+        serializedVersion: 2
+        x: 600
+        y: 218
+        width: 160
+        height: 30
+    - id: 4
+      fields:
+      - title: Title
+        value: Honest Response
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Actor
+        value: 1
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 2
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Menu Text
+        value: I'm still learning myself. What drew you to competitive play?
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Dialogue Text
+        value: I'm still learning myself. What drew you to competitive play?
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Sequence
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      conversationID: 1
+      isRoot: 0
+      isGroup: 0
+      nodeColor: 
+      delaySimStatus: 0
+      falseConditionAction: Block
+      conditionPriority: 2
+      outgoingLinks:
+      - originConversationID: 1
+        originDialogueID: 4
+        destinationConversationID: 1
         destinationDialogueID: 7
         isConnector: 0
         priority: 2
@@ -538,18 +436,14 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 599
-        y: 129
+        x: 1016
+        y: 218
         width: 160
         height: 30
-    - id: 3
+    - id: 5
       fields:
       - title: Title
-        value: NPC thanks player for having previously completed quest.
-        type: 0
-        typeString: CustomFieldType_Text
-      - title: Description
-        value: 
+        value: Marcus Impressed
         type: 0
         typeString: CustomFieldType_Text
       - title: Actor
@@ -565,14 +459,16 @@ MonoBehaviour:
         type: 0
         typeString: CustomFieldType_Text
       - title: Dialogue Text
-        value: 
+        value: Oh, you keep up with the meta! I'm playing tournament standard, 1500
+          points. The recent FAQ changes really shook things up. Do you have any
+          Crystal Conduit upgrade kits in stock?
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
         value: 
         type: 0
         typeString: CustomFieldType_Text
-      conversationID: 2
+      conversationID: 1
       isRoot: 0
       isGroup: 0
       nodeColor: 
@@ -580,10 +476,16 @@ MonoBehaviour:
       falseConditionAction: Block
       conditionPriority: 2
       outgoingLinks:
-      - originConversationID: 2
-        originDialogueID: 3
-        destinationConversationID: 2
-        destinationDialogueID: 10
+      - originConversationID: 1
+        originDialogueID: 5
+        destinationConversationID: 1
+        destinationDialogueID: 8
+        isConnector: 0
+        priority: 2
+      - originConversationID: 1
+        originDialogueID: 5
+        destinationConversationID: 1
+        destinationDialogueID: 9
         isConnector: 0
         priority: 2
       conditionsString: 
@@ -593,18 +495,132 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 912
-        y: 134
+        x: 184
+        y: 302
         width: 160
         height: 30
-    - id: 4
+    - id: 6
       fields:
       - title: Title
-        value: Player accepts quest.
+        value: Marcus Explains Army
         type: 0
         typeString: CustomFieldType_Text
-      - title: Description
+      - title: Actor
+        value: 2
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 1
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Menu Text
         value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Dialogue Text
+        value: Right now I'm running mostly Heavy Infantry with Stormcaller support.
+          But I keep getting crushed by faster armies. Maybe you have some terrain
+          pieces that could help me practice positioning?
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Sequence
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      conversationID: 1
+      isRoot: 0
+      isGroup: 0
+      nodeColor: 
+      delaySimStatus: 0
+      falseConditionAction: Block
+      conditionPriority: 2
+      outgoingLinks:
+      - originConversationID: 1
+        originDialogueID: 6
+        destinationConversationID: 1
+        destinationDialogueID: 10
+        isConnector: 0
+        priority: 2
+      - originConversationID: 1
+        originDialogueID: 6
+        destinationConversationID: 1
+        destinationDialogueID: 11
+        isConnector: 0
+        priority: 2
+      conditionsString: 
+      userScript: 
+      onExecute:
+        m_PersistentCalls:
+          m_Calls: []
+      canvasRect:
+        serializedVersion: 2
+        x: 600
+        y: 302
+        width: 160
+        height: 30
+    - id: 7
+      fields:
+      - title: Title
+        value: Marcus Shares Passion
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Actor
+        value: 2
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 1
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Menu Text
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Dialogue Text
+        value: Honestly, it was my local gaming group. The strategic depth just clicked
+          for me. Maybe you could recommend some beginner-friendly products for newer
+          players in our group?
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Sequence
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      conversationID: 1
+      isRoot: 0
+      isGroup: 0
+      nodeColor: 
+      delaySimStatus: 0
+      falseConditionAction: Block
+      conditionPriority: 2
+      outgoingLinks:
+      - originConversationID: 1
+        originDialogueID: 7
+        destinationConversationID: 1
+        destinationDialogueID: 12
+        isConnector: 0
+        priority: 2
+      - originConversationID: 1
+        originDialogueID: 7
+        destinationConversationID: 1
+        destinationDialogueID: 13
+        isConnector: 0
+        priority: 2
+      conditionsString: 
+      userScript: 
+      onExecute:
+        m_PersistentCalls:
+          m_Calls: []
+      canvasRect:
+        serializedVersion: 2
+        x: 1016
+        y: 302
+        width: 160
+        height: 30
+    - id: 8
+      fields:
+      - title: Title
+        value: Yes I Have Conduits
         type: 0
         typeString: CustomFieldType_Text
       - title: Actor
@@ -616,21 +632,22 @@ MonoBehaviour:
         type: 5
         typeString: CustomFieldType_Actor
       - title: Menu Text
-        value: 
+        value: I have Crystal Conduit kits in stock.
         type: 0
         typeString: CustomFieldType_Text
       - title: Dialogue Text
-        value: 
+        value: I have Crystal Conduit kits in stock.
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
-        value: 
+        value: Variable["CustomerSatisfaction"] = Variable["CustomerSatisfaction"]
+          + 3
         type: 0
         typeString: CustomFieldType_Text
-      conversationID: 2
+      conversationID: 1
       isRoot: 0
       isGroup: 0
-      nodeColor: 
+      nodeColor: green
       delaySimStatus: 0
       falseConditionAction: Block
       conditionPriority: 2
@@ -643,17 +660,13 @@ MonoBehaviour:
       canvasRect:
         serializedVersion: 2
         x: 80
-        y: 218
+        y: 386
         width: 160
         height: 30
-    - id: 5
+    - id: 9
       fields:
       - title: Title
-        value: Player declines quest.
-        type: 0
-        typeString: CustomFieldType_Text
-      - title: Description
-        value: 
+        value: Suggest Alternative
         type: 0
         typeString: CustomFieldType_Text
       - title: Actor
@@ -665,21 +678,22 @@ MonoBehaviour:
         type: 5
         typeString: CustomFieldType_Actor
       - title: Menu Text
-        value: 
+        value: The Advanced Tactics manual covers anti-meta strategies.
         type: 0
         typeString: CustomFieldType_Text
       - title: Dialogue Text
-        value: 
+        value: The Advanced Tactics manual covers anti-meta strategies.
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
-        value: 
+        value: Variable["CustomerSatisfaction"] = Variable["CustomerSatisfaction"]
+          + 2
         type: 0
         typeString: CustomFieldType_Text
-      conversationID: 2
+      conversationID: 1
       isRoot: 0
       isGroup: 0
-      nodeColor: 
+      nodeColor: blue
       delaySimStatus: 0
       falseConditionAction: Block
       conditionPriority: 2
@@ -692,17 +706,13 @@ MonoBehaviour:
       canvasRect:
         serializedVersion: 2
         x: 288
-        y: 218
+        y: 386
         width: 160
         height: 30
-    - id: 6
+    - id: 10
       fields:
       - title: Title
-        value: Player says they are still working on quest.
-        type: 0
-        typeString: CustomFieldType_Text
-      - title: Description
-        value: 
+        value: Terrain Set Available
         type: 0
         typeString: CustomFieldType_Text
       - title: Actor
@@ -714,21 +724,22 @@ MonoBehaviour:
         type: 5
         typeString: CustomFieldType_Actor
       - title: Menu Text
-        value: 
+        value: I have the Ruined Monastery set - perfect for Heavy Infantry.
         type: 0
         typeString: CustomFieldType_Text
       - title: Dialogue Text
-        value: 
+        value: I have the Ruined Monastery set - perfect for Heavy Infantry.
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
-        value: 
+        value: Variable["CustomerSatisfaction"] = Variable["CustomerSatisfaction"]
+          + 2
         type: 0
         typeString: CustomFieldType_Text
-      conversationID: 2
+      conversationID: 1
       isRoot: 0
       isGroup: 0
-      nodeColor: 
+      nodeColor: green
       delaySimStatus: 0
       falseConditionAction: Block
       conditionPriority: 2
@@ -741,17 +752,13 @@ MonoBehaviour:
       canvasRect:
         serializedVersion: 2
         x: 496
-        y: 218
+        y: 386
         width: 160
         height: 30
-    - id: 7
+    - id: 11
       fields:
       - title: Title
-        value: Player turns in completed quest.
-        type: 0
-        typeString: CustomFieldType_Text
-      - title: Description
-        value: 
+        value: Tactical Advice
         type: 0
         typeString: CustomFieldType_Text
       - title: Actor
@@ -763,131 +770,22 @@ MonoBehaviour:
         type: 5
         typeString: CustomFieldType_Actor
       - title: Menu Text
-        value: 
+        value: Try using terrain to force them into your engagement range.
         type: 0
         typeString: CustomFieldType_Text
       - title: Dialogue Text
-        value: 
+        value: Try using terrain to force them into your engagement range.
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
-        value: 
+        value: Variable["CustomerSatisfaction"] = Variable["CustomerSatisfaction"]
+          + 1
         type: 0
         typeString: CustomFieldType_Text
-      conversationID: 2
+      conversationID: 1
       isRoot: 0
       isGroup: 0
-      nodeColor: 
-      delaySimStatus: 0
-      falseConditionAction: Block
-      conditionPriority: 2
-      outgoingLinks:
-      - originConversationID: 2
-        originDialogueID: 7
-        destinationConversationID: 2
-        destinationDialogueID: 8
-        isConnector: 0
-        priority: 2
-      conditionsString: 
-      userScript: 
-      onExecute:
-        m_PersistentCalls:
-          m_Calls: []
-      canvasRect:
-        serializedVersion: 2
-        x: 704
-        y: 218
-        width: 160
-        height: 30
-    - id: 8
-      fields:
-      - title: Title
-        value: NPC thanks player for completing quest.
-        type: 0
-        typeString: CustomFieldType_Text
-      - title: Description
-        value: 
-        type: 0
-        typeString: CustomFieldType_Text
-      - title: Actor
-        value: 2
-        type: 5
-        typeString: CustomFieldType_Actor
-      - title: Conversant
-        value: 1
-        type: 5
-        typeString: CustomFieldType_Actor
-      - title: Menu Text
-        value: 
-        type: 0
-        typeString: CustomFieldType_Text
-      - title: Dialogue Text
-        value: 
-        type: 0
-        typeString: CustomFieldType_Text
-      - title: Sequence
-        value: 
-        type: 0
-        typeString: CustomFieldType_Text
-      conversationID: 2
-      isRoot: 0
-      isGroup: 0
-      nodeColor: 
-      delaySimStatus: 0
-      falseConditionAction: Block
-      conditionPriority: 2
-      outgoingLinks:
-      - originConversationID: 2
-        originDialogueID: 8
-        destinationConversationID: 2
-        destinationDialogueID: 9
-        isConnector: 0
-        priority: 2
-      conditionsString: 
-      userScript: 
-      onExecute:
-        m_PersistentCalls:
-          m_Calls: []
-      canvasRect:
-        serializedVersion: 2
-        x: 704
-        y: 268
-        width: 160
-        height: 30
-    - id: 9
-      fields:
-      - title: Title
-        value: Player says goodbye.
-        type: 0
-        typeString: CustomFieldType_Text
-      - title: Description
-        value: 
-        type: 0
-        typeString: CustomFieldType_Text
-      - title: Actor
-        value: 1
-        type: 5
-        typeString: CustomFieldType_Actor
-      - title: Conversant
-        value: 2
-        type: 5
-        typeString: CustomFieldType_Actor
-      - title: Menu Text
-        value: 
-        type: 0
-        typeString: CustomFieldType_Text
-      - title: Dialogue Text
-        value: 
-        type: 0
-        typeString: CustomFieldType_Text
-      - title: Sequence
-        value: 
-        type: 0
-        typeString: CustomFieldType_Text
-      conversationID: 2
-      isRoot: 0
-      isGroup: 0
-      nodeColor: 
+      nodeColor: blue
       delaySimStatus: 0
       falseConditionAction: Block
       conditionPriority: 2
@@ -900,17 +798,13 @@ MonoBehaviour:
       canvasRect:
         serializedVersion: 2
         x: 704
-        y: 318
+        y: 386
         width: 160
         height: 30
-    - id: 10
+    - id: 12
       fields:
       - title: Title
-        value: Player says goodbye.
-        type: 0
-        typeString: CustomFieldType_Text
-      - title: Description
-        value: 
+        value: Starter Set Offer
         type: 0
         typeString: CustomFieldType_Text
       - title: Actor
@@ -922,21 +816,22 @@ MonoBehaviour:
         type: 5
         typeString: CustomFieldType_Actor
       - title: Menu Text
-        value: 
+        value: I have excellent starter sets for new players.
         type: 0
         typeString: CustomFieldType_Text
       - title: Dialogue Text
-        value: 
+        value: I have excellent starter sets for new players.
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
-        value: 
+        value: Variable["CustomerSatisfaction"] = Variable["CustomerSatisfaction"]
+          + 2
         type: 0
         typeString: CustomFieldType_Text
-      conversationID: 2
+      conversationID: 1
       isRoot: 0
       isGroup: 0
-      nodeColor: 
+      nodeColor: green
       delaySimStatus: 0
       falseConditionAction: Block
       conditionPriority: 2
@@ -949,68 +844,15 @@ MonoBehaviour:
       canvasRect:
         serializedVersion: 2
         x: 912
-        y: 184
+        y: 386
         width: 160
         height: 30
-    entryGroups: []
-    canvasScrollPosition: {x: 1.010315, y: 0}
-    canvasZoom: 0.98968905
-  - id: 3
-    fields:
-    - title: Title
-      value: New Conversation 3
-      type: 0
-      typeString: CustomFieldType_Text
-    - title: Description
-      value: 
-      type: 0
-      typeString: CustomFieldType_Text
-    - title: Actor
-      value: 1
-      type: 5
-      typeString: CustomFieldType_Actor
-    - title: Conversant
-      value: 2
-      type: 5
-      typeString: CustomFieldType_Actor
-    overrideSettings:
-      useOverrides: 0
-      overrideSubtitleSettings: 0
-      showNPCSubtitlesDuringLine: 1
-      showNPCSubtitlesWithResponses: 1
-      showPCSubtitlesDuringLine: 0
-      skipPCSubtitleAfterResponseMenu: 0
-      subtitleCharsPerSecond: 30
-      minSubtitleSeconds: 2
-      continueButton: 0
-      overrideSequenceSettings: 0
-      defaultSequence: 
-      defaultPlayerSequence: 
-      defaultResponseMenuSequence: 
-      overrideInputSettings: 0
-      alwaysForceResponseMenu: 1
-      includeInvalidEntries: 0
-      responseTimeout: 0
-      emTagForOldResponses: 0
-      emTagForInvalidResponses: 0
-      cancelSubtitle:
-        key: 27
-        buttonName: 
-      cancelConversation:
-        key: 27
-        buttonName: 
-    nodeColor: 
-    dialogueEntries:
-    - id: 0
+    - id: 13
       fields:
       - title: Title
-        value: START
+        value: Group Building Advice
         type: 0
-        typeString: 
-      - title: Description
-        value: 
-        type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       - title: Actor
         value: 1
         type: 5
@@ -1020,23 +862,24 @@ MonoBehaviour:
         type: 5
         typeString: CustomFieldType_Actor
       - title: Menu Text
-        value: 
+        value: Building a strong gaming group takes time and patience.
         type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       - title: Dialogue Text
-        value: 
+        value: Building a strong gaming group takes time and patience.
         type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       - title: Sequence
-        value: None()
+        value: Variable["CustomerSatisfaction"] = Variable["CustomerSatisfaction"]
+          + 1
         type: 0
-        typeString: 
-      conversationID: 0
-      isRoot: 1
+        typeString: CustomFieldType_Text
+      conversationID: 1
+      isRoot: 0
       isGroup: 0
-      nodeColor: 
+      nodeColor: blue
       delaySimStatus: 0
-      falseConditionAction: 
+      falseConditionAction: Block
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
@@ -1046,13 +889,13 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 160
-        y: 30
+        x: 1120
+        y: 386
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 0}
-    canvasZoom: 1
+    canvasScrollPosition: {x: 33.383415, y: 0}
+    canvasZoom: 0.80512
   syncInfo:
     syncActors: 0
     syncItems: 0
@@ -1062,10 +905,10 @@ MonoBehaviour:
     syncItemsDatabase: {fileID: 0}
     syncLocationsDatabase: {fileID: 0}
     syncVariablesDatabase: {fileID: 0}
-  templateJson: '{"treatItemsAsQuests":true,"actorFields":[{"title":"Name","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"Pictures","value":"[]","type":3,"typeString":"CustomFieldType_Files"},{"title":"Description","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"IsPlayer","value":"False","type":2,"typeString":"CustomFieldType_Boolean"}],"itemFields":[{"title":"Name","value":"","type":0,"typeString":""},{"title":"Pictures","value":"[]","type":3,"typeString":"CustomFieldType_Files"},{"title":"Description","value":"","type":0,"typeString":""},{"title":"Is
-    Item","value":"True","type":2,"typeString":"CustomFieldType_Boolean"}],"questFields":[{"title":"Name","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"Pictures","value":"[]","type":3,"typeString":"CustomFieldType_Files"},{"title":"Description","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"Success
-    Description","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"Failure
-    Description","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"State","value":"unassigned","type":0,"typeString":"CustomFieldType_QuestState"},{"title":"Is
-    Item","value":"False","type":2,"typeString":"CustomFieldType_Boolean"}],"locationFields":[{"title":"Name","value":"","type":0,"typeString":""},{"title":"Description","value":"","type":0,"typeString":""}],"variableFields":[{"title":"Name","value":"","type":0,"typeString":""},{"title":"Initial
-    Value","value":"","type":0,"typeString":""},{"title":"Description","value":"","type":0,"typeString":""}],"conversationFields":[{"title":"Title","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"Description","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"Actor","value":"0","type":5,"typeString":"CustomFieldType_Actor"},{"title":"Conversant","value":"0","type":5,"typeString":"CustomFieldType_Actor"}],"dialogueEntryFields":[{"title":"Title","value":"","type":0,"typeString":""},{"title":"Description","value":"","type":0,"typeString":""},{"title":"Actor","value":"","type":5,"typeString":"CustomFieldType_Actor"},{"title":"Conversant","value":"","type":5,"typeString":"CustomFieldType_Actor"},{"title":"Menu
-    Text","value":"","type":0,"typeString":""},{"title":"Dialogue Text","value":"","type":0,"typeString":""},{"title":"Sequence","value":"","type":0,"typeString":""}],"actorPrimaryFieldTitles":[],"itemPrimaryFieldTitles":[],"questPrimaryFieldTitles":[],"locationPrimaryFieldTitles":[],"variablePrimaryFieldTitles":[],"conversationPrimaryFieldTitles":[],"dialogueEntryPrimaryFieldTitles":[],"npcLineColor":{"r":1.0,"g":0.0,"b":0.0,"a":1.0},"pcLineColor":{"r":0.0,"g":0.0,"b":1.0,"a":1.0},"repeatLineColor":{"r":0.5,"g":0.5,"b":0.5,"a":1.0}}'
+  templateJson: '{"treatItemsAsQuests":true,"actorFields":[{"title":"Name","value":"","type":0,"typeString":""},{"title":"Pictures","value":"[]","type":3,"typeString":"CustomFieldType_Files"},{"title":"Description","value":"","type":0,"typeString":""},{"title":"IsPlayer","value":"False","type":2,"typeString":"CustomFieldType_Boolean"}],"itemFields":[{"title":"Name","value":"","type":0,"typeString":""},{"title":"Pictures","value":"[]","type":3,"typeString":"CustomFieldType_Files"},{"title":"Description","value":"","type":0,"typeString":""},{"title":"Is
+    Item","value":"True","type":2,"typeString":"CustomFieldType_Boolean"}],"questFields":[{"title":"Name","value":"","type":0,"typeString":""},{"title":"Pictures","value":"[]","type":3,"typeString":"CustomFieldType_Files"},{"title":"Description","value":"","type":0,"typeString":""},{"title":"Success
+    Description","value":"","type":0,"typeString":""},{"title":"Failure Description","value":"","type":0,"typeString":""},{"title":"State","value":"unassigned","type":0,"typeString":""},{"title":"Is
+    Item","value":"False","type":2,"typeString":"CustomFieldType_Boolean"}],"locationFields":[{"title":"Name","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"Description","value":"","type":0,"typeString":"CustomFieldType_Text"}],"variableFields":[{"title":"Name","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"Initial
+    Value","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"Description","value":"","type":0,"typeString":"CustomFieldType_Text"}],"conversationFields":[{"title":"Title","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"Description","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"Actor","value":"0","type":5,"typeString":"CustomFieldType_Actor"},{"title":"Conversant","value":"0","type":5,"typeString":"CustomFieldType_Actor"}],"dialogueEntryFields":[{"title":"Title","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"Description","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"Actor","value":"","type":5,"typeString":"CustomFieldType_Actor"},{"title":"Conversant","value":"","type":5,"typeString":"CustomFieldType_Actor"},{"title":"Menu
+    Text","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"Dialogue
+    Text","value":"","type":0,"typeString":"CustomFieldType_Text"},{"title":"Sequence","value":"","type":0,"typeString":"CustomFieldType_Text"}],"actorPrimaryFieldTitles":[],"itemPrimaryFieldTitles":[],"questPrimaryFieldTitles":[],"locationPrimaryFieldTitles":[],"variablePrimaryFieldTitles":[],"conversationPrimaryFieldTitles":[],"dialogueEntryPrimaryFieldTitles":[],"npcLineColor":{"r":1.0,"g":0.0,"b":0.0,"a":1.0},"pcLineColor":{"r":0.0,"g":0.0,"b":1.0,"a":1.0},"repeatLineColor":{"r":0.5,"g":0.5,"b":0.5,"a":1.0}}'

@@ -30,6 +30,23 @@ namespace TabletopShop
         
         private void Start()
         {
+#if UNITY_EDITOR
+            // In editor, immediately simulate a click to enable cursor locking
+            var gameWindow = EditorWindow
+                .GetWindow(typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView"));
+            if (gameWindow != null)
+            {
+                gameWindow.Focus();
+                gameWindow.SendEvent(new Event
+                {
+                    button = 0,
+                    clickCount = 1,
+                    type = EventType.MouseDown,
+                    mousePosition = gameWindow.rootVisualElement.contentRect.center
+                });
+            }
+#endif
+            
             // Find player controller to communicate with
             playerController = FindAnyObjectByType<PlayerController>();
             if (playerController == null)

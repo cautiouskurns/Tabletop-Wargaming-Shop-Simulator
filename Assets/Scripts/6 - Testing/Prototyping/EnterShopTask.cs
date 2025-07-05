@@ -76,7 +76,7 @@ namespace TabletopShop
             // Check if customer has entered the shop
             bool inShop = IsCustomerInShop(customer);
             if (customer.showDebugLogs)
-                Debug.Log($"[EnterShopTask] {customer.name}: In shop check: {inShop}, Position: {customer.transform.position}");
+//                Debug.Log($"[EnterShopTask] {customer.name}: In shop check: {inShop}, Position: {customer.transform.position}");
             
             if (inShop)
             {

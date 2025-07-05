@@ -2197,9 +2197,13 @@ PrefabInstance:
       value: 3895
       objectReference: {fileID: 0}
     - target: {fileID: 11426072, guid: 58ac37417e60e534f91138088a3e6f70, type: 3}
+      propertyPath: debugLevel
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 11426072, guid: 58ac37417e60e534f91138088a3e6f70, type: 3}
       propertyPath: initialDatabase
       value: 
-      objectReference: {fileID: 11400000, guid: c47df7be85e9f4328a0e347449373bb4, type: 2}
+      objectReference: {fileID: 11400000, guid: e34dd9dd10911447aa85813c767bc65d, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -11722,7 +11726,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -32, y: 61}
+  m_AnchoredPosition: {x: -32.00006, y: 61}
   m_SizeDelta: {x: -1316.4717, y: -575.7693}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1028325994
@@ -20534,7 +20538,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 662.9, y: -218.1}
+  m_AnchoredPosition: {x: 557.2, y: -139.3}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1783062171
@@ -21566,7 +21570,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1573237569328733333, guid: 820bf978301ea434fbfff9bccc74f53a, type: 3}
       propertyPath: m_Name
-      value: Gamer1
+      value: Marcus
       objectReference: {fileID: 0}
     - target: {fileID: 2206363146247145007, guid: 820bf978301ea434fbfff9bccc74f53a, type: 3}
       propertyPath: m_LocalPosition.x
@@ -21701,7 +21705,7 @@ MonoBehaviour:
   allowBarksDuringConversations: 0
   skipBarkIfNoValidEntries: 0
   cacheBarkLines: 0
-  conversation: New Conversation 1
+  conversation: Marcus - Competitive Advice
   conversationConversant: {fileID: 1911864553}
   conversationActor: {fileID: 1395094050}
   startConversationEntryID: -1
@@ -21728,7 +21732,7 @@ MonoBehaviour:
   useConversationTitlePicker: 1
   useBarkTitlePicker: 1
   useQuestNamePicker: 1
-  selectedDatabase: {fileID: 11400000, guid: c47df7be85e9f4328a0e347449373bb4, type: 2}
+  selectedDatabase: {fileID: 11400000, guid: e34dd9dd10911447aa85813c767bc65d, type: 2}
 --- !u!114 &1911864560
 MonoBehaviour:
   m_ObjectHideFlags: 0
