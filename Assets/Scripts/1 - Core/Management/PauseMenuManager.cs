@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TabletopShop;
 
 public class PauseMenuManager : MonoBehaviour
 {
@@ -9,12 +10,22 @@ public class PauseMenuManager : MonoBehaviour
     [SerializeField] private string mainMenuSceneName = "MainMenu";
     
     private bool isPaused = false;
+    private CursorManager cursorManager;
+    
+    public bool IsPaused => isPaused;
     
     private void Start()
     {
         // Make sure pause menu starts hidden
         if (pauseMenuPanel != null)
             pauseMenuPanel.SetActive(false);
+            
+        // Find the cursor manager
+        cursorManager = FindAnyObjectByType<CursorManager>();
+        if (cursorManager == null)
+        {
+            Debug.LogWarning("PauseMenuManager: No CursorManager found! Cursor control may not work properly.");
+        }
     }
     
     private void Update()
@@ -36,9 +47,11 @@ public class PauseMenuManager : MonoBehaviour
         if (pauseMenuPanel != null)
             pauseMenuPanel.SetActive(true);
             
-        // Unlock cursor for menu interaction
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        // Use cursor manager for proper cursor control
+        if (cursorManager != null)
+        {
+            cursorManager.SetCursorState(false); // Unlock for menu interaction
+        }
     }
     
     public void ResumeGame()
@@ -49,9 +62,11 @@ public class PauseMenuManager : MonoBehaviour
         if (pauseMenuPanel != null)
             pauseMenuPanel.SetActive(false);
             
-        // Lock cursor back for gameplay
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        // Use cursor manager for proper cursor control
+        if (cursorManager != null)
+        {
+            cursorManager.SetCursorState(true); // Lock for gameplay
+        }
     }
     
     public void ReturnToMainMenu()

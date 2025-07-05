@@ -1,4 +1,7 @@
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace TabletopShop
 {
@@ -15,24 +18,14 @@ namespace TabletopShop
         private bool hasInitialized = false;
         private PlayerController playerController;
         private InventoryUI inventoryUI;
+        private PauseMenuManager pauseMenuManager;
         
         private void Awake()
         {
-            // Set cursor state as early as possible
-            if (startWithCursorLocked)
-            {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-                isCursorLocked = true;
-            }
-            else
-            {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-                isCursorLocked = false;
-            }
+            // Set initial cursor state - this will be properly applied in Start()
+            isCursorLocked = startWithCursorLocked;
             
-//            Debug.Log($"CursorManager Awake: cursor {(startWithCursorLocked ? "locked" : "unlocked")}");
+            Debug.Log($"CursorManager Awake: cursor will be {(startWithCursorLocked ? "locked" : "unlocked")}");
         }
         
         private void Start()
@@ -47,16 +40,19 @@ namespace TabletopShop
             // Find inventory UI for integration
             inventoryUI = FindAnyObjectByType<InventoryUI>();
             
-            // Set initial cursor state - this should override any other cursor settings
-            SetCursorState(startWithCursorLocked);
+            // Find pause menu manager for integration
+            pauseMenuManager = FindAnyObjectByType<PauseMenuManager>();
+            
+            // Apply initial cursor state properly
+            ForceImmediateCursorState(isCursorLocked);
             hasInitialized = true;
             
-            Debug.Log($"CursorManager initialized - cursor {(startWithCursorLocked ? "locked" : "unlocked")}");
+            Debug.Log($"CursorManager initialized - cursor {(isCursorLocked ? "locked" : "unlocked")}");
         }
         
         private void LateUpdate()
         {
-            // Ensure cursor state is maintained - this runs after all other Update() calls
+            // Only enforce cursor state if it has drifted from our intended state
             if (hasInitialized)
             {
                 EnforceCursorState();
@@ -65,8 +61,12 @@ namespace TabletopShop
         
         private void Update()
         {
+            // Only handle escape key for cursor toggle when game is not paused
+            // If there's no pause manager, allow cursor toggle
+            bool shouldHandleEscapeKey = pauseMenuManager == null || !pauseMenuManager.IsPaused;
+            
             // Toggle cursor with Escape key - make this more immediate and reliable
-            if (Input.GetKeyDown(toggleCursorKey))
+            if (Input.GetKeyDown(toggleCursorKey) && shouldHandleEscapeKey)
             {
                 ToggleCursor();
             }
@@ -82,26 +82,28 @@ namespace TabletopShop
             }
         }
         /// <summary>
-        /// Enforce the current cursor state to prevent other scripts from interfering
+        /// Enforce the current cursor state only if it has drifted from our intended state
         /// </summary>
         private void EnforceCursorState()
         {
             if (isCursorLocked)
             {
+                // Only enforce if cursor state has drifted
                 if (Cursor.lockState != CursorLockMode.Locked || Cursor.visible)
                 {
-                    Cursor.lockState = CursorLockMode.Locked;
                     Cursor.visible = false;
-                    Debug.Log("CursorManager: Enforced locked cursor state");
+                    Cursor.lockState = CursorLockMode.Locked;
+                    Debug.Log("CursorManager: Enforced locked cursor state (state had drifted)");
                 }
             }
             else
             {
+                // Only enforce if cursor state has drifted
                 if (Cursor.lockState != CursorLockMode.None || !Cursor.visible)
                 {
                     Cursor.lockState = CursorLockMode.None;
                     Cursor.visible = true;
-                    Debug.Log("CursorManager: Enforced unlocked cursor state");
+                    Debug.Log("CursorManager: Enforced unlocked cursor state (state had drifted)");
                 }
             }
         }
@@ -111,7 +113,18 @@ namespace TabletopShop
         /// </summary>
         public void ToggleCursor()
         {
-            SetCursorState(!isCursorLocked);
+            bool newLockState = !isCursorLocked;
+            
+            if (newLockState)
+            {
+                // When locking, use force immediate to bypass Unity's click requirement
+                ForceImmediateCursorState(true);
+            }
+            else
+            {
+                // When unlocking, normal method is fine
+                SetCursorState(false);
+            }
         }
         
         /// <summary>
@@ -124,13 +137,9 @@ namespace TabletopShop
             
             if (locked)
             {
-                // Lock cursor for first-person movement - be forceful about it
-                Cursor.lockState = CursorLockMode.Locked;
+                // Proper Unity cursor lock sequence - visibility first, then lock state
                 Cursor.visible = false;
-                
-                // Force the state immediately to overcome any Unity delays
-                UnityEngine.Cursor.lockState = CursorLockMode.Locked;
-                UnityEngine.Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
                 
                 // Enable player mouse look
                 if (playerController != null)
@@ -140,13 +149,9 @@ namespace TabletopShop
             }
             else
             {
-                // Unlock cursor for UI interaction
+                // Proper Unity cursor unlock sequence - lock state first, then visibility
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
-                
-                // Force the state immediately to overcome any Unity delays
-                UnityEngine.Cursor.lockState = CursorLockMode.None;
-                UnityEngine.Cursor.visible = true;
                 
                 // Disable player mouse look to prevent camera jitter
                 if (playerController != null)
@@ -155,7 +160,7 @@ namespace TabletopShop
                 }
             }
             
-//            Debug.Log($"CursorManager: Cursor {(locked ? "locked" : "unlocked")} for {(locked ? "movement" : "UI interaction")}");
+            Debug.Log($"CursorManager: Cursor {(locked ? "locked" : "unlocked")} for {(locked ? "movement" : "UI interaction")}");
         }
         
         /// <summary>
@@ -164,6 +169,81 @@ namespace TabletopShop
         public void ForceCursorState()
         {
             SetCursorState(isCursorLocked);
+        }
+        
+        /// <summary>
+        /// Force immediate cursor state change, bypassing Unity's click requirement
+        /// </summary>
+        /// <param name="locked">True to lock cursor, false to unlock</param>
+        private void ForceImmediateCursorState(bool locked)
+        {
+            isCursorLocked = locked;
+            
+            if (locked)
+            {
+                // Multiple attempts to force cursor lock immediately
+                StartCoroutine(ForceImmediateLockCoroutine());
+                
+                // Enable player mouse look immediately
+                if (playerController != null)
+                {
+                    playerController.SetMouseLookEnabled(true);
+                }
+            }
+            else
+            {
+                // Unlock is immediate
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                
+                // Disable player mouse look
+                if (playerController != null)
+                {
+                    playerController.SetMouseLookEnabled(false);
+                }
+            }
+            
+            Debug.Log($"CursorManager: Force immediate cursor {(locked ? "locked" : "unlocked")}");
+        }
+        
+        /// <summary>
+        /// Coroutine to force cursor lock over multiple frames to overcome Unity's limitations
+        /// </summary>
+        private System.Collections.IEnumerator ForceImmediateLockCoroutine()
+        {
+#if UNITY_EDITOR
+            // In editor, simulate a click on the game window to enable cursor locking
+            var gameWindow = EditorWindow
+                .GetWindow(typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView"));
+            if (gameWindow != null)
+            {
+                gameWindow.Focus();
+                gameWindow.SendEvent(new Event
+                {
+                    button = 0,
+                    clickCount = 1,
+                    type = EventType.MouseDown,
+                    mousePosition = gameWindow.rootVisualElement.contentRect.center
+                });
+            }
+#endif
+            
+            // Try multiple times over several frames to ensure lock takes effect
+            for (int i = 0; i < 10; i++)
+            {
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
+                
+                // Wait a frame
+                yield return null;
+                
+                // Check if it worked
+                if (Cursor.lockState == CursorLockMode.Locked && !Cursor.visible)
+                {
+                    Debug.Log($"CursorManager: Cursor locked successfully on attempt {i + 1}");
+                    break;
+                }
+            }
         }
         
         /// <summary>
