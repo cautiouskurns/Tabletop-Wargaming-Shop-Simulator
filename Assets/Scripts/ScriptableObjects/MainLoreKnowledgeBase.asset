@@ -29,9 +29,9 @@ MonoBehaviour:
       the Legion serves as both protector and enforcer for the realm''s most sacred
       sites.'
     previewText: Mysterious knowledge awaits...
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 3a8ee26b0e2ca4b0c9c2ee92e81c18ef, type: 3}
     isUnlocked: 1
-    readCount: 0
+    readCount: 11
   - faction: 0
     entryTitle: Runic Weapons
     category: Technology
@@ -49,7 +49,7 @@ MonoBehaviour:
     previewText: Mysterious knowledge awaits...
     icon: {fileID: 0}
     isUnlocked: 1
-    readCount: 0
+    readCount: 4
   - faction: 0
     entryTitle: The Great Forging
     category: History
@@ -102,8 +102,8 @@ MonoBehaviour:
       powerful runic weapons.'
     previewText: Mysterious knowledge awaits...
     icon: {fileID: 0}
-    isUnlocked: 0
-    readCount: 0
+    isUnlocked: 1
+    readCount: 3
   - faction: 1
     entryTitle: The Corrupted
     category: Characters
@@ -121,7 +121,7 @@ MonoBehaviour:
     previewText: Mysterious knowledge awaits...
     icon: {fileID: 0}
     isUnlocked: 1
-    readCount: 0
+    readCount: 7
   - faction: 1
     entryTitle: Void Crystals
     category: Technology
@@ -139,7 +139,7 @@ MonoBehaviour:
     previewText: Mysterious knowledge awaits...
     icon: {fileID: 0}
     isUnlocked: 1
-    readCount: 0
+    readCount: 3
   - faction: 1
     entryTitle: The Void Incursion
     category: History
@@ -192,5 +192,5 @@ MonoBehaviour:
       from the Void dimension.'
     previewText: Mysterious knowledge awaits...
     icon: {fileID: 0}
-    isUnlocked: 0
-    readCount: 0
+    isUnlocked: 1
+    readCount: 3

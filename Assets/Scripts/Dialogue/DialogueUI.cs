@@ -17,9 +17,11 @@ namespace TabletopShop.Dialogue
         [SerializeField] private Transform choicesParent;
         [SerializeField] private Button choiceButtonPrefab;
         [SerializeField] private Button closeButton;
+        [SerializeField] private Canvas dialogueCanvas;
         
         private DialogueManager dialogueManager;
         private List<Button> activeChoiceButtons = new List<Button>();
+        private UILayerManager uiLayerManager;
         
         private void Awake()
         {
@@ -40,7 +42,46 @@ namespace TabletopShop.Dialogue
                 closeButton.onClick.AddListener(() => dialogueManager?.EndDialogue());
             }
             
+            // Find the dialogue canvas if not assigned
+            if (dialogueCanvas == null)
+            {
+                dialogueCanvas = GetComponentInParent<Canvas>();
+            }
+            
             HideDialogue();
+        }
+        
+        private void Start()
+        {
+            RegisterWithUILayerManager();
+        }
+        
+        private void OnDestroy()
+        {
+            // Unregister from UI layer manager
+            if (uiLayerManager != null && dialogueCanvas != null)
+            {
+                uiLayerManager.UnregisterCanvas(dialogueCanvas);
+            }
+        }
+        
+        /// <summary>
+        /// Register with UILayerManager for proper canvas layering
+        /// </summary>
+        private void RegisterWithUILayerManager()
+        {
+            uiLayerManager = UILayerManager.Instance;
+            
+            if (uiLayerManager != null && dialogueCanvas != null)
+            {
+                // Register this canvas with the dialogue layer
+                uiLayerManager.RegisterCanvas(dialogueCanvas, "Dialogue", UILayerManager.UILayers.Dialogue, true);
+                Debug.Log("[DialogueUI] Registered with UILayerManager at Dialogue layer");
+            }
+            else
+            {
+                Debug.LogWarning("[DialogueUI] Could not register with UILayerManager - check that UILayerManager exists in scene");
+            }
         }
         
         /// <summary>
@@ -49,6 +90,7 @@ namespace TabletopShop.Dialogue
         private void ShowDialogue()
         {
             dialoguePanel.SetActive(true);
+            UpdateRaycastBlocking();
         }
         
         /// <summary>
@@ -58,6 +100,18 @@ namespace TabletopShop.Dialogue
         {
             dialoguePanel.SetActive(false);
             ClearChoices();
+            UpdateRaycastBlocking();
+        }
+        
+        /// <summary>
+        /// Update raycast blocking for all registered canvases
+        /// </summary>
+        private void UpdateRaycastBlocking()
+        {
+            if (uiLayerManager != null)
+            {
+                uiLayerManager.UpdateRaycastBlocking();
+            }
         }
         
         /// <summary>

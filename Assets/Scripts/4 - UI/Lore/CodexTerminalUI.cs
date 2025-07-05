@@ -64,6 +64,8 @@ namespace TabletopShop
         // References
         [SerializeField] private LoreProgressTracker progressTracker;
         [SerializeField] private LoreKnowledgeBaseSO knowledgeBase;
+        [SerializeField] private Canvas terminalCanvas;
+        private UILayerManager uiLayerManager;
         
         #region Unity Lifecycle
         
@@ -72,6 +74,7 @@ namespace TabletopShop
             InitializeReferences();
             SetupUI();
             SetupEventListeners();
+            RegisterWithUILayerManager();
             HideAllPanels(); // Keep all panels hidden initially
         }
         
@@ -94,6 +97,18 @@ namespace TabletopShop
                 progressTracker.OnEntryUnlocked -= OnEntryUnlocked;
                 progressTracker.OnDepthLevelUnlocked -= OnDepthLevelUnlocked;
                 progressTracker.OnProgressUpdated -= OnProgressUpdated;
+            }
+            
+            // Update raycast blocking when disabled
+            UpdateRaycastBlocking();
+        }
+        
+        private void OnDestroy()
+        {
+            // Unregister from UI layer manager
+            if (uiLayerManager != null && terminalCanvas != null)
+            {
+                uiLayerManager.UnregisterCanvas(terminalCanvas);
             }
         }
         
@@ -126,6 +141,16 @@ namespace TabletopShop
             {
                 if (enableDebugLogs)
                     Debug.Log($"[CodexTerminalUI] Knowledge base loaded with {knowledgeBase.EntryCount} entries");
+            }
+            
+            // Find the terminal canvas if not assigned
+            if (terminalCanvas == null)
+            {
+                terminalCanvas = GetComponentInParent<Canvas>();
+                if (terminalCanvas == null)
+                {
+                    Debug.LogError("[CodexTerminalUI] No Canvas found! Make sure this UI is placed under a Canvas.");
+                }
             }
         }
         
@@ -166,6 +191,33 @@ namespace TabletopShop
                 nextEntryButton.onClick.AddListener(ShowNextEntry);
         }
         
+        private void RegisterWithUILayerManager()
+        {
+            // Get UILayerManager instance
+            uiLayerManager = UILayerManager.Instance;
+            
+            if (uiLayerManager != null && terminalCanvas != null)
+            {
+                // Register this canvas with the lore layer
+                uiLayerManager.RegisterCanvas(terminalCanvas, "LoreTerminal", UILayerManager.UILayers.Lore, true);
+                
+                if (enableDebugLogs)
+                    Debug.Log("[CodexTerminalUI] Registered with UILayerManager at Lore layer");
+            }
+            else
+            {
+                Debug.LogWarning("[CodexTerminalUI] Could not register with UILayerManager - check that UILayerManager exists in scene");
+            }
+        }
+        
+        private void UpdateRaycastBlocking()
+        {
+            if (uiLayerManager != null)
+            {
+                uiLayerManager.UpdateRaycastBlocking();
+            }
+        }
+        
         #endregion
         
         #region Panel Management
@@ -190,6 +242,7 @@ namespace TabletopShop
                 // If no main menu panel, go straight to faction selection
                 ShowFactionSelection();
             }
+            UpdateRaycastBlocking();
         }
         
         private void ShowFactionSelection()
@@ -200,6 +253,7 @@ namespace TabletopShop
                 factionSelectPanel.SetActive(true);
                 UpdateFactionProgress();
             }
+            UpdateRaycastBlocking();
         }
         
         private void ShowDepthLevelSelection()
@@ -210,6 +264,7 @@ namespace TabletopShop
                 depthLevelPanel.SetActive(true);
                 UpdateDepthLevelDisplay();
             }
+            UpdateRaycastBlocking();
         }
         
         private void ShowEntryDisplay()
@@ -220,6 +275,7 @@ namespace TabletopShop
                 entryDisplayPanel.SetActive(true);
                 UpdateEntryDisplay();
             }
+            UpdateRaycastBlocking();
         }
         
         #endregion
@@ -591,6 +647,7 @@ namespace TabletopShop
         {
             gameObject.SetActive(true);
             ShowMainMenu();
+            UpdateRaycastBlocking();
         }
         
         /// <summary>
@@ -600,6 +657,7 @@ namespace TabletopShop
         {
             HideAllPanels();
             gameObject.SetActive(false);
+            UpdateRaycastBlocking();
         }
         
         /// <summary>
