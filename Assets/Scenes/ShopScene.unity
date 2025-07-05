@@ -21618,6 +21618,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1573237569328733333, guid: 820bf978301ea434fbfff9bccc74f53a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1911864559}
+    - targetCorrespondingSourceObject: {fileID: 1573237569328733333, guid: 820bf978301ea434fbfff9bccc74f53a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1911864560}
   m_SourcePrefab: {fileID: 100100000, guid: 820bf978301ea434fbfff9bccc74f53a, type: 3}
 --- !u!4 &1911864553 stripped
 Transform:
@@ -21659,7 +21662,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c593457cd8105e148906690e1707c592, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp-firstpass::PixelCrushers.DialogueSystem.Wrappers.DialogueSystemTrigger
-  trigger: 16
+  trigger: 32
   delayOneFrame: 0
   condition:
     luaConditions: []
@@ -21726,6 +21729,31 @@ MonoBehaviour:
   useBarkTitlePicker: 1
   useQuestNamePicker: 1
   selectedDatabase: {fileID: 11400000, guid: c47df7be85e9f4328a0e347449373bb4, type: 2}
+--- !u!114 &1911864560
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389536285}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 274b80ab5b659c646ba9338870d14625, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::PixelCrushers.DialogueSystem.Wrappers.Usable
+  m_overrideName: 
+  m_overrideUseMessage: 
+  maxUseDistance: 30
+  events:
+    onSelect:
+      m_PersistentCalls:
+        m_Calls: []
+    onDeselect:
+      m_PersistentCalls:
+        m_Calls: []
+    onUse:
+      m_PersistentCalls:
+        m_Calls: []
 --- !u!1001 &1912843488
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -23827,6 +23855,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4110414787461727462, guid: 5cd710874f1cb4d0cb7e4278a5ec073d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6893552252209953651}
+    - targetCorrespondingSourceObject: {fileID: 4110414787461727462, guid: 5cd710874f1cb4d0cb7e4278a5ec073d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6893552252209953669}
   m_SourcePrefab: {fileID: 100100000, guid: 5cd710874f1cb4d0cb7e4278a5ec073d, type: 3}
 --- !u!1 &6893552252209953650 stripped
 GameObject:
@@ -23841,6 +23872,56 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6893552252209953650}
   m_Enabled: 1
+--- !u!114 &6893552252209953669
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6893552252209953650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 624654ff0a68ee844994f728ddf3d991, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::PixelCrushers.DialogueSystem.Wrappers.Selector
+  selectAt: 0
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  distanceFrom: 0
+  maxSelectionDistance: 30
+  runRaycasts: 1
+  raycastAll: 0
+  selectBehindUIObjects: 0
+  useDefaultGUI: 1
+  guiSkin: {fileID: 0}
+  guiStyleName: label
+  alignment: 1
+  textStyle: 1
+  textStyleColor: {r: 0, g: 0, b: 0, a: 1}
+  inRangeColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  outOfRangeColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  reticle:
+    inRange: {fileID: 0}
+    outOfRange: {fileID: 0}
+    width: 64
+    height: 64
+  useKey: 114
+  useButton: Fire2
+  m_defaultUseMessage: (spacebar to interact)
+  broadcastToChildren: 1
+  actorTransform: {fileID: 0}
+  tooFarMessage: 
+  onSelectedUsable:
+    m_PersistentCalls:
+      m_Calls: []
+  onDeselectedUsable:
+    m_PersistentCalls:
+      m_Calls: []
+  tooFarEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  debug: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
