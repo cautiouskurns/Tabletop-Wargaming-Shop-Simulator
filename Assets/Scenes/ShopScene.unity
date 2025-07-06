@@ -2715,7 +2715,7 @@ PrefabInstance:
     - target: {fileID: 11426072, guid: 58ac37417e60e534f91138088a3e6f70, type: 3}
       propertyPath: initialDatabase
       value: 
-      objectReference: {fileID: 11400000, guid: e34dd9dd10911447aa85813c767bc65d, type: 2}
+      objectReference: {fileID: 11400000, guid: a135b85035af6489baa950813ce73818, type: 2}
     - target: {fileID: 11426072, guid: 58ac37417e60e534f91138088a3e6f70, type: 3}
       propertyPath: displaySettings.dialogueUI
       value: 
@@ -3302,7 +3302,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 561206922}
   m_HandleRect: {fileID: 561206921}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -13557,7 +13557,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -32.00006, y: 61}
+  m_AnchoredPosition: {x: -32, y: 61}
   m_SizeDelta: {x: -1316.4717, y: -575.7693}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1028325994
@@ -25003,7 +25003,7 @@ MonoBehaviour:
   useConversationTitlePicker: 1
   useBarkTitlePicker: 1
   useQuestNamePicker: 1
-  selectedDatabase: {fileID: 11400000, guid: e34dd9dd10911447aa85813c767bc65d, type: 2}
+  selectedDatabase: {fileID: 11400000, guid: a135b85035af6489baa950813ce73818, type: 2}
 --- !u!114 &1911864560
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26220,6 +26220,11 @@ RectTransform:
   m_AnchoredPosition: {x: 188.5, y: -20}
   m_SizeDelta: {x: 73, y: 24}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1980364877 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1573237569328733333, guid: 820bf978301ea434fbfff9bccc74f53a, type: 3}
+  m_PrefabInstance: {fileID: 2053372562}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1983513346
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26579,7 +26584,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1573237569328733333, guid: 820bf978301ea434fbfff9bccc74f53a, type: 3}
       propertyPath: m_Name
-      value: Gamer1 (1)
+      value: Gavin
       objectReference: {fileID: 0}
     - target: {fileID: 2206363146247145007, guid: 820bf978301ea434fbfff9bccc74f53a, type: 3}
       propertyPath: m_LocalPosition.x
@@ -26624,13 +26629,149 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1573237569328733333, guid: 820bf978301ea434fbfff9bccc74f53a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2053372567}
+    - targetCorrespondingSourceObject: {fileID: 1573237569328733333, guid: 820bf978301ea434fbfff9bccc74f53a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2053372566}
+    - targetCorrespondingSourceObject: {fileID: 1573237569328733333, guid: 820bf978301ea434fbfff9bccc74f53a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2053372565}
   m_SourcePrefab: {fileID: 100100000, guid: 820bf978301ea434fbfff9bccc74f53a, type: 3}
 --- !u!4 &2053372563 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2206363146247145007, guid: 820bf978301ea434fbfff9bccc74f53a, type: 3}
   m_PrefabInstance: {fileID: 2053372562}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2053372565
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1980364877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 274b80ab5b659c646ba9338870d14625, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::PixelCrushers.DialogueSystem.Wrappers.Usable
+  m_overrideName: 
+  m_overrideUseMessage: 
+  maxUseDistance: 30
+  events:
+    onSelect:
+      m_PersistentCalls:
+        m_Calls: []
+    onDeselect:
+      m_PersistentCalls:
+        m_Calls: []
+    onUse:
+      m_PersistentCalls:
+        m_Calls: []
+--- !u!114 &2053372566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1980364877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c593457cd8105e148906690e1707c592, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::PixelCrushers.DialogueSystem.Wrappers.DialogueSystemTrigger
+  trigger: 32
+  delayOneFrame: 0
+  condition:
+    luaConditions: []
+    questConditions: []
+    acceptedTags: []
+    acceptedGameObjects: []
+    luaWizardIndex: -1
+    lastEvaluationValue: 0
+  setQuestState: 1
+  questName: 
+  questState: 0
+  setQuestEntryState: 0
+  questEntryNumber: 1
+  questEntryState: 0
+  setAnotherQuestEntryState: 0
+  anotherQuestEntryNumber: 1
+  anotherQuestEntryState: 0
+  luaCode: 
+  sequence: 
+  sequenceSpeaker: {fileID: 0}
+  sequenceListener: {fileID: 0}
+  waitOneFrameOnStartOrEnable: 1
+  alertMessage: 
+  textTable: {fileID: 0}
+  alertDuration: 0
+  sendMessages: []
+  barkSource: 0
+  barkConversation: 
+  barkEntryID: -1
+  barkEntryTitle: 
+  barkText: 
+  barkTextSequence: 
+  barker: {fileID: 0}
+  barkTarget: {fileID: 0}
+  barkOrder: 0
+  allowBarksDuringConversations: 0
+  skipBarkIfNoValidEntries: 0
+  cacheBarkLines: 0
+  conversation: Elena - Voidborn Lore Discussion
+  conversationConversant: {fileID: 2053372563}
+  conversationActor: {fileID: 1395094050}
+  startConversationEntryID: -1
+  startConversationEntryTitle: 
+  overrideDialogueUI: {fileID: 0}
+  exclusive: 0
+  replace: 0
+  queue: 0
+  skipIfNoValidEntries: 0
+  preventRestartOnSameFrameEnded: 0
+  stopConversationOnTriggerExit: 0
+  marginToAllowTriggerExit: 0.2
+  stopConversationIfTooFar: 0
+  maxConversationDistance: 5
+  monitorConversationDistanceFrequency: 1
+  showCursorDuringConversation: 0
+  pauseGameDuringConversation: 0
+  setActiveActions: []
+  setEnabledActions: []
+  setAnimatorStateActions: []
+  onExecute:
+    m_PersistentCalls:
+      m_Calls: []
+  useConversationTitlePicker: 1
+  useBarkTitlePicker: 1
+  useQuestNamePicker: 1
+  selectedDatabase: {fileID: 11400000, guid: a135b85035af6489baa950813ce73818, type: 2}
+--- !u!136 &2053372567
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1980364877}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.82, z: 0}
 --- !u!1 &2057327432
 GameObject:
   m_ObjectHideFlags: 0
